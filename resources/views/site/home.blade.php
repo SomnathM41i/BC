@@ -14,7 +14,7 @@
         <div class="hero-advertisement-frame">
             <img src="{{ asset('images/site/hero-advertisement.png') }}"
                  alt="{{ __('site.home.hero_image_alt') }}"
-                 class="h-full w-full object-contain"
+                 class="h-full w-full object-cover object-center"
                  fetchpriority="high">
         </div>
     </section>
