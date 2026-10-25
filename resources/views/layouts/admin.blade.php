@@ -16,7 +16,7 @@
             <p class="text-xs text-slate-400">Account Manager</p>
         </div>
         <nav class="flex-1 space-y-1 px-3 py-4 text-sm">
-            @include('partials.nav-links', ['user' => $user, 'dark' => true])
+            @include('partials.admin.nav-links', ['user' => $user, 'dark' => true])
         </nav>
         <div class="border-t border-slate-700 px-6 py-4 text-xs">
             <p class="font-medium text-white">{{ $user->name }}</p>
@@ -44,7 +44,7 @@
                         <p class="font-medium text-slate-900">{{ $user->name }}</p>
                         <p class="text-slate-500">{{ $user->role->label() }}</p>
                     </div>
-                    @include('partials.nav-links', ['user' => $user, 'dark' => false])
+                    @include('partials.admin.nav-links', ['user' => $user, 'dark' => false])
                     <form method="POST" action="{{ route('admin.logout') }}" class="mt-1 border-t border-slate-100 pt-1">
                         @csrf
                         <button type="submit" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-slate-100">

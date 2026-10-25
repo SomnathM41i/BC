@@ -1,17 +1,13 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="index,follow">
-    <title>Bandgar Construction — Coming soon</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-stone-50 text-stone-800 antialiased">
-    <main class="mx-auto flex min-h-screen w-full max-w-3xl flex-col justify-center px-6 py-16">
+@extends('layouts.site')
+
+@section('title', 'Coming soon')
+@section('meta_description', 'Bandgar Construction — a new website is on the way.')
+
+@section('content')
+    <section class="mx-auto flex w-full max-w-6xl flex-col justify-center px-4 py-20 md:px-8 md:py-28">
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Bandgar Construction</p>
 
-        <h1 class="mt-4 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+        <h1 class="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
             Our new website is on the way.
         </h1>
 
@@ -20,12 +16,11 @@
             delivered and the people we build for. Please check back shortly.
         </p>
 
-        <div class="mt-10 border-t border-stone-200 pt-6">
+        <div class="mt-10">
             <a href="{{ route('admin.login') }}"
-               class="text-sm font-medium text-stone-600 underline decoration-stone-300 underline-offset-4 hover:text-stone-900">
+               class="inline-flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-stone-800">
                 Staff sign in
             </a>
         </div>
-    </main>
-</body>
-</html>
+    </section>
+@endsection
