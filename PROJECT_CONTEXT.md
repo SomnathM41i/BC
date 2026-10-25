@@ -188,14 +188,15 @@ Every balance change runs inside `DB::transaction` with `lockForUpdate` row lock
 
 ## 9. Routes
 
-> **Current map after the restructure (Phases 1–4).** The pre-restructure route list below it is kept for history only.
+> **Current map after the restructure (Phases 1–5).** The pre-restructure route list below it is kept for history only.
 
 ### Public business website (`routes/web.php`, English at the root, Marathi under `/mr`)
 - `GET /` — home
 - `GET /about`, `GET /services`, `GET /contact`, `GET /credits`
 - `GET /projects`, `GET /projects/{slug}` — public portfolio
 - `GET /sitemap.xml` — bilingual sitemap
-- `GET /contractors/{contractor}` — public contractor statement (unchanged until Phase 5)
+- `GET /statement/{contractor:statement_token}` — public contractor statement (random token, noindex)
+- `GET /contractors/{slug}` — retired guessable statement URL, answers 410 Gone
 
 ### Internal app (`routes/admin.php`, mounted at `/admin` by `bootstrap/app.php`)
 - Login, dashboard, projects, transactions, owner wallet, contractors — all under `/admin`

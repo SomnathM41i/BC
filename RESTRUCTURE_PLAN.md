@@ -1,6 +1,6 @@
 # Bandgar — Public Website + Admin Route Restructure Plan
 
-> Status: **Phases 1–4 complete** (branch `restructure/public-site-admin`). Phase 5 not started.
+> Status: **Phases 1–5 complete** (branch `restructure/public-site-admin`). Phase 6 not started.
 > Scope: move the existing wallet/project app under `/admin`, free up `/` for a public business website.
 > Stack stays the same: Laravel 12 · Blade · Tailwind 4 · Vite · MySQL. No framework change.
 
@@ -14,12 +14,12 @@
 | Internal routes | All at root: `/dashboard`, `/projects`, `/transactions`, `/owner`, `/managers`, `/contractors` |
 | Access control | `auth` + `role:owner` middleware group; `ProjectPolicy`; `WalletService` guards |
 | Landing | `GET /` → `HomeController` → redirect to dashboard or login |
-| Public pages | Only `GET /contractors/{contractor:slug}` (contractor statement, no login) |
+| Public pages | Only `GET /statement/{contractor:statement_token}` (contractor statement, no login) |
 | Deploy | `GET/POST /deploy`, protected by `DEPLOY_TOKEN` |
 | Route name refs | 24 unique names, ~50 call sites across `app/`, `resources/views/`, `tests/` |
 | Tests | 9 feature test files — several call route names, all must stay green |
 
-**Important:** the contractor statement is already public and URL-enumerable (`/contractors/ramesh-jadhav`). Restructuring is the right moment to fix that (§7).
+**Important:** the contractor statement used to be URL-enumerable (`/contractors/ramesh-jadhav`); Phase 5 moved it to a random token and retired the old URL with 410 (§7).
 
 ---
 
@@ -258,13 +258,13 @@ The internal `Project` holds `agreed_amount`, `manager_id`, wallet balances. The
 
 Current: `/contractors/{slug}` — anyone who guesses a name reads that contractor's full financial statement. That's a privacy problem.
 
-**Recommended:** `/statement/{token}` where `token` is a 40-char random string stored on `contractors.statement_token` (unique, indexed). Benefits over `URL::signedRoute()`: survives `APP_KEY` rotation, can be revoked/regenerated, stable link the owner can re-send.
+**Implemented in Phase 5:** `/statement/{token}` where `token` is a 48-char random string stored on `contractors.statement_token` (unique, indexed). Benefits over `URL::signedRoute()`: survives `APP_KEY` rotation, can be revoked/regenerated, stable link the owner can re-send.
 
 Also:
 - `<meta name="robots" content="noindex,nofollow">` on the statement layout.
 - `Cache-Control: private, no-store`.
 - Rate-limit repeated 404s on `/statement/{token}`.
-- Keep a permanent 301 from the old slug URL during transition **only if** it was already shared — otherwise drop it.
+- Old slug URL answers **410 Gone** (no evidence the links were shared; a 301 would have kept the guessable URL working).
 
 ---
 
@@ -326,6 +326,15 @@ One phase at a time. Each phase is a separate commit and must end green before t
 - noindex + no-store headers.
 - **Accept:** valid token renders the same statement; invalid token 404s; old slug no longer exposes data.
 
+**As built (Phase 5):**
+- Migration `2026_10_25_000003` adds a nullable, unique `statement_token` (64) and backfills every existing contractor with a 48-char `Str::random` token; applied to the dev database (2 contractors, 0 left null).
+- `Contractor::generateStatementToken()` runs on create, `statementToken()` lazily fills pre-migration rows, `statementUrl()` is the single place the link is built.
+- `GET /statement/{contractor:statement_token}` (`statements.show`) returns the same statement with `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet` and `Cache-Control: no-store, no-cache, must-revalidate, private`.
+- `GET /contractors/{slug}` returns 410 with `site/statement-unavailable` (no data, same private headers); an unknown token 404s.
+- Admin contractor links now use `statementUrl()`, so the owner copies the token URL from the directory.
+- `robots.txt` disallows `/statement`.
+- Tests: `ContractorManagementTest` asserts the token is 48 chars and differs from the slug, the token page renders with the robots header, the old slug is 410 without leaking the name, and an unknown token is 404. Suite: **67 passed, 8 failed** (same pre-existing `ManagerManagementTest` failures).
+
 ### Phase 6 — Hardening & deploy
 - Throttle admin login (`throttle:5,1` + `RateLimiter`).
 - `noindex` on admin layout; `robots.txt` disallow.
@@ -345,7 +354,7 @@ One phase at a time. Each phase is a separate commit and must end green before t
 |------|------------|
 | Route-name collisions / missed `route()` calls | Grep the 24 known names; tests catch the rest. Do Phase 1 alone. |
 | Guest redirect loops (`/admin/login` ↔ `/admin`) | Set both `redirectGuestsTo` and `redirectUsersTo`; test guest + authed hitting `/admin/login`. |
-| Old shared contractor links break | Decide 301 vs 410 per §7 before deploying Phase 5. |
+| Old shared contractor links break | Resolved in Phase 5 with 410; re-share the new token links from the contractor directory. |
 | Public site accidentally queries internal `Project` | Separate `portfolio_projects` table; code review rule. |
 | `config:cache` hides new `config/site.php` edits | Document "run `php artisan config:clear` after copy changes". |
 | Tailwind 4 `@source` picking up stale classes | `@source '../**/*.blade.php'` already covers new folders; rebuild after moves. |
@@ -373,7 +382,7 @@ One phase at a time. Each phase is a separate commit and must end green before t
 2. Services: 13 services, architecture → construction → interiors, ordered in `config/site.php`.
 3. Language: English + Marathi (`/mr`).
 4. Portfolio: no real photographs available yet; v1 ships labelled illustrative samples and CC placeholder images.
-5. Statement links: still open (decides 301 vs 410 in Phase 5).
+5. Statement links: moved to random tokens; old slug URLs answer 410 Gone.
 6. Domain: unchanged for now — root site with `/admin`.
 7. Extras: deferred; no blog/testimonials in v1.
 8. Content editing: copy lives in `lang/` + `config/site.php` for now; no CMS.
@@ -382,7 +391,6 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 - Real project photographs, names and permission to publish.
 - Confirmed email address, Google Maps link and social profiles.
-- Whether any `/contractors/{slug}` links were shared (Phase 5).
 - Final domain and whether admin moves to a subdomain later.
 
 1. **Brand name & contact details** — is the public brand "Bandgar Construction"? Phone, WhatsApp, address, email, Google Maps link?
@@ -396,4 +404,4 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 ---
 
-*End of plan. Phase 5 awaits the statement-link decision.*
+*End of plan. Phase 6 (hardening & deploy) is next.*
