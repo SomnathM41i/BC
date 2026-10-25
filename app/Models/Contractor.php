@@ -38,6 +38,10 @@ class Contractor extends Model
             if (blank($contractor->slug)) {
                 $contractor->slug = static::generateSlug($contractor->name);
             }
+
+            if (blank($contractor->statement_token)) {
+                $contractor->statement_token = static::generateStatementToken();
+            }
         });
     }
 
@@ -56,6 +60,38 @@ class Contractor extends Model
         }
 
         return $slug;
+    }
+
+    /**
+     * A long random token used in the public statement URL.
+     *
+     * The token replaces the guessable slug so only the owner's shared link
+     * opens a contractor's payment statement.
+     */
+    public static function generateStatementToken(): string
+    {
+        do {
+            $token = Str::random(48);
+        } while (static::query()->where('statement_token', $token)->exists());
+
+        return $token;
+    }
+
+    /**
+     * The statement token, generated lazily for rows created before tokens.
+     */
+    public function statementToken(): string
+    {
+        if (blank($this->statement_token)) {
+            $this->forceFill(['statement_token' => static::generateStatementToken()])->saveQuietly();
+        }
+
+        return (string) $this->statement_token;
+    }
+
+    public function statementUrl(): string
+    {
+        return route('statements.show', ['contractor' => $this->statementToken()]);
     }
 
     public function getRouteKeyName(): string
