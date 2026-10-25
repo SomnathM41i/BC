@@ -47,6 +47,18 @@ would generate, run `npm run build` locally and commit the regenerated
 `public/build/` folder before deploying. Never deploy without it: pages will fail
 with *Vite manifest not found*.
 
+The repository ships a pre-commit hook that does this for you: when staged changes
+touch `resources/css`, `resources/js`, `resources/views`, or the Vite/Tailwind/package
+configuration, it runs the build and stages `public/build` in the same commit.
+Install it once per clone:
+
+```
+bash scripts/install-git-hooks.sh
+```
+
+Use `SKIP_BUILD=1 git commit ...` only when you are certain a change cannot affect
+the compiled assets.
+
 You have two layout options. **Option A is the most secure; Option B is the
 easiest.**
 

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+# Rebuild Vite assets whenever something that affects them is staged.
+#
+# The production host has no Node and deploys straight from Git, so a stale or
+# missing public/build/ breaks the live site (ViteManifestNotFoundException).
+# Keeping the build in the same commit as the source removes that class of bug.
+#
+# Bypass once with:  SKIP_BUILD=1 git commit ...
+#
+set -euo pipefail
+
+if [ "${SKIP_BUILD:-0}" = "1" ]; then
+    echo "pre-commit: SKIP_BUILD=1, not rebuilding assets"
+    exit 0
+fi
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+# Anything that can change the compiled CSS/JS, including Blade class names.
+if ! printf '%s\n' "$staged" | grep -Eq '^(resources/(css|js)/|resources/views/|vite\.config\.|tailwind\.config\.|package(-lock)?\.json)'; then
+    exit 0
+fi
+
+echo "pre-commit: frontend sources changed — rebuilding Vite assets"
+
+if ! command -v npm >/dev/null 2>&1; then
+    echo "pre-commit: npm is not available, so public/build would be stale." >&2
+    echo "pre-commit: install Node, or commit with SKIP_BUILD=1 if this change cannot affect assets." >&2
+    exit 1
+fi
+
+npm run build
+git add public/build
+
+echo "pre-commit: public/build staged"
