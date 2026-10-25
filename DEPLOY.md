@@ -5,6 +5,17 @@ shared hosting account **without needing a terminal**. Everything that normally
 needs the command line (migrations, seeders, caches, app key) is available from a
 protected page at `/deploy`.
 
+## Site layout in this release
+
+- `https://your-domain.com` — public business website (English; Marathi under `/mr`)
+- `https://your-domain.com/admin` — sign-in and the internal account manager
+- `https://your-domain.com/statement/{token}` — the private contractor statement the
+  owner shares with one contractor. It is deliberately unguessable and excluded from
+  search engines; never post it publicly.
+
+The internal pages used to sit at the root (`/dashboard`, `/owner`, `/contractors`, …).
+Those old paths now redirect to `/admin`, so existing bookmarks keep working.
+
 ---
 
 ## 1. What you need from your hosting account
@@ -72,7 +83,22 @@ easiest.**
 
    # Choose a long random secret for the installer:
    DEPLOY_TOKEN=some-long-random-secret
+
+   # Contact-form enquiries. Without SMTP the enquiry is still saved in the
+   # database, but no email reaches the owner.
+   MAIL_MAILER=smtp
+   MAIL_HOST=smtp.your-host.com
+   MAIL_PORT=465
+   MAIL_USERNAME=your_mailbox@your-domain.com
+   MAIL_PASSWORD=your_mailbox_password
+   MAIL_FROM_ADDRESS="no-reply@your-domain.com"
+   SITE_NOTIFY_EMAIL=owner@your-domain.com
    ```
+
+   Cookies are marked HTTPS-only whenever `APP_URL` starts with `https://`
+   (`SESSION_SECURE_COOKIE` overrides this). If you deploy **without** SSL for a
+   trial, either keep `APP_URL` on `http://` or set `SESSION_SECURE_COOKIE=false`,
+   otherwise sign-in will appear to do nothing.
 
    `APP_KEY` can be left empty — step 6 generates it for you. If you prefer,
    paste any `base64:` key yourself.
@@ -112,6 +138,18 @@ Once you are logged in and everything works:
 2. Go back to `/deploy` and click **Clear all caches** so the cached config no
    longer holds the old token.
 3. Confirm that `https://your-domain.com/deploy` now returns a **404**.
+
+## 8. Smoke test after deployment
+
+1. `https://your-domain.com` loads with styling and no PHP error.
+2. `https://your-domain.com/mr` shows the Marathi version.
+3. `https://your-domain.com/sitemap.xml` returns XML, not a 404.
+4. `https://your-domain.com/admin/login` loads; sign in with the owner account.
+5. Open **Contractors**, click a contractor name — the statement page opens from a
+   `/statement/…` link with a long token, and the browser tab shows no phone number.
+6. Submit the contact form on `/contact` and confirm the enquiry arrives at
+   `SITE_NOTIFY_EMAIL` (or at least appears in `inquiries`).
+7. `https://your-domain.com/deploy` returns **404** now that step 7 is done.
 
 ---
 
@@ -170,6 +208,11 @@ again) for maintenance:
 - [ ] Owner login uses a strong, private password (step 6.3).
 - [ ] `DEPLOY_TOKEN` removed and `/deploy` returns 404 (step 7).
 - [ ] `.env` is not web-accessible (it isn't with either Option A or B above).
+- [ ] `SESSION_SECURE_COOKIE` is true on HTTPS (or `APP_URL` is `https://`).
+- [ ] Admin sign-in is rate limited to 5 failed attempts per minute per account/IP,
+      and `/admin` pages send `noindex`.
+- [ ] Contractor links shared with workers are the `/statement/…` token links, never
+      the retired `/contractors/…` addresses (those now answer 410).
 - [ ] Seeded demo accounts (`owner@bandgar.test`, `ramesh@bandgar.test`) either
       removed or given strong passwords. The owner account is replaced when you
       use **Create / reset owner login**; create managers from the **Managers**

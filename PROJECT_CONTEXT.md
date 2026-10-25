@@ -200,6 +200,7 @@ Every balance change runs inside `DB::transaction` with `lockForUpdate` row lock
 
 ### Internal app (`routes/admin.php`, mounted at `/admin` by `bootstrap/app.php`)
 - Login, dashboard, projects, transactions, owner wallet, contractors — all under `/admin`
+- Sign-in is rate limited to 5 failed attempts per minute per account+IP; admin pages send `noindex`
 - Legacy paths (`/login`, `/dashboard`, `/owner`, `/transactions`, `/contractors`) 301 to their `/admin` equivalent
 
 ### Deployment

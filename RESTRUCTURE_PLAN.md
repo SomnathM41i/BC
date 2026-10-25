@@ -1,6 +1,6 @@
 # Bandgar — Public Website + Admin Route Restructure Plan
 
-> Status: **Phases 1–5 complete** (branch `restructure/public-site-admin`). Phase 6 not started.
+> Status: **Phases 1–6 complete** (branch `main`). The restructure is finished; remaining work is content and deployment.
 > Scope: move the existing wallet/project app under `/admin`, free up `/` for a public business website.
 > Stack stays the same: Laravel 12 · Blade · Tailwind 4 · Vite · MySQL. No framework change.
 
@@ -342,6 +342,14 @@ One phase at a time. Each phase is a separate commit and must end green before t
 - Update `DEPLOY.md` and `PROJECT_CONTEXT.md` with the new URL map.
 - Confirm `/deploy` still works and is removed after setup.
 - Final `php artisan optimize` on production, smoke test both surfaces.
+
+**As built (Phase 6):**
+- `RateLimiter::for('admin-login')` allows 5 failed sign-ins per minute per email+IP, applied to `POST /admin/login`; a different account from the same IP is unaffected.
+- `noindex, nofollow` meta on the admin layout and the standalone login page (`/admin` was already disallowed in `robots.txt`).
+- Session cookies default to HTTPS-only when `APP_URL` starts with `https://`, overridable with `SESSION_SECURE_COOKIE`; `.env.example` sets it true.
+- `DEPLOY.md` gained a site-layout section, mail/`SITE_NOTIFY_EMAIL` and secure-cookie guidance, an 8-step post-deploy smoke test, and three new security checklist items.
+- `php artisan optimize` (config, events, routes, views) verified clean, then cleared; `/deploy` returns 404 with no token configured, as documented.
+- Tests: `AdminLoginThrottleTest` (2 tests) covers the 429 and per-account isolation. Suite: **69 passed, 8 failed** — the same pre-existing `ManagerManagementTest` failures.
 - **Accept:** production checklist complete, both surfaces verified.
 
 **Estimated effort:** Phase 1–3 ≈ 1 working day (mechanical, test-guarded). Phase 4 ≈ 2–4 days depending on design/content. Phase 5 ≈ half a day. Phase 6 ≈ half a day.
@@ -404,4 +412,4 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 ---
 
-*End of plan. Phase 6 (hardening & deploy) is next.*
+*End of plan. Restructure complete; see `DEPLOY.md` for release steps.*
