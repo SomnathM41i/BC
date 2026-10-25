@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------------
+# Root .htaccess for shared hosting (Laravel kept inside public_html).
+#
+# This file makes the site work when you upload the whole project into
+# public_html (the common, zero-config shared hosting layout). It sends every
+# request through the public/ front controller and only ever serves real files
+# that live inside public/, so your .env, vendor/, and other internals are not
+# web-accessible.
+#
+# If instead you place the application OUTSIDE public_html and copy only the
+# contents of public/ into public_html, this file is not needed. See DEPLOY.md.
+# ---------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never expose application internals directly.
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+
+    # Serve real files (css, js, images) that live inside public/.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Everything else goes to the Laravel front controller.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/index.php [L]
+</IfModule>
+
+# Block directory listing.
+Options -Indexes
+
+# Extra protection for the .env file if mod_rewrite is unavailable.
+<FilesMatch "^\.env">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

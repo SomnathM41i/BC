@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\ReceiveUnallocatedIncomeRequest;
+use App\Services\WalletService;
+use Illuminate\Http\RedirectResponse;
+
+class IncomeController extends Controller
+{
+    public function __construct(private readonly WalletService $wallets) {}
+
+    public function store(ReceiveUnallocatedIncomeRequest $request): RedirectResponse
+    {
+        $this->wallets->receiveUnallocatedIncome(
+            $request->validated('amount'),
+            $request->validated('transaction_date'),
+            $request->validated('description'),
+            $request->user(),
+        );
+
+        return redirect()
+            ->route('dashboard')
+            ->with('status', 'Unallocated company income recorded.');
+    }
+}
