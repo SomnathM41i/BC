@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\FundProjectRequest;
-use App\Http\Requests\ReceiveProjectPaymentRequest;
-use App\Http\Requests\RecordProjectExpenseRequest;
-use App\Http\Requests\TransferToContractorRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\FundProjectRequest;
+use App\Http\Requests\Admin\ReceiveProjectPaymentRequest;
+use App\Http\Requests\Admin\RecordProjectExpenseRequest;
+use App\Http\Requests\Admin\TransferToContractorRequest;
 use App\Models\Contractor;
 use App\Models\Project;
 use App\Services\WalletService;

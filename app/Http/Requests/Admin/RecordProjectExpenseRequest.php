@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
 use App\Models\ExpenseCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class TransferToOwnerRequest extends FormRequest
+class RecordProjectExpenseRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -23,7 +23,7 @@ class TransferToOwnerRequest extends FormRequest
             'category_id' => [
                 'required',
                 Rule::exists('expense_categories', 'id')
-                    ->where('context', ExpenseCategory::CONTEXT_OWNER),
+                    ->where('context', ExpenseCategory::CONTEXT_PROJECT),
             ],
             'transaction_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:1000'],

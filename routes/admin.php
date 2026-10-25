@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ContractorController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\OwnerWalletController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ProjectFinanceController;
-use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\ContractorController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OwnerWalletController;
+use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\ProjectFinanceController;
+use App\Http\Controllers\Admin\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 /*

@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Enums\TransactionType;
-use App\Http\Requests\RecordOwnerExpenseRequest;
-use App\Http\Requests\RecordOwnerIncomeRequest;
-use App\Http\Requests\ReturnOwnerFundsRequest;
-use App\Http\Requests\TransferToOwnerRequest;
+use App\Http\Requests\Admin\RecordOwnerExpenseRequest;
+use App\Http\Requests\Admin\RecordOwnerIncomeRequest;
+use App\Http\Requests\Admin\ReturnOwnerFundsRequest;
+use App\Http\Requests\Admin\TransferToOwnerRequest;
 use App\Models\ExpenseCategory;
 use App\Models\WalletTransaction;
 use App\Services\WalletService;
@@ -33,7 +34,7 @@ class OwnerWalletController extends Controller
             ->recentFirst()
             ->get();
 
-        return view('owner.show', [
+        return view('admin.owner.show', [
             'summary' => $this->wallets->ownerSummary(),
             'businessBalance' => $this->wallets->businessBalance(),
             'unallocated' => $this->wallets->unallocatedFunds(),

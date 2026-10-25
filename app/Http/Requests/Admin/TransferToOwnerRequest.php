@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
+use App\Models\ExpenseCategory;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class ReceiveUnallocatedIncomeRequest extends FormRequest
+class TransferToOwnerRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,6 +20,11 @@ class ReceiveUnallocatedIncomeRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],
+            'category_id' => [
+                'required',
+                Rule::exists('expense_categories', 'id')
+                    ->where('context', ExpenseCategory::CONTEXT_OWNER),
+            ],
             'transaction_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];

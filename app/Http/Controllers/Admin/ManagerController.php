@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Enums\UserRole;
-use App\Http\Requests\StoreManagerRequest;
+use App\Http\Requests\Admin\StoreManagerRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -18,7 +19,7 @@ class ManagerController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('managers.index', [
+        return view('admin.managers.index', [
             'managers' => $managers,
         ]);
     }

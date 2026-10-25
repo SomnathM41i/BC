@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
-use App\Enums\UserRole;
 use App\Models\ExpenseCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class TransferToManagerRequest extends FormRequest
+class RecordOwnerIncomeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -22,13 +21,9 @@ class TransferToManagerRequest extends FormRequest
         return [
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],
             'category_id' => [
-                'required',
+                'nullable',
                 Rule::exists('expense_categories', 'id')
-                    ->where('context', ExpenseCategory::CONTEXT_PROJECT),
-            ],
-            'manager_id' => [
-                'required',
-                Rule::exists('users', 'id')->where('role', UserRole::Manager->value),
+                    ->where('context', ExpenseCategory::CONTEXT_OWNER_INCOME),
             ],
             'transaction_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:1000'],

@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\ContractorController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InstallerController;
+use App\Http\Controllers\Site\ContractorStatementController;
+use App\Http\Controllers\Site\HomeController;
+use App\Http\Controllers\Admin\InstallerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,7 +42,7 @@ Route::get('/', HomeController::class)->name('home');
 | NOTE: temporary location. This becomes an unguessable /statement/{token}
 | link in phase 5 of the restructure plan.
 */
-Route::get('contractors/{contractor}', [ContractorController::class, 'show'])
+Route::get('contractors/{contractor}', [ContractorStatementController::class, 'show'])
     ->name('contractors.show');
 
 /*

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\StoreContractorRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreContractorRequest;
 use App\Models\Contractor;
 use App\Services\WalletService;
 use Illuminate\Http\RedirectResponse;
@@ -20,19 +21,9 @@ class ContractorController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('contractors.index', [
+        return view('admin.contractors.index', [
             'contractors' => $contractors,
             'totals' => $this->wallets->contractorTotals(),
-        ]);
-    }
-
-    public function show(Contractor $contractor): View
-    {
-        $contractor->load('type');
-
-        return view('contractors.show', [
-            'contractor' => $contractor,
-            'report' => $this->wallets->contractorReport($contractor),
         ]);
     }
 

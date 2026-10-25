@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Enums\TransactionType;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class TransactionController extends Controller
             }
         }
 
-        return view('transactions.index', [
+        return view('admin.transactions.index', [
             'transactions' => $query->paginate(25)->withQueryString(),
             'selectedType' => $type,
             'types' => TransactionType::cases(),

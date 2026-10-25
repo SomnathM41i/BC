@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
-use App\Models\ExpenseCategory;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class RecordProjectExpenseRequest extends FormRequest
+class ReceiveUnallocatedIncomeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -20,11 +18,6 @@ class RecordProjectExpenseRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2'],
-            'category_id' => [
-                'required',
-                Rule::exists('expense_categories', 'id')
-                    ->where('context', ExpenseCategory::CONTEXT_PROJECT),
-            ],
             'transaction_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];

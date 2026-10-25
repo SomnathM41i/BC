@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Enums\ProjectStatus;
 use App\Models\Project;
 use App\Models\WalletTransaction;
@@ -34,7 +35,7 @@ class DashboardController extends Controller
             ->limit(15)
             ->get();
 
-        return view('dashboard', [
+        return view('admin.dashboard', [
             'isOwner' => true,
             'businessBalance' => $this->wallets->businessBalance(),
             'unallocated' => $this->wallets->unallocatedFunds(),

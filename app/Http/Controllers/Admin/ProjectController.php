@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Enums\ProjectStatus;
-use App\Http\Requests\StoreProjectRequest;
-use App\Http\Requests\TransferToContractorRequest;
+use App\Http\Requests\Admin\StoreProjectRequest;
+use App\Http\Requests\Admin\TransferToContractorRequest;
 use App\Models\Contractor;
 use App\Models\ExpenseCategory;
 use App\Models\Project;
@@ -32,7 +33,7 @@ class ProjectController extends Controller
             'report' => $this->wallets->projectReport($project),
         ]);
 
-        return view('projects.index', [
+        return view('admin.projects.index', [
             'rows' => $rows,
         ]);
     }
@@ -41,7 +42,7 @@ class ProjectController extends Controller
     {
         $this->authorize('create', Project::class);
 
-        return view('projects.create');
+        return view('admin.projects.create');
     }
 
     public function store(StoreProjectRequest $request): RedirectResponse
@@ -72,7 +73,7 @@ class ProjectController extends Controller
             ->recentFirst()
             ->get();
 
-        return view('projects.show', [
+        return view('admin.projects.show', [
             'project' => $project,
             'report' => $this->wallets->projectReport($project),
             'unallocated' => $this->wallets->unallocatedFunds(),

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class FundProjectRequest extends FormRequest
+class RecordManagerReturnRequest extends FormRequest
 {
     public function authorize(): bool
     {

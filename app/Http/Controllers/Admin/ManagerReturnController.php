@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\RecordManagerReturnRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RecordManagerReturnRequest;
 use App\Models\WalletTransaction;
 use App\Services\WalletService;
 use Illuminate\Http\RedirectResponse;
