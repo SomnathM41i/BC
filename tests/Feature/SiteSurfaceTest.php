@@ -13,8 +13,8 @@ class SiteSurfaceTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('बंदगर', false)
-            ->assertSee('तुमच्या स्वप्नातील घराला देऊया सुंदर आकार!', false);
+            ->assertSee('Bandgar', false)
+            ->assertSee('तुमच्या Dream Home ला देऊया सुंदर आकार!', false);
 
         $this->get('/en')
             ->assertOk()

@@ -21,15 +21,15 @@ return [
     'company' => [
         'names' => [
             'en' => 'Bandgar Construction & Developers',
-            'mr' => 'बंदगर कन्स्ट्रक्शन अँड डेव्हलपर्स',
+            'mr' => 'Bandgar Construction & Developers',
         ],
         'short_names' => [
             'en' => 'Bandgar',
-            'mr' => 'बंदगर',
+            'mr' => 'Bandgar',
         ],
         'taglines' => [
             'en' => 'We build your dream home with care.',
-            'mr' => 'तुमच्या स्वप्नातील घर आम्ही काळजीपूर्वक उभारतो.',
+            'mr' => 'तुमच्या Dream Home साठी आम्ही काळजीपूर्वक Construction करतो.',
         ],
     ],
 

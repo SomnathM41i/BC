@@ -31,7 +31,7 @@ class PublicSiteTest extends TestCase
             $this->get($url)->assertOk()->assertSee('lang="mr-IN"', false);
         }
 
-        $this->get('/')->assertSee('तुमच्या स्वप्नातील घराला देऊया सुंदर आकार!', false);
+        $this->get('/')->assertSee('तुमच्या Dream Home ला देऊया सुंदर आकार!', false);
     }
 
     public function test_english_pages_render_under_the_en_prefix(): void
