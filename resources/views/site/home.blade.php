@@ -178,24 +178,22 @@
     </section>
 
     {{-- Why us --}}
-    <section class="relative overflow-hidden bg-brand-dark py-20 lg:py-24">
-        <div class="absolute inset-0 bg-grid opacity-30" aria-hidden="true"></div>
-        <div class="site-container relative">
+    <section class="py-20 lg:py-24">
+        <div class="site-container">
             <x-site.section-heading
                 :eyebrow="__('site.home.why_eyebrow')"
                 :title="__('site.home.why_title')"
                 :lead="__('site.home.why_lead')"
-                tone="dark"
                 align="center" />
 
             <div class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach (__('site.home.why_items') as $index => $item)
-                    <div class="reveal border-t border-white/10 pt-6">
-                        <span class="grid h-10 w-10 place-items-center rounded-lg bg-white/10 text-gold">
+                    <div class="reveal border-t border-ink/10 pt-6">
+                        <span class="grid h-10 w-10 place-items-center rounded-lg bg-sand text-brand">
                             <x-site.icon :name="$whyIcons[$index] ?? 'check'" class="h-5 w-5" />
                         </span>
-                        <h3 class="mt-4 font-display text-lg font-semibold text-white">{{ $item['title'] }}</h3>
-                        <p class="mt-2 text-sm leading-relaxed text-white/60">{{ $item['text'] }}</p>
+                        <h3 class="mt-4 font-display text-lg font-semibold text-brand-dark">{{ $item['title'] }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-ink/60">{{ $item['text'] }}</p>
                     </div>
                 @endforeach
             </div>
