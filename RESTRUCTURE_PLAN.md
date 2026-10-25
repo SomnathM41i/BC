@@ -1,6 +1,6 @@
 # Bandgar — Public Website + Admin Route Restructure Plan
 
-> Status: **Draft for approval**
+> Status: **Phases 1–4 complete** (branch `restructure/public-site-admin`). Phase 5 not started.
 > Scope: move the existing wallet/project app under `/admin`, free up `/` for a public business website.
 > Stack stays the same: Laravel 12 · Blade · Tailwind 4 · Vite · MySQL. No framework change.
 
@@ -308,6 +308,17 @@ One phase at a time. Each phase is a separate commit and must end green before t
 - SEO: meta partial, sitemap, robots, JSON-LD.
 - **Accept:** `/`, `/about`, `/services`, `/portfolio`, `/contact` render on mobile + desktop; contact form stores a row and sends mail; no route leaks financial data.
 
+#### Phase 4 — as built (2026-10-25)
+- English at the root, Marathi under `/mr`; URL is the language source of truth, with `hreflang` + `x-default` on every page.
+- Portfolio lives at `/projects` (not `/portfolio`). The legacy `projects` → `/admin/projects` redirect was **removed**; `/projects` now belongs to the public site.
+- Separate `portfolio_projects` table (never the internal `Project` model) plus an `inquiries` table for enquiries. Gallery images are a JSON column, so no separate `portfolio_images` table was needed.
+- Portfolio entries carry `is_sample` and are labelled "Illustrative sample" in the UI and on the detail page. Replace before launch.
+- Placeholder photography comes from Wikimedia Commons with visible credits at `/credits`; replace with real project photographs before launch.
+- Contact form: honeypot, validation, throttling (`5,1`), stores the row, emails the owner when `SITE_NOTIFY_EMAIL` (or `SITE_EMAIL`) is set.
+- No email address, social profile, map embed or founding date is published — unverified business facts stay empty.
+- `public/robots.txt` disallows `/admin`, `/deploy`, `/contractors`, and the legacy internal paths; `sitemap.xml` lists both languages.
+- Tests: `PublicSiteTest` (14 tests) covers rendering, locale switching, portfolio visibility and filters, enquiry storage/mail/honeypot, sitemap, robots and credits. Suite: **67 passed, 8 failed** — the same 8 pre-existing `ManagerManagementTest` failures from the phase-0 baseline.
+
 ### Phase 5 — Statement security
 - Add `statement_token` to `contractors` (nullable, unique), backfill existing rows.
 - New `Site\ContractorStatementController@show` at `/statement/{token}`.
@@ -354,7 +365,25 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 ---
 
-## 11. Open questions (need Emperor's answers before Phase 4)
+## 11. Open questions
+
+**Answered before Phase 4:**
+
+1. Brand: Bandgar Construction & Developers; phones, WhatsApp and Kargani/Atpadi address confirmed. No email, socials or map link yet.
+2. Services: 13 services, architecture → construction → interiors, ordered in `config/site.php`.
+3. Language: English + Marathi (`/mr`).
+4. Portfolio: no real photographs available yet; v1 ships labelled illustrative samples and CC placeholder images.
+5. Statement links: still open (decides 301 vs 410 in Phase 5).
+6. Domain: unchanged for now — root site with `/admin`.
+7. Extras: deferred; no blog/testimonials in v1.
+8. Content editing: copy lives in `lang/` + `config/site.php` for now; no CMS.
+
+**Still open:**
+
+- Real project photographs, names and permission to publish.
+- Confirmed email address, Google Maps link and social profiles.
+- Whether any `/contractors/{slug}` links were shared (Phase 5).
+- Final domain and whether admin moves to a subdomain later.
 
 1. **Brand name & contact details** — is the public brand "Bandgar Construction"? Phone, WhatsApp, address, email, Google Maps link?
 2. **Services list** — which services do we advertise, and in what order?
@@ -367,4 +396,4 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 ---
 
-*End of plan. Awaiting approval on Phase 0 + 1.*
+*End of plan. Phase 5 awaits the statement-link decision.*
