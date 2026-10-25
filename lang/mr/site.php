@@ -4,12 +4,12 @@ return [
 
     'meta' => [
         'home' => [
-            'title' => 'Atpadi, Sangli मधील Construction आणि Architectural Design Services',
-            'description' => 'Bandgar Construction & Developers — Atpadi, Sangli येथे Architectural Design, 2D Plans, 3D Design, Residential Construction आणि Interior Design Services.',
+            'title' => 'Kargani, Atpadi मधील Construction आणि Architectural Design Services',
+            'description' => 'Bandgar Construction & Developers — Kargani, Shetfale Road, Gav Number 2, Atpadi येथे Architectural Design, Plans आणि Construction Services.',
         ],
         'about' => [
             'title' => 'आमच्याबद्दल',
-            'description' => 'Bandgar Construction & Developers बद्दल जाणून घ्या — Atpadi, Sangli आणि आसपास Residential Construction आणि Architectural Design Services.',
+            'description' => 'Bandgar Construction & Developers बद्दल जाणून घ्या — Kargani, Shetfale Road, Atpadi, Sangli District येथे Residential Construction आणि Design Services.',
         ],
         'services' => [
             'title' => 'आमच्या Services',
@@ -21,7 +21,7 @@ return [
         ],
         'contact' => [
             'title' => 'Contact',
-            'description' => 'तुमच्या Home किंवा Construction Project च्या Planning बद्दल Bandgar Construction & Developers सोबत बोला. Phone करा, WhatsApp वर Message करा किंवा Enquiry पाठवा.',
+            'description' => 'Kargani, Shetfale Road, Gav Number 2, Taluka Atpadi येथे तुमच्या Home किंवा Construction Project बद्दल Bandgar Construction & Developers सोबत बोला.',
         ],
         'sitemap' => [
             'title' => 'Sitemap',
@@ -75,7 +75,7 @@ return [
     ],
 
     'home' => [
-        'hero_eyebrow' => 'Atpadi · Sangli · Maharashtra',
+        'hero_eyebrow' => 'Kargani · Atpadi · Sangli · Maharashtra',
         'hero_title' => 'तुमच्या Dream Home ला देऊया सुंदर आकार!',
         'hero_lead' => 'Modern Design, योग्य Planning आणि Quality Construction च्या मदतीने तुमच्या स्वप्नातील घर साकार करण्यासाठी आम्ही तुमच्यासोबत आहोत.',
         'hero_support' => [
@@ -89,7 +89,7 @@ return [
             ['icon' => 'compass', 'label' => 'Plot नुसार Design'],
             ['icon' => 'shield', 'label' => 'Quality-first Construction'],
             ['icon' => 'calculator', 'label' => 'Clear Written Estimate'],
-            ['icon' => 'pin', 'label' => 'Atpadi, Sangli येथून सेवा'],
+            ['icon' => 'pin', 'label' => 'Kargani, Atpadi येथून सेवा'],
         ],
 
         'about_eyebrow' => 'आमच्याबद्दल',
@@ -151,7 +151,7 @@ return [
 
         'intro_title' => 'काळजीपूर्वक Planning आणि विश्वासार्ह Work वर आधारित',
         'intro_body' => [
-            'Bandgar Construction & Developers Atpadi, Sangli आणि आसपासच्या कुटुंबे व Property Owners सोबत काम करते. आमचा मुख्य भर कुटुंबाच्या गरजांनुसार नियोजित Residential Construction वर आहे.',
+            'Bandgar Construction & Developers Kargani, Atpadi, Sangli District आणि आसपासच्या कुटुंबे व Property Owners सोबत काम करते. आमचा मुख्य भर कुटुंबाच्या गरजांनुसार नियोजित Residential Construction वर आहे.',
             'Architectural Design, Building Design आणि Construction Execution एकत्रितपणे केल्यामुळे Plans, Estimate आणि Site Work यांच्यात योग्य Coordination राहतो. केवळ Plan देऊन थांबण्याऐवजी Construction Process मध्येही आम्ही सहभागी राहतो.',
             'आमची पद्धत सरळ आहे: काळजीपूर्वक ऐकणे, Practical Design करणे, Approved Plan नुसार काम करणे आणि प्रत्येक Stage वर Updates देत राहणे. Home ही दीर्घकालीन Investment आहे; म्हणून Planning आणि Execution दोन्ही महत्त्वाचे आहेत.',
         ],
@@ -369,7 +369,8 @@ return [
         'address_label' => 'Address',
         'email_label' => 'Email',
         'map_title' => 'Location',
-        'map_note' => 'आमचे exact Map Location लवकरच जोडले जाईल. तोपर्यंत वरील Address वापरा किंवा Directions साठी आम्हाला Call करा.',
+        'map_note' => 'येथे exact office pin claim केलेला नाही. वरील Official Address वापरून Google Maps वर आमचे Location शोधा.',
+        'map_link' => 'Google Maps वर हा Address उघडा',
 
         'form_title' => 'तुमची Enquiry पाठवा',
         'form_lead' => 'तुमच्या Project बद्दल थोडक्यात माहिती द्या. * चिन्हांकित माहिती Required आहे.',
@@ -420,7 +421,7 @@ return [
     ],
 
     'footer' => [
-        'about' => 'Kargani, Atpadi, Maharashtra येथील Residential Construction, Architectural Design आणि Interior Design Services.',
+        'about' => 'Kargani, Shetfale Road, Gav Number 2, Taluka Atpadi, Sangli District, Maharashtra, India येथील Residential Construction, Architectural Design आणि Interior Design Services.',
         'quick_links' => 'Quick Links',
         'services_title' => 'Services',
         'contact_title' => 'Contact',

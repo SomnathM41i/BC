@@ -77,6 +77,15 @@
                     @if ($site['map_embed_url'])
                         <iframe src="{{ $site['map_embed_url'] }}" title="{{ __('site.contact.map_title') }}"
                                 class="h-64 w-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    @elseif ($site['map_link'])
+                        <div class="px-5 py-6">
+                            <p class="text-sm leading-relaxed text-ink/55">{{ __('site.contact.map_note') }}</p>
+                            <a href="{{ $site['map_link'] }}" target="_blank" rel="noopener"
+                               class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brand-red">
+                                {{ __('site.contact.map_link') }}
+                                <x-site.icon name="arrow-up-right" class="h-4 w-4" />
+                            </a>
+                        </div>
                     @else
                         <p class="px-5 py-6 text-sm leading-relaxed text-ink/55">{{ __('site.contact.map_note') }}</p>
                     @endif

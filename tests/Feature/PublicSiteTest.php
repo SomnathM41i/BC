@@ -61,6 +61,35 @@ class PublicSiteTest extends TestCase
             ->assertSee(url('/en/about'), false);
     }
 
+    public function test_public_contact_details_match_the_official_address_and_signboard_numbers(): void
+    {
+        $this->get('/contact')
+            ->assertOk()
+            ->assertSee('करगणी, शेटफळे रोड', false)
+            ->assertSee('गाव नंबर २', false)
+            ->assertSee('ता. आटपाडी, जि. सांगली', false)
+            ->assertSee('अर्ज. भरत बंदगर', false)
+            ->assertSee('श्री. मनोराव बंदगर', false)
+            ->assertSee('श्री. विशाल बंदगर', false)
+            ->assertSee('href="tel:+919021113887"', false)
+            ->assertSee('href="tel:+919420450672"', false)
+            ->assertSee('href="tel:+917387291539"', false)
+            ->assertSee('https://www.google.com/maps/search/?api=1', false)
+            ->assertDontSee('संजोराव', false)
+            ->assertDontSee('शेतफुळे', false)
+            ->assertDontSee('गावठाण', false);
+
+        $this->get('/en/contact')
+            ->assertOk()
+            ->assertSee('Kargani, Shetfale Road', false)
+            ->assertSee('Gav Number 2', false)
+            ->assertSee('Taluka Atpadi, Sangli District', false)
+            ->assertSee('Shri. Manorao Bandgar', false)
+            ->assertDontSee('Sanjorao', false)
+            ->assertDontSee('Shetphule', false)
+            ->assertDontSee('Gaothan No. 2', false);
+    }
+
     public function test_language_switch_preserves_project_context_and_filters(): void
     {
         $project = PortfolioProject::factory()->create([

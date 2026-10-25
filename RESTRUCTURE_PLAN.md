@@ -386,7 +386,7 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 **Answered before Phase 4:**
 
-1. Brand: Bandgar Construction & Developers; phones, WhatsApp and Kargani/Atpadi address confirmed. No email, socials or map link yet.
+1. Brand: Bandgar Construction & Developers; phones, WhatsApp and the Kargani/Shetfale Road address confirmed. The public site uses an address-based Google Maps search link; no exact office pin, email or socials are claimed.
 2. Services: 13 services, architecture → construction → interiors, ordered in `config/site.php`.
 3. Language: Marathi at the root, with English under `/en`.
 4. Portfolio: no real photographs available yet; v1 ships labelled illustrative samples and CC placeholder images.
@@ -398,7 +398,7 @@ One phase at a time. Each phase is a separate commit and must end green before t
 **Still open:**
 
 - Real project photographs, names and permission to publish.
-- Confirmed email address, Google Maps link and social profiles.
+- Confirmed email address, exact Google Maps office pin and social profiles.
 - Final domain and whether admin moves to a subdomain later.
 
 1. **Brand name & contact details** — is the public brand "Bandgar Construction"? Phone, WhatsApp, address, email, Google Maps link?

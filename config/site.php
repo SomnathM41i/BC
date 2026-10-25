@@ -12,7 +12,8 @@
 | (and php artisan config:cache if you cache configuration in production).
 |
 | Only verified business information belongs in this file. Do not add an
-| email address, social profile or map link until it has been confirmed.
+| email address or social profile until it has been confirmed. Map links
+| should use the verified address unless an exact office pin is confirmed.
 |
 */
 
@@ -39,7 +40,7 @@ return [
     */
     'phones' => [
         ['name' => 'Er. Bharat Bandgar', 'name_mr' => 'अर्ज. भरत बंदगर', 'number' => '9021113887'],
-        ['name' => 'Shri. Sanjorao Bandgar', 'name_mr' => 'श्री. संजोराव बंदगर', 'number' => '9420450672'],
+        ['name' => 'Shri. Manorao Bandgar', 'name_mr' => 'श्री. मनोराव बंदगर', 'number' => '9420450672'],
         ['name' => 'Shri. Vishal Bandgar', 'name_mr' => 'श्री. विशाल बंदगर', 'number' => '7387291539'],
     ],
 
@@ -52,23 +53,23 @@ return [
     'address' => [
         'lines' => [
             'en' => [
-                'Kargani, Shetphule Road',
-                'Gaothan No. 2',
-                'Taluka Atpadi, District Sangli',
+                'Kargani, Shetfale Road',
+                'Gav Number 2',
+                'Taluka Atpadi, Sangli District',
                 'Maharashtra, India',
             ],
             'mr' => [
-                'कारगणी, शेतफुळे रोड',
-                'गावठाण क्र. २',
+                'करगणी, शेटफळे रोड',
+                'गाव नंबर २',
                 'ता. आटपाडी, जि. सांगली',
                 'महाराष्ट्र, भारत',
             ],
         ],
-        // Coordinates and links are optional when a verified embed URL is available.
+        // Coordinates remain unset because an exact office pin is not verified.
         'latitude' => null,
         'longitude' => null,
-        'map_embed_url' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4796.342092476506!2d74.88095891295377!3d17.312705420034792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc1535a1001f10f%3A0x2ab4d598c53b07c9!2sBandgar%20Construction%20%26%20Developer%27s%20Kargani!5e0!3m2!1sen!2sin!4v1792951830007!5m2!1sen!2sin',
-        'map_link' => null,
+        'map_embed_url' => null,
+        'map_link' => 'https://www.google.com/maps/search/?api=1&query=Kargani%2C+Shetfale+Road%2C+Gav+Number+2%2C+Taluka+Atpadi%2C+Sangli+District%2C+Maharashtra%2C+India',
     ],
 
     // Confirmed social profiles only. Example: ['facebook' => 'https://...'].
@@ -106,7 +107,7 @@ return [
 
     'seo' => [
         'title_suffix' => 'Bandgar Construction & Developers',
-        'default_description' => 'Residential construction, architectural planning, structural and interior design services in Atpadi, Sangli, Maharashtra.',
+        'default_description' => 'Residential construction, architectural planning, structural and interior design services in Kargani, Shetfale Road, Gav Number 2, Taluka Atpadi, Sangli District, Maharashtra, India.',
         'og_image' => 'images/site/photos/hero.jpg',
         'theme_color' => '#64151F',
     ],

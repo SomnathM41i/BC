@@ -14,7 +14,7 @@
         'url' => SiteRoutes::url('home'),
         'image' => $ogImage,
         'description' => __('site.meta.home.description'),
-        'telephone' => $site['phones'][0]['tel'] ?? null,
+        'telephone' => array_values(array_column($site['phones'], 'tel')),
         'address' => [
             '@type' => 'PostalAddress',
             'streetAddress' => $site['address_line'],
@@ -22,7 +22,7 @@
             'addressRegion' => 'Maharashtra',
             'addressCountry' => 'IN',
         ],
-        'areaServed' => ['Atpadi', 'Sangli', 'Maharashtra'],
+        'areaServed' => ['Kargani', 'Atpadi', 'Sangli District', 'Maharashtra'],
     ];
 
     if ($site['social'] !== []) {
