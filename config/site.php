@@ -64,10 +64,10 @@ return [
                 'महाराष्ट्र, भारत',
             ],
         ],
-        // Set these once the exact office pin is confirmed.
+        // Coordinates and links are optional when a verified embed URL is available.
         'latitude' => null,
         'longitude' => null,
-        'map_embed_url' => null,
+        'map_embed_url' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4796.342092476506!2d74.88095891295377!3d17.312705420034792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc1535a1001f10f%3A0x2ab4d598c53b07c9!2sBandgar%20Construction%20%26%20Developer%27s%20Kargani!5e0!3m2!1sen!2sin!4v1792951830007!5m2!1sen!2sin',
         'map_link' => null,
     ],
 
