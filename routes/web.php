@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\InstallerController;
+use App\Http\Controllers\Site\ContactController;
 use App\Http\Controllers\Site\ContractorStatementController;
 use App\Http\Controllers\Site\HomeController;
-use App\Http\Controllers\Admin\InstallerController;
+use App\Http\Controllers\Site\PageController;
+use App\Http\Controllers\Site\PortfolioController;
+use App\Http\Controllers\Site\SitemapController;
+use App\Http\Middleware\SetSiteLocale;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,7 +37,40 @@ Route::prefix('deploy')->group(function () {
     Route::post('/run', [InstallerController::class, 'run'])->name('deploy.run');
 });
 
-Route::get('/', HomeController::class)->name('home');
+/*
+|--------------------------------------------------------------------------
+| Business website
+|--------------------------------------------------------------------------
+|
+| English lives at the root, Marathi under /mr. The URL is the source of
+| truth for the language, so shared links and search results always open
+| in the language they were written in.
+|
+*/
+$siteRoutes = function () {
+    Route::get('/', HomeController::class)->name('home');
+    Route::get('about', [PageController::class, 'about'])->name('about');
+    Route::get('services', [PageController::class, 'services'])->name('services');
+
+    Route::get('projects', [PortfolioController::class, 'index'])->name('portfolio.index');
+    Route::get('projects/{portfolio:slug}', [PortfolioController::class, 'show'])->name('portfolio.show');
+
+    Route::get('contact', [ContactController::class, 'show'])->name('contact');
+    Route::post('contact', [ContactController::class, 'store'])
+        ->middleware('throttle:'.config('site.contact.throttle'))
+        ->name('contact.store');
+
+    Route::get('credits', [PageController::class, 'credits'])->name('credits');
+};
+
+Route::middleware(SetSiteLocale::class.':en')->group($siteRoutes);
+
+Route::prefix('mr')
+    ->name('mr.')
+    ->middleware(SetSiteLocale::class.':mr')
+    ->group($siteRoutes);
+
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 
 /*
 | Public contractor statement.
@@ -56,8 +94,6 @@ Route::get('contractors/{contractor}', [ContractorStatementController::class, 's
 */
 Route::redirect('login', '/admin/login');
 Route::redirect('dashboard', '/admin/dashboard');
-Route::redirect('projects', '/admin/projects');
-Route::redirect('projects/{any}', '/admin/projects/{any}')->where('any', '.*');
 Route::redirect('transactions', '/admin/transactions');
 Route::redirect('contractors', '/admin/contractors');
 Route::redirect('owner', '/admin/owner');

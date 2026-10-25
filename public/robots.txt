@@ -1,2 +1,10 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /deploy
+Disallow: /contractors
+Disallow: /login
+Disallow: /dashboard
+Disallow: /transactions
+Disallow: /owner
+
+# The public sitemap is available at /sitemap.xml

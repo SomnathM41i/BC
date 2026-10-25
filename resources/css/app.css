@@ -8,4 +8,144 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Public website typography */
+    --font-site: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Noto Sans Devanagari', sans-serif;
+    --font-display: 'Fraunces', 'Noto Serif Devanagari', ui-serif, Georgia, serif;
+
+    /* Brand palette */
+    --color-brand: #64151f;
+    --color-brand-dark: #3d0b13;
+    --color-brand-red: #e84b3c;
+    --color-gold: #f2c75c;
+    --color-sand: #f7f7f5;
+    --color-ink: #242424;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    html[lang='mr'] body {
+        line-height: 1.85;
+    }
+
+    ::selection {
+        background-color: var(--color-gold);
+        color: var(--color-brand-dark);
+    }
+}
+
+@layer components {
+    .site-container {
+        @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+    }
+
+    .eyebrow {
+        @apply inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-red;
+    }
+
+    .eyebrow-light {
+        @apply text-gold;
+    }
+
+    .display-title {
+        @apply font-display text-3xl leading-[1.15] font-semibold tracking-tight text-brand-dark sm:text-4xl lg:text-[2.85rem];
+    }
+
+    .display-title-light {
+        @apply text-white;
+    }
+
+    .lead-copy {
+        @apply text-base leading-relaxed text-ink/70 sm:text-lg;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold tracking-wide text-white shadow-sm transition duration-200 hover:bg-brand-dark hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red;
+    }
+
+    .btn-gold {
+        @apply inline-flex items-center justify-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-semibold tracking-wide text-brand-dark transition duration-200 hover:bg-[#e9ba45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red;
+    }
+
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand/25 px-6 py-3 text-sm font-semibold tracking-wide text-brand transition duration-200 hover:border-brand hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red;
+    }
+
+    .btn-outline-light {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/35 px-6 py-3 text-sm font-semibold tracking-wide text-white transition duration-200 hover:border-white hover:bg-white hover:text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold;
+    }
+
+    .btn-sm {
+        @apply px-4 py-2 text-xs;
+    }
+
+    .nav-link {
+        @apply relative text-sm font-medium text-ink/75 transition hover:text-brand;
+    }
+
+    .nav-link-active {
+        @apply text-brand;
+    }
+
+    .nav-link-active::after {
+        content: '';
+        @apply absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-brand-red;
+    }
+
+    .site-input {
+        @apply w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition placeholder:text-ink/35 focus:border-brand focus:ring-2 focus:ring-brand/15;
+    }
+
+    .site-label {
+        @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink/60;
+    }
+
+    .site-card {
+        @apply rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(36,36,36,0.04)];
+    }
+
+    .chip {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-white px-4 py-2 text-xs font-semibold tracking-wide text-ink/60 transition hover:border-brand/30 hover:text-brand;
+    }
+
+    .chip-active {
+        @apply border-brand bg-brand text-white hover:text-white;
+    }
+
+    .gold-rule {
+        @apply h-px w-16 bg-gold;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+
+    .bg-grid {
+        background-image:
+            linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+        background-size: 64px 64px;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+    }
 }
