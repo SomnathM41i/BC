@@ -44,7 +44,7 @@
     </div>
 
     <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <form method="POST" action="{{ route('owner.income') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+        <form method="POST" action="{{ route('admin.owner.income') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
             @csrf
             <h2 class="font-semibold text-slate-900">Record Personal Income</h2>
             <p class="text-xs text-slate-500">Personal income from any personal source. Stays in the personal wallet only.</p>
@@ -66,7 +66,7 @@
             </button>
         </form>
 
-        <form method="POST" action="{{ route('owner.expense') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+        <form method="POST" action="{{ route('admin.owner.expense') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
             @csrf
             <h2 class="font-semibold text-slate-900">Record Personal Expense</h2>
             <p class="text-xs text-slate-500">Personal spending. Reduces the personal wallet only, never company or project money.</p>
@@ -92,7 +92,7 @@
     <h2 class="mb-3 text-lg font-semibold text-slate-900">Company &harr; Personal Transfers</h2>
 
     <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <form method="POST" action="{{ route('owner.transfer') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+        <form method="POST" action="{{ route('admin.owner.transfer') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
             @csrf
             <h3 class="font-semibold text-slate-900">Transfer to Owner</h3>
             <p class="text-xs text-slate-500">Move company cash into the personal wallet. Uses unallocated company funds.</p>
@@ -114,7 +114,7 @@
             </button>
         </form>
 
-        <form method="POST" action="{{ route('owner.return') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+        <form method="POST" action="{{ route('admin.owner.return') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
             @csrf
             <h3 class="font-semibold text-slate-900">Transfer to Company</h3>
             <p class="text-xs text-slate-500">Move personal money into company cash. Personal wallet available: @inr($summary['balance']).</p>

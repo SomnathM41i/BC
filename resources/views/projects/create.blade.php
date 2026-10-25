@@ -9,7 +9,7 @@
             Enter the contract value agreed with the client. Receipts are recorded separately as payments are received.
         </p>
 
-        <form method="POST" action="{{ route('projects.store') }}" class="space-y-4 rounded-xl bg-white p-6 shadow-sm">
+        <form method="POST" action="{{ route('admin.projects.store') }}" class="space-y-4 rounded-xl bg-white p-6 shadow-sm">
             @csrf
             <div>
                 <label for="name" class="mb-1 block text-sm font-medium text-slate-700">Project Name</label>
@@ -32,7 +32,7 @@
                     <x-icon name="plus" />
                     Create Project
                 </button>
-                <a href="{{ route('projects.index') }}" class="text-sm text-slate-600 underline">Cancel</a>
+                <a href="{{ route('admin.projects.index') }}" class="text-sm text-slate-600 underline">Cancel</a>
             </div>
         </form>
     </div>

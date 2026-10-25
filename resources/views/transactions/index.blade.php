@@ -8,7 +8,7 @@
             <h1 class="text-2xl font-semibold text-slate-900">Transactions</h1>
             <p class="text-sm text-slate-500">Complete record of all transactions across the business.</p>
         </div>
-        <form method="GET" action="{{ route('transactions.index') }}" class="flex items-end gap-2">
+        <form method="GET" action="{{ route('admin.transactions.index') }}" class="flex items-end gap-2">
             <div>
                 <label for="type" class="mb-1 block text-xs font-medium text-slate-500">Filter by type</label>
                 <select id="type" name="type" class="rounded-md border border-slate-300 px-3 py-2 text-sm">

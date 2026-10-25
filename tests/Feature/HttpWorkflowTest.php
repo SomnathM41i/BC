@@ -30,7 +30,7 @@ class HttpWorkflowTest extends TestCase
         $this->actingAs($owner);
 
         // Create the project.
-        $this->post('/projects', [
+        $this->post('/admin/projects', [
             'name' => 'Project A',
             'location' => 'Pune',
             'agreed_amount' => '1000000',
@@ -41,44 +41,44 @@ class HttpWorkflowTest extends TestCase
         $this->assertSame('0.00', $wallets->projectBalance($project));
 
         // Receive ₹5,00,000.
-        $this->post("/projects/{$project->id}/receipts", [
+        $this->post("/admin/projects/{$project->id}/receipts", [
             'amount' => '500000',
             'transaction_date' => '2026-10-01',
             'description' => 'First payment',
-        ])->assertRedirect("/projects/{$project->id}");
+        ])->assertRedirect("/admin/projects/{$project->id}");
 
         // Direct expenses ₹50,000.
-        $this->post("/projects/{$project->id}/expenses", [
+        $this->post("/admin/projects/{$project->id}/expenses", [
             'amount' => '35000',
             'category_id' => $materials->id,
             'transaction_date' => '2026-10-02',
-        ])->assertRedirect("/projects/{$project->id}");
+        ])->assertRedirect("/admin/projects/{$project->id}");
 
-        $this->post("/projects/{$project->id}/expenses", [
+        $this->post("/admin/projects/{$project->id}/expenses", [
             'amount' => '15000',
             'category_id' => $transport->id,
             'transaction_date' => '2026-10-03',
-        ])->assertRedirect("/projects/{$project->id}");
+        ])->assertRedirect("/admin/projects/{$project->id}");
 
         // Transfer ₹50,000 to the contractor.
-        $this->post("/projects/{$project->id}/transfers", [
+        $this->post("/admin/projects/{$project->id}/transfers", [
             'amount' => '50000',
             'category_id' => $labour->id,
             'contractor_id' => $contractor->id,
             'transaction_date' => '2026-10-04',
             'description' => 'Labour payment',
-        ])->assertRedirect("/projects/{$project->id}");
+        ])->assertRedirect("/admin/projects/{$project->id}");
 
         // Close the project.
-        $this->post("/projects/{$project->id}/request-closure")->assertRedirect("/projects/{$project->id}");
-        $this->post("/projects/{$project->id}/finalize-closure")->assertRedirect("/projects/{$project->id}");
+        $this->post("/admin/projects/{$project->id}/request-closure")->assertRedirect("/admin/projects/{$project->id}");
+        $this->post("/admin/projects/{$project->id}/finalize-closure")->assertRedirect("/admin/projects/{$project->id}");
 
         // Transfer ₹1,00,000 to the owner personal wallet.
-        $this->post('/owner/transfer', [
+        $this->post('/admin/owner/transfer', [
             'amount' => '100000',
             'category_id' => $ownerWithdrawal->id,
             'transaction_date' => '2026-10-06',
-        ])->assertRedirect('/owner');
+        ])->assertRedirect('/admin/owner');
 
         $project->refresh();
 
@@ -93,7 +93,7 @@ class HttpWorkflowTest extends TestCase
         $this->assertTrue($project->isClosed());
 
         // Dashboard renders the final figures.
-        $this->get('/dashboard')
+        $this->get('/admin/dashboard')
             ->assertOk()
             ->assertSee('₹3,00,000.00');
     }
@@ -105,15 +105,15 @@ class HttpWorkflowTest extends TestCase
 
         $this->actingAs($owner);
 
-        $this->post('/contractors', [
+        $this->post('/admin/contractors', [
             'name' => 'Ganesh Patil',
             'phone' => '+91 9000000000',
             'contractor_type_id' => $type->id,
-        ])->assertRedirect('/contractors');
+        ])->assertRedirect('/admin/contractors');
 
         $contractor = Contractor::query()->where('name', 'Ganesh Patil')->firstOrFail();
 
-        $this->get('/contractors')
+        $this->get('/admin/contractors')
             ->assertOk()
             ->assertSee('Ganesh Patil')
             ->assertSee('Plumbing');

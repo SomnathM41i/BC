@@ -13,24 +13,24 @@ class RolePermissionTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/dashboard')->assertRedirect('/login');
-        $this->get('/projects')->assertRedirect('/login');
-        $this->get('/contractors')->assertRedirect('/login');
+        $this->get('/admin/dashboard')->assertRedirect('/admin/login');
+        $this->get('/admin/projects')->assertRedirect('/admin/login');
+        $this->get('/admin/contractors')->assertRedirect('/admin/login');
     }
 
     public function test_login_screen_renders(): void
     {
-        $this->get('/login')->assertOk()->assertSee('Sign in');
+        $this->get('/admin/login')->assertOk()->assertSee('Sign in');
     }
 
     public function test_user_can_log_in_with_valid_credentials(): void
     {
         $owner = $this->owner();
 
-        $this->post('/login', [
+        $this->post('/admin/login', [
             'email' => $owner->email,
             'password' => 'password',
-        ])->assertRedirect('/dashboard');
+        ])->assertRedirect('/admin/dashboard');
 
         $this->assertAuthenticatedAs($owner);
     }
@@ -42,7 +42,7 @@ class RolePermissionTest extends TestCase
             'is_active' => false,
         ]);
 
-        $this->post('/login', [
+        $this->post('/admin/login', [
             'email' => $user->email,
             'password' => 'password',
         ])->assertSessionHasErrors('email');
@@ -54,14 +54,14 @@ class RolePermissionTest extends TestCase
     {
         $owner = $this->owner();
 
-        $this->actingAs($owner)->get('/owner')->assertOk();
+        $this->actingAs($owner)->get('/admin/owner')->assertOk();
     }
 
     public function test_owner_can_view_the_dashboard(): void
     {
         $owner = $this->owner();
 
-        $this->actingAs($owner)->get('/dashboard')->assertOk();
+        $this->actingAs($owner)->get('/admin/dashboard')->assertOk();
     }
 
     public function test_owner_can_view_a_project(): void
@@ -71,7 +71,7 @@ class RolePermissionTest extends TestCase
         $project = $this->makeProject($contractor, '100000.00', 'My Project');
 
         $this->actingAs($owner)
-            ->get("/projects/{$project->id}")
+            ->get("/admin/projects/{$project->id}")
             ->assertOk()
             ->assertSee('My Project');
     }

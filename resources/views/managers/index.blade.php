@@ -74,7 +74,7 @@
         </div>
 
         <div>
-            <form method="POST" action="{{ route('managers.store') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+            <form method="POST" action="{{ route('admin.managers.store') }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
                 @csrf
                 <h2 class="font-semibold text-slate-900">Add a manager</h2>
                 <div>

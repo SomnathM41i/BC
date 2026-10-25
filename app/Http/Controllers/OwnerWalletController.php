@@ -54,7 +54,7 @@ class OwnerWalletController extends Controller
         );
 
         return redirect()
-            ->route('owner.show')
+            ->route('admin.owner.show')
             ->with('status', 'Personal income recorded in the owner personal wallet.');
     }
 
@@ -69,7 +69,7 @@ class OwnerWalletController extends Controller
         );
 
         return redirect()
-            ->route('owner.show')
+            ->route('admin.owner.show')
             ->with('status', 'Transfer to Owner Personal Wallet recorded.');
     }
 
@@ -83,7 +83,7 @@ class OwnerWalletController extends Controller
         );
 
         return redirect()
-            ->route('owner.show')
+            ->route('admin.owner.show')
             ->with('status', 'Transfer to company wallet recorded.');
     }
 
@@ -98,7 +98,7 @@ class OwnerWalletController extends Controller
         );
 
         return redirect()
-            ->route('owner.show')
+            ->route('admin.owner.show')
             ->with('status', 'Personal expense recorded.');
     }
 }

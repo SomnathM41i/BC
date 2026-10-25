@@ -28,7 +28,7 @@ class ProjectFinanceController extends Controller
         );
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Project payment recorded.');
     }
 
@@ -46,7 +46,7 @@ class ProjectFinanceController extends Controller
         );
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Direct project expense recorded.');
     }
 
@@ -63,7 +63,7 @@ class ProjectFinanceController extends Controller
         );
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Unallocated company funds assigned to the project.');
     }
 
@@ -84,7 +84,7 @@ class ProjectFinanceController extends Controller
         );
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Contractor cost transfer recorded.');
     }
 

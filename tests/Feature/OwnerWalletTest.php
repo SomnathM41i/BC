@@ -135,7 +135,7 @@ class OwnerWalletTest extends TestCase
         $projectCategory = $this->projectCategory('Materials');
 
         $this->actingAs($owner)
-            ->post('/owner/income', [
+            ->post('/admin/owner/income', [
                 'amount' => '1000',
                 'category_id' => $projectCategory->id,
                 'transaction_date' => '2026-10-01',
@@ -149,20 +149,20 @@ class OwnerWalletTest extends TestCase
         $salary = $this->ownerIncomeCategory('Salary');
 
         $this->actingAs($owner)
-            ->post('/owner/income', [
+            ->post('/admin/owner/income', [
                 'amount' => '25000',
                 'category_id' => $salary->id,
                 'transaction_date' => '2026-10-01',
                 'description' => 'Salary',
             ])
-            ->assertRedirect(route('owner.show'));
+            ->assertRedirect(route('admin.owner.show'));
 
         $wallets = app(WalletService::class);
         $this->assertSame('25000.00', $wallets->ownerBalance());
         $this->assertSame('0.00', $wallets->businessBalance());
 
         $this->actingAs($owner)
-            ->get('/owner')
+            ->get('/admin/owner')
             ->assertOk()
             ->assertSee('Personal Wallet Balance')
             ->assertSee('Personal Income')

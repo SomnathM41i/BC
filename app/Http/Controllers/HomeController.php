@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function __invoke(): RedirectResponse
+    public function __invoke(): View
     {
-        return auth()->check()
-            ? redirect()->route('dashboard')
-            : redirect()->route('login');
+        return view('site.coming-soon');
     }
 }

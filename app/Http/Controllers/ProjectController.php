@@ -57,7 +57,7 @@ class ProjectController extends Controller
         $this->wallets->projectWallet($project);
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Project created successfully.');
     }
 
@@ -91,7 +91,7 @@ class ProjectController extends Controller
         $this->wallets->requestProjectClosure($project, request()->user());
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Project moved to Closure Pending. New expenses and transfers are blocked.');
     }
 
@@ -102,7 +102,7 @@ class ProjectController extends Controller
         $this->wallets->finalizeProjectClosure($project, request()->user());
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Project closed. Remaining assigned balance released to unallocated funds.');
     }
 }

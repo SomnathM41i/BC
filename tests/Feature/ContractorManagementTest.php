@@ -17,7 +17,7 @@ class ContractorManagementTest extends TestCase
         $owner = $this->owner();
 
         $this->actingAs($owner)
-            ->get('/contractors')
+            ->get('/admin/contractors')
             ->assertOk()
             ->assertSee('Contractor Directory')
             ->assertSee('Total Given');
@@ -30,19 +30,19 @@ class ContractorManagementTest extends TestCase
         $project = $this->makeProject($contractor, '1000000.00', 'Tower A');
         $category = $this->projectCategory('Labour');
 
-        $this->actingAs($owner)->post("/projects/{$project->id}/receipts", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/receipts", [
             'amount' => '50000',
             'transaction_date' => '2026-10-01',
         ]);
 
-        $this->actingAs($owner)->post("/projects/{$project->id}/transfers", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/transfers", [
             'amount' => '12000',
             'category_id' => $category->id,
             'contractor_id' => $contractor->id,
             'transaction_date' => '2026-10-02',
         ]);
 
-        $this->actingAs($owner)->post("/projects/{$project->id}/transfers", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/transfers", [
             'amount' => '8000',
             'category_id' => $category->id,
             'contractor_id' => $contractor->id,
@@ -67,13 +67,13 @@ class ContractorManagementTest extends TestCase
         $type = $this->contractorType('Masonry');
 
         $this->actingAs($owner)
-            ->post('/contractors', [
+            ->post('/admin/contractors', [
                 'name' => 'Suresh Pawar',
                 'phone' => '+91 9876543210',
                 'contractor_type_id' => $type->id,
                 'notes' => 'Handles brickwork',
             ])
-            ->assertRedirect('/contractors');
+            ->assertRedirect('/admin/contractors');
 
         $contractor = Contractor::query()->where('name', 'Suresh Pawar')->firstOrFail();
 
@@ -92,7 +92,7 @@ class ContractorManagementTest extends TestCase
         $owner = $this->owner();
 
         $this->actingAs($owner)
-            ->post('/contractors', [
+            ->post('/admin/contractors', [
                 'name' => '',
                 'contractor_type_id' => $this->contractorType()->id,
             ])
@@ -104,7 +104,7 @@ class ContractorManagementTest extends TestCase
         $owner = $this->owner();
 
         $this->actingAs($owner)
-            ->post('/contractors', [
+            ->post('/admin/contractors', [
                 'name' => 'Suresh',
                 'contractor_type_id' => 9999,
             ])
@@ -116,13 +116,13 @@ class ContractorManagementTest extends TestCase
         $owner = $this->owner();
         $type = $this->contractorType('General');
 
-        $this->actingAs($owner)->post('/contractors', [
+        $this->actingAs($owner)->post('/admin/contractors', [
             'name' => 'Suresh Pawar',
             'phone' => '+91 9876543210',
             'contractor_type_id' => $type->id,
-        ])->assertRedirect('/contractors');
+        ])->assertRedirect('/admin/contractors');
 
-        $this->actingAs($owner)->post('/contractors', [
+        $this->actingAs($owner)->post('/admin/contractors', [
             'name' => 'Suresh Pawar',
             'phone' => '+91 9876543210',
             'contractor_type_id' => $type->id,
@@ -140,13 +140,13 @@ class ContractorManagementTest extends TestCase
         $project = $this->makeProject($contractor, '1000000.00');
         $category = $this->projectCategory('Labour');
 
-        $this->actingAs($owner)->post("/projects/{$project->id}/receipts", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/receipts", [
             'amount' => '5000',
             'transaction_date' => '2026-10-01',
         ]);
 
         $this->actingAs($owner)
-            ->post("/projects/{$project->id}/transfers", [
+            ->post("/admin/projects/{$project->id}/transfers", [
                 'amount' => '1000',
                 'category_id' => $category->id,
                 'contractor_id' => $contractor->id,
@@ -162,13 +162,13 @@ class ContractorManagementTest extends TestCase
         $owner = $this->owner();
         $type = $this->contractorType('General');
 
-        $this->actingAs($owner)->post('/contractors', [
+        $this->actingAs($owner)->post('/admin/contractors', [
             'name' => 'No Login Required',
             'phone' => null,
             'contractor_type_id' => $type->id,
             'email' => 'should-not-be-used@example.com',
             'password' => 'secret-password',
-        ])->assertRedirect('/contractors');
+        ])->assertRedirect('/admin/contractors');
 
         Contractor::query()->where('name', 'No Login Required')->firstOrFail();
 
@@ -184,13 +184,13 @@ class ContractorManagementTest extends TestCase
         $project = $this->makeProject($contractor, '1000000.00');
         $category = $this->projectCategory('Labour');
 
-        $this->actingAs($owner)->post("/projects/{$project->id}/receipts", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/receipts", [
             'amount' => '5000',
             'transaction_date' => '2026-10-01',
         ]);
 
         $this->actingAs($owner)
-            ->post("/projects/{$project->id}/transfers", [
+            ->post("/admin/projects/{$project->id}/transfers", [
                 'amount' => '1000',
                 'category_id' => $category->id,
                 'contractor_id' => '__new__',
@@ -198,7 +198,7 @@ class ContractorManagementTest extends TestCase
                 'new_contractor_phone' => '+91 9000000000',
                 'transaction_date' => '2026-10-02',
             ])
-            ->assertRedirect("/projects/{$project->id}");
+            ->assertRedirect("/admin/projects/{$project->id}");
 
         $new = Contractor::query()->where('name', 'Fresh Subcontractor')->firstOrFail();
 
@@ -223,13 +223,13 @@ class ContractorManagementTest extends TestCase
         $project = $this->makeProject($contractor, '1000000.00');
         $category = $this->projectCategory('Labour');
 
-        $this->actingAs($owner)->post("/projects/{$project->id}/receipts", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/receipts", [
             'amount' => '5000',
             'transaction_date' => '2026-10-01',
         ]);
 
         $this->actingAs($owner)
-            ->post("/projects/{$project->id}/transfers", [
+            ->post("/admin/projects/{$project->id}/transfers", [
                 'amount' => '1000',
                 'category_id' => $category->id,
                 'contractor_id' => '__new__',

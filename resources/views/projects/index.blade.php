@@ -16,7 +16,7 @@
             <h1 class="text-2xl font-semibold text-slate-900">Projects</h1>
             <p class="text-sm text-slate-500">Track contract value, funding, spend and status for every project.</p>
         </div>
-        <a href="{{ route('projects.create') }}"
+        <a href="{{ route('admin.projects.create') }}"
            class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
             <x-icon name="plus" />
             New Project
@@ -57,7 +57,7 @@
                             <td class="px-4 py-3 text-right font-medium">@inr($report['assigned_balance'])</td>
                             <td class="px-4 py-3 text-right">@inr($report['total_costs'])</td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{ route('projects.show', $project) }}" class="inline-flex items-center gap-1 text-slate-700 underline">
+                                <a href="{{ route('admin.projects.show', $project) }}" class="inline-flex items-center gap-1 text-slate-700 underline">
                                     <x-icon name="view" class="h-3.5 w-3.5" />
                                     View
                                 </a>

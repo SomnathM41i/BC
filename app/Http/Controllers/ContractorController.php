@@ -50,7 +50,7 @@ class ContractorController extends Controller
         $this->wallets->contractorWallet($contractor);
 
         return redirect()
-            ->route('contractors.index')
+            ->route('admin.contractors.index')
             ->with('status', 'Contractor created successfully.');
     }
 }

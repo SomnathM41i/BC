@@ -24,20 +24,20 @@ class FundMovementTest extends TestCase
         $this->service()->receiveUnallocatedIncome('1000.00', '2026-10-01', null, $owner);
 
         $this->actingAs($owner)
-            ->post('/owner/transfer', [
+            ->post('/admin/owner/transfer', [
                 'amount' => '1000',
                 'category_id' => $category->id,
                 'transaction_date' => '2026-10-01',
             ])
-            ->assertRedirect('/owner');
+            ->assertRedirect('/admin/owner');
 
         $this->actingAs($owner)
-            ->post('/owner/return', [
+            ->post('/admin/owner/return', [
                 'amount' => '400',
                 'transaction_date' => '2026-10-02',
                 'description' => 'Return',
             ])
-            ->assertRedirect('/owner');
+            ->assertRedirect('/admin/owner');
 
         $this->assertSame('400.00', $this->service()->businessBalance());
         $this->assertSame('600.00', $this->service()->ownerBalance());
@@ -54,12 +54,12 @@ class FundMovementTest extends TestCase
         $this->service()->receiveUnallocatedIncome('1000.00', '2026-10-01', null, $owner);
 
         $this->actingAs($owner)
-            ->post("/projects/{$project->id}/fund", [
+            ->post("/admin/projects/{$project->id}/fund", [
                 'amount' => '700',
                 'transaction_date' => '2026-10-02',
                 'description' => 'Seed funds',
             ])
-            ->assertRedirect("/projects/{$project->id}");
+            ->assertRedirect("/admin/projects/{$project->id}");
 
         $this->assertSame('1000.00', $this->service()->businessBalance());
         $this->assertSame('700.00', $this->service()->projectBalance($project));
@@ -76,7 +76,7 @@ class FundMovementTest extends TestCase
         $this->service()->receiveUnallocatedIncome('1000.00', '2026-10-01', null, $owner);
 
         $this->actingAs($owner)
-            ->post("/projects/{$project->id}/fund", [
+            ->post("/admin/projects/{$project->id}/fund", [
                 'amount' => '2500',
                 'transaction_date' => '2026-10-02',
             ])
@@ -94,20 +94,20 @@ class FundMovementTest extends TestCase
         $category = $this->projectCategory('Labour');
 
         // Seed the project with ₹5,000.
-        $this->actingAs($owner)->post("/projects/{$project->id}/receipts", [
+        $this->actingAs($owner)->post("/admin/projects/{$project->id}/receipts", [
             'amount' => '5000',
             'transaction_date' => '2026-10-01',
         ]);
 
         $this->actingAs($owner)
-            ->post("/projects/{$project->id}/transfers", [
+            ->post("/admin/projects/{$project->id}/transfers", [
                 'amount' => '2000',
                 'category_id' => $category->id,
                 'contractor_id' => $contractor->id,
                 'transaction_date' => '2026-10-02',
                 'description' => 'Advance for labour',
             ])
-            ->assertRedirect("/projects/{$project->id}");
+            ->assertRedirect("/admin/projects/{$project->id}");
 
         $this->assertSame('2000.00', $this->service()->contractorBalance($contractor));
         $this->assertSame('3000.00', $this->service()->projectBalance($project));

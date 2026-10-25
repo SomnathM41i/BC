@@ -21,7 +21,7 @@
         <div class="border-t border-slate-700 px-6 py-4 text-xs">
             <p class="font-medium text-white">{{ $user->name }}</p>
             <p class="mb-3 text-slate-400">{{ $user->role->label() }}</p>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('admin.logout') }}">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-slate-700 px-3 py-1.5 text-white hover:bg-slate-600">
                     <x-icon name="logout" />
@@ -45,7 +45,7 @@
                         <p class="text-slate-500">{{ $user->role->label() }}</p>
                     </div>
                     @include('partials.nav-links', ['user' => $user, 'dark' => false])
-                    <form method="POST" action="{{ route('logout') }}" class="mt-1 border-t border-slate-100 pt-1">
+                    <form method="POST" action="{{ route('admin.logout') }}" class="mt-1 border-t border-slate-100 pt-1">
                         @csrf
                         <button type="submit" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-slate-100">
                             <x-icon name="logout" />

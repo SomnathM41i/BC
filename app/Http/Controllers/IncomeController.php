@@ -20,7 +20,7 @@ class IncomeController extends Controller
         );
 
         return redirect()
-            ->route('dashboard')
+            ->route('admin.dashboard')
             ->with('status', 'Unallocated company income recorded.');
     }
 }

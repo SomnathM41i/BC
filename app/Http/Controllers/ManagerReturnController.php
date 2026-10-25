@@ -28,7 +28,7 @@ class ManagerReturnController extends Controller
         );
 
         return redirect()
-            ->route('projects.show', $project)
+            ->route('admin.projects.show', $project)
             ->with('status', 'Manager return recorded.');
     }
 }

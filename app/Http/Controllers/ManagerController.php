@@ -38,7 +38,7 @@ class ManagerController extends Controller
         ]);
 
         return redirect()
-            ->route('managers.index')
+            ->route('admin.managers.index')
             ->with('status', 'Manager created successfully.')
             // Flashed for one request only so the password can be handed over once.
             ->with('new_manager_credentials', [

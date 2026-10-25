@@ -14,7 +14,7 @@
 @section('content')
     <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-            <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-1 text-sm text-slate-500 underline">
+            <a href="{{ route('admin.projects.index') }}" class="inline-flex items-center gap-1 text-sm text-slate-500 underline">
                 <x-icon name="back" class="h-3.5 w-3.5" />
                 Projects
             </a>
@@ -28,7 +28,7 @@
                 {{ $project->status->label() }}
             </span>
             @if ($isOwner && $project->isActive())
-                <form method="POST" action="{{ route('projects.request-closure', $project) }}">
+                <form method="POST" action="{{ route('admin.projects.request-closure', $project) }}">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100">
                         <x-icon name="lock" />
@@ -37,7 +37,7 @@
                 </form>
             @endif
             @if ($isOwner && $project->isClosurePending())
-                <form method="POST" action="{{ route('projects.finalize-closure', $project) }}">
+                <form method="POST" action="{{ route('admin.projects.finalize-closure', $project) }}">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
                         <x-icon name="check-circle" />
@@ -101,7 +101,7 @@
 
     @if ($isOwner && $project->isActive())
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <form method="POST" action="{{ route('projects.receipts.store', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+            <form method="POST" action="{{ route('admin.projects.receipts.store', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
                 @csrf
                 <h3 class="font-semibold text-slate-900">Record Receipt</h3>
                 <input type="number" step="0.01" min="0.01" name="amount" placeholder="Amount (₹)" required
@@ -116,7 +116,7 @@
                 </button>
             </form>
 
-            <form method="POST" action="{{ route('projects.expenses.store', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+            <form method="POST" action="{{ route('admin.projects.expenses.store', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
                 @csrf
                 <h3 class="font-semibold text-slate-900">Record Project Expense</h3>
                 <input type="number" step="0.01" min="0.01" name="amount" placeholder="Amount (₹)" required
@@ -137,7 +137,7 @@
                 </button>
             </form>
 
-            <form method="POST" action="{{ route('projects.transfers.store', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+            <form method="POST" action="{{ route('admin.projects.transfers.store', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
                 @csrf
                 <h3 class="font-semibold text-slate-900">Contractor Payment</h3>
                 <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" placeholder="Amount (₹)" required
@@ -177,7 +177,7 @@
                 </button>
             </form>
 
-            <form method="POST" action="{{ route('projects.fund', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
+            <form method="POST" action="{{ route('admin.projects.fund', $project) }}" class="space-y-3 rounded-xl bg-white p-5 shadow-sm">
                 @csrf
                 <h3 class="font-semibold text-slate-900">Allocate Funds to Project</h3>
                 <p class="text-xs text-slate-500">Move unallocated funds into this project. Unallocated Funds available: @inr($unallocated).</p>
