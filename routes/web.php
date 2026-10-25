@@ -74,14 +74,17 @@ Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 
 /*
 | Public contractor statement.
-| No login required: the owner can share this link with the contractor.
-| The URL starts with the contractor's name, e.g. /contractors/ramesh-jadhav.
+| No login required: the owner shares this link with the contractor.
 |
-| NOTE: temporary location. This becomes an unguessable /statement/{token}
-| link in phase 5 of the restructure plan.
+| The URL carries a long random token, never the contractor's name, so it
+| cannot be found by guessing. The page is noindex and no-store.
 */
-Route::get('contractors/{contractor}', [ContractorStatementController::class, 'show'])
-    ->name('contractors.show');
+Route::get('statement/{contractor:statement_token}', [ContractorStatementController::class, 'show'])
+    ->name('statements.show');
+
+// Retired guessable links (/contractors/ramesh-jadhav) answer 410 Gone.
+Route::get('contractors/{slug}', [ContractorStatementController::class, 'legacy'])
+    ->where('slug', '[A-Za-z0-9._-]+');
 
 /*
 |--------------------------------------------------------------------------

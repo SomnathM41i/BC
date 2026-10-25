@@ -2,6 +2,7 @@ User-agent: *
 Disallow: /admin
 Disallow: /deploy
 Disallow: /contractors
+Disallow: /statement
 Disallow: /login
 Disallow: /dashboard
 Disallow: /transactions

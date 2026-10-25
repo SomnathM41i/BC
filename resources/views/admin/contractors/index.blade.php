@@ -29,7 +29,7 @@
                     @forelse ($contractors as $contractor)
                         <tr class="hover:bg-slate-50">
                             <td class="px-4 py-3 font-medium">
-                                <a href="{{ route('contractors.show', $contractor) }}"
+                                <a href="{{ $contractor->statementUrl() }}"
                                    class="text-slate-900 underline decoration-slate-300 hover:decoration-slate-500">
                                     {{ $contractor->name }}
                                 </a>

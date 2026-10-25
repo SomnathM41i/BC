@@ -49,16 +49,32 @@ class ContractorManagementTest extends TestCase
             'transaction_date' => '2026-10-05',
         ]);
 
-        // The link uses the contractor's name and needs no login.
+        // The public link carries a random token, not the contractor's name.
         $this->assertSame('ramesh-jadhav', $contractor->slug);
 
-        $this->get("/contractors/{$contractor->slug}")
+        $token = $contractor->statementToken();
+
+        $this->assertNotSame($contractor->slug, $token);
+        $this->assertSame(48, strlen($token));
+
+        $this->get("/statement/{$token}")
             ->assertOk()
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet')
             ->assertSee('Ramesh Jadhav')
             ->assertSee('Tower A')
             ->assertSee('Payments by Project')
             ->assertSee('₹20,000.00')
-            ->assertDontSee('9000000000');
+            ->assertDontSee('9000000000')
+            ->assertDontSee($contractor->slug);
+
+        // The old guessable URL no longer exposes anything.
+        $this->get("/contractors/{$contractor->slug}")
+            ->assertStatus(410)
+            ->assertDontSee('Ramesh Jadhav');
+
+        // An unknown token is simply not found.
+        $this->get('/statement/this-token-does-not-exist')
+            ->assertNotFound();
     }
 
     public function test_owner_can_create_a_contractor_and_a_wallet_is_created(): void
