@@ -9,7 +9,7 @@ namespace App\Support\Site;
 final class SiteContent
 {
     /**
-     * @return array{name: string, short_name: string, tagline: string, phones: list<array{name: string, number: string, display: string, tel: string}>, whatsapp: string, whatsapp_url: string, email: ?string, address: list<string>, address_line: string, map_embed_url: ?string, map_link: ?string, social: array<string, string>}
+     * @return array{name: string, short_name: string, tagline: string, logo: string, phones: list<array{name: string, number: string, display: string, tel: string}>, whatsapp: string, whatsapp_url: string, email: ?string, address: list<string>, address_line: string, map_embed_url: ?string, map_link: ?string, social: array<string, string>}
      */
     public static function company(): array
     {
@@ -32,6 +32,7 @@ final class SiteContent
             'name' => $config['company']['names'][$locale] ?? $config['company']['names']['en'],
             'short_name' => $config['company']['short_names'][$locale] ?? $config['company']['short_names']['en'],
             'tagline' => $config['company']['taglines'][$locale] ?? $config['company']['taglines']['en'],
+            'logo' => asset($config['company']['logo']),
             'phones' => $phones,
             'whatsapp' => $whatsapp,
             'whatsapp_url' => 'https://wa.me/'.$whatsapp.'?text='.rawurlencode(__('site.contact.whatsapp_message')),

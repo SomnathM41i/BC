@@ -83,7 +83,7 @@ return [
             'योग्य Planning',
             'Clear Communication',
         ],
-        'hero_image_alt' => 'Website वर उदाहरणासाठी वापरलेले Modern Residential Home चे बाह्य छायाचित्र',
+        'hero_image_alt' => 'Bandgar Construction & Developers चे Dream Home Advertisement — Modern Home आणि Services दाखवणारी प्रतिमा',
 
         'trust' => [
             ['icon' => 'compass', 'label' => 'Plot नुसार Design'],

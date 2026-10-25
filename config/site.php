@@ -20,6 +20,7 @@
 return [
 
     'company' => [
+        'logo' => 'images/site/brand-logo.png',
         'names' => [
             'en' => 'Bandgar Construction & Developers',
             'mr' => 'Bandgar Construction & Developers',

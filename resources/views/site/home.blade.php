@@ -10,56 +10,12 @@
 
 @section('content')
     {{-- Hero --}}
-    <section class="relative overflow-hidden bg-brand-dark">
-        <div class="absolute inset-0 bg-grid opacity-40" aria-hidden="true"></div>
-        <div class="absolute -left-24 top-10 h-72 w-72 rounded-full bg-brand-red/20 blur-3xl" aria-hidden="true"></div>
-
-        <div class="relative grid lg:grid-cols-[1.02fr_1fr]">
-            <div class="flex items-center">
-                <div class="w-full max-w-2xl px-5 py-16 sm:px-8 sm:py-20 lg:py-24 lg:pl-12 xl:pl-16">
-                    <span class="eyebrow eyebrow-light">
-                        <span class="h-px w-8 bg-current"></span>
-                        {{ __('site.home.hero_eyebrow') }}
-                    </span>
-
-                    <h1 class="site-hero-title mt-5 font-display text-[2.4rem] font-semibold leading-[1.08] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.5rem]">
-                        {{ __('site.home.hero_title') }}
-                    </h1>
-
-                    <p class="mt-6 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-                        {{ __('site.home.hero_lead') }}
-                    </p>
-
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <x-site.button :href="SiteRoutes::url('portfolio.index')" variant="gold" icon="arrow-right">
-                            {{ __('site.actions.explore_projects') }}
-                        </x-site.button>
-                        <x-site.button :href="SiteRoutes::url('contact')" variant="outline-light">
-                            {{ __('site.actions.contact_us') }}
-                        </x-site.button>
-                    </div>
-
-                    <ul class="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-6">
-                        @foreach (__('site.home.hero_support') as $support)
-                            <li class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
-                                <x-site.icon name="check" class="h-4 w-4 text-gold" />
-                                {{ $support }}
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-
-            <div class="relative min-h-[320px] sm:min-h-[420px] lg:min-h-full">
-                <img src="{{ asset('images/site/photos/hero.jpg') }}" alt="{{ __('site.home.hero_image_alt') }}"
-                     class="absolute inset-0 h-full w-full object-cover" fetchpriority="high">
-                <div class="absolute inset-0 bg-gradient-to-r from-brand-dark/70 via-brand-dark/10 to-transparent lg:from-brand-dark/50"></div>
-
-                <div class="absolute bottom-6 left-6 right-6 rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-md sm:right-auto sm:max-w-xs">
-                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gold">{{ __('site.nav.brand_sub') }}</p>
-                    <p class="mt-1 text-sm leading-relaxed text-white/80">{{ $site['tagline'] }}</p>
-                </div>
-            </div>
+    <section class="overflow-hidden bg-brand-dark">
+        <div class="hero-advertisement-frame">
+            <img src="{{ asset('images/site/hero-advertisement.png') }}"
+                 alt="{{ __('site.home.hero_image_alt') }}"
+                 class="h-full w-full object-contain"
+                 fetchpriority="high">
         </div>
     </section>
 

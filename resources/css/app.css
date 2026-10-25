@@ -70,6 +70,18 @@
         @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
     }
 
+    .hero-advertisement-frame {
+        height: calc(100vh - 5rem);
+        height: calc(100dvh - 5rem);
+    }
+
+    @media (min-width: 1024px) {
+        .hero-advertisement-frame {
+            height: calc(100vh - 7rem);
+            height: calc(100dvh - 7rem);
+        }
+    }
+
     .eyebrow {
         @apply inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-red;
     }

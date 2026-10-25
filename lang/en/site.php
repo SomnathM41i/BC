@@ -83,7 +83,7 @@ return [
             'Thoughtful Design',
             'Customer Satisfaction',
         ],
-        'hero_image_alt' => 'Illustrative photograph of a modern residential home exterior',
+        'hero_image_alt' => 'Bandgar Construction & Developers Dream Home advertisement showing a modern home and its services',
 
         'trust' => [
             ['icon' => 'compass', 'label' => 'Site-responsive design'],

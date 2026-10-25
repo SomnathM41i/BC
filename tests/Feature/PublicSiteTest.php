@@ -31,7 +31,7 @@ class PublicSiteTest extends TestCase
             $this->get($url)->assertOk()->assertSee('lang="mr-IN"', false);
         }
 
-        $this->get('/')->assertSee('तुमच्या Dream Home ला देऊया सुंदर आकार!', false);
+        $this->get('/')->assertSee('hero-advertisement.png', false);
     }
 
     public function test_english_pages_render_under_the_en_prefix(): void
@@ -39,7 +39,7 @@ class PublicSiteTest extends TestCase
         $this->get('/en')
             ->assertOk()
             ->assertSee('lang="en-IN"', false)
-            ->assertSee('A Better Shape for Your Dream Home', false);
+            ->assertSee('hero-advertisement.png', false);
 
         $this->get('/en/services')
             ->assertOk()

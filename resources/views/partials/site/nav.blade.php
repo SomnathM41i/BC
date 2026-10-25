@@ -20,9 +20,8 @@
 
     <div class="site-container flex items-center justify-between gap-6 py-4">
         <a href="{{ SiteRoutes::url('home') }}" class="flex items-center gap-3" aria-label="{{ $site['name'] }}">
-            <span class="grid h-11 w-11 place-items-center rounded-lg bg-brand font-display text-xl font-semibold text-gold shadow-sm">
-                {{ mb_substr($site['short_name'], 0, 1) }}
-            </span>
+            <img src="{{ $site['logo'] }}" alt="{{ $site['name'] }} logo"
+                 class="h-12 w-12 shrink-0 rounded-lg bg-white object-contain p-0.5 shadow-sm">
             <span class="leading-tight">
                 <span class="block font-display text-[1.05rem] font-semibold tracking-tight text-brand-dark">
                     {{ $site['short_name'] }}

@@ -6,9 +6,8 @@
     <div class="site-container relative grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div class="lg:pr-6">
             <div class="flex items-center gap-3">
-                <span class="grid h-11 w-11 place-items-center rounded-lg bg-white/10 font-display text-xl font-semibold text-gold">
-                    {{ mb_substr($site['short_name'], 0, 1) }}
-                </span>
+                <img src="{{ $site['logo'] }}" alt="{{ $site['name'] }} logo"
+                     class="h-14 w-14 shrink-0 rounded-lg bg-white object-contain p-0.5">
                 <div class="leading-tight">
                     <p class="font-display text-lg font-semibold">{{ $site['short_name'] }}</p>
                     <p class="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-white/45">

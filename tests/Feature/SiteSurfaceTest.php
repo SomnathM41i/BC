@@ -14,12 +14,13 @@ class SiteSurfaceTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Bandgar', false)
-            ->assertSee('तुमच्या Dream Home ला देऊया सुंदर आकार!', false);
+            ->assertSee('brand-logo.png', false)
+            ->assertSee('hero-advertisement.png', false);
 
         $this->get('/en')
             ->assertOk()
             ->assertSee('Bandgar Construction', false)
-            ->assertSee('A Better Shape for Your Dream Home', false);
+            ->assertSee('hero-advertisement.png', false);
     }
 
     public function test_legacy_internal_urls_redirect_under_admin(): void
