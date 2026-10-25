@@ -21,7 +21,7 @@
             <ul class="mt-10 grid gap-4 sm:grid-cols-2">
                 @foreach ($credits as $credit)
                     <li class="site-card flex gap-4 p-4">
-                        <img src="{{ asset($credit['local_path']) }}" alt=""
+                        <img src="{{ asset($credit['local_path']) }}" alt="{{ $credit['title'] }}"
                              class="h-20 w-24 shrink-0 rounded-lg object-cover" loading="lazy" decoding="async">
 
                         <div class="min-w-0">

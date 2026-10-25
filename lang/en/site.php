@@ -40,9 +40,12 @@ return [
         'services' => 'Services',
         'portfolio' => 'Our Projects',
         'contact' => 'Contact Us',
-        'menu' => 'Menu',
+        'menu' => 'Open main menu',
         'close' => 'Close',
+        'main_navigation' => 'Main navigation',
         'language' => 'Language',
+        'language_marathi' => 'मराठी',
+        'language_english' => 'English',
         'staff' => 'Staff sign in',
         'skip' => 'Skip to main content',
     ],
@@ -73,14 +76,14 @@ return [
 
     'home' => [
         'hero_eyebrow' => 'Atpadi · Sangli · Maharashtra',
-        'hero_title' => 'Building Your Dreams, One Brick at a Time',
-        'hero_lead' => 'Thoughtful designs, dependable construction, and quality-focused workmanship for your dream home.',
+        'hero_title' => 'A Better Shape for Your Dream Home',
+        'hero_lead' => 'Thoughtful architecture, careful planning and quality-focused construction for a home made around your needs.',
         'hero_support' => [
             'Quality Construction',
             'Thoughtful Design',
             'Customer Satisfaction',
         ],
-        'hero_image_alt' => 'Modern residential house built by Bandgar Construction & Developers',
+        'hero_image_alt' => 'Illustrative photograph of a modern residential home exterior',
 
         'trust' => [
             ['icon' => 'compass', 'label' => 'Site-responsive design'],
@@ -90,8 +93,8 @@ return [
         ],
 
         'about_eyebrow' => 'Who we are',
-        'about_title' => 'Building More Than Houses. Creating Homes.',
-        'about_lead' => 'Bandgar Construction & Developers is a residential construction and design firm based in Kargani, Atpadi. We work with families who want a home that is planned carefully, built properly and finished with attention to detail.',
+        'about_title' => 'Building More Than a House: Building Trust.',
+        'about_lead' => 'Bandgar Construction & Developers focuses on architectural planning, construction planning and quality-focused building services. We understand what each customer needs and work towards practical solutions that match their expectations.',
         'about_body' => 'Our work covers architectural planning, building design, structural coordination and the construction services that turn a drawing into a home you can live in. We keep the process clear: understand the requirement, plan it practically, build it to the agreed drawings, and stay available after handover.',
         'about_points' => [
             'Residential construction and home building',
@@ -99,20 +102,20 @@ return [
             '2D plans, 3D views and working drawings',
             'Construction supervision and contracting',
         ],
-        'about_image_alt' => 'Contemporary house exterior with clean architectural lines',
+        'about_image_alt' => 'Illustrative contemporary house exterior with clean architectural lines',
 
         'services_eyebrow' => 'What we do',
-        'services_title' => 'Design and Construction Services',
-        'services_lead' => 'From the first sketch to the final finish, the services you need for a home project in one place.',
+        'services_title' => 'Our Construction and Design Services',
+        'services_lead' => 'Explore architectural planning, drawings, 3D design and construction-related services for your project.',
         'services_note' => 'Structural, electrical and plumbing designs are prepared in coordination with qualified consultants where required.',
 
         'projects_eyebrow' => 'Our work',
         'projects_title' => 'Explore Our Projects',
-        'projects_lead' => 'A look at the kind of homes and design work we take on — residential buildings, modern homes and architectural studies.',
+        'projects_lead' => 'Explore illustrative examples of residential homes, modern construction and architectural design work.',
 
         'why_eyebrow' => 'Why us',
         'why_title' => 'Why Choose Bandgar Construction & Developers?',
-        'why_lead' => 'Construction is a long relationship. These are the things we hold ourselves to from the first meeting to the final handover.',
+        'why_lead' => 'Your home deserves practical planning, clear communication and careful attention to every construction detail.',
         'why_items' => [
             ['title' => 'Quality-focused workmanship', 'text' => 'Materials, finishing and detailing are checked at every stage, not only at the end.'],
             ['title' => 'Thoughtful planning', 'text' => 'Plans are made for how a family actually uses a home — light, ventilation, storage and movement.'],
@@ -134,7 +137,7 @@ return [
 
         'cta_title' => 'Ready to Build Your Dream Home?',
         'cta_text' => 'Tell us about your project, and let\'s discuss how we can help.',
-        'cta_image_alt' => 'Residential construction site with structural work in progress',
+        'cta_image_alt' => 'Illustrative residential construction site with structural work in progress',
 
         'contact_eyebrow' => 'Get in touch',
         'contact_title' => 'Talk to Us About Your Project',
@@ -187,10 +190,10 @@ return [
 
     'services' => [
         'banner_eyebrow' => 'Services',
-        'banner_title' => 'From First Sketch to Final Finish',
-        'banner_lead' => 'Architectural design, engineering coordination and construction services for residential projects.',
+        'banner_title' => 'From the First Plan to the Final Finish',
+        'banner_lead' => 'Architectural design, technical coordination and construction services for residential projects.',
 
-        'intro_title' => 'Everything a Home Project Needs',
+        'intro_title' => 'Services for Your Home Project',
         'intro_body' => 'You can engage us for a single service, such as a 2D plan or a structural design, or for the complete journey from design to construction. Each service is delivered with clear drawings, a written scope and a realistic timeline.',
 
         'items' => [
@@ -332,9 +335,9 @@ return [
 
     'portfolio' => [
         'banner_eyebrow' => 'Our projects',
-        'banner_title' => 'Homes and Design Work',
-        'banner_lead' => 'Residential buildings, modern homes and architectural studies from our design and construction work.',
-        'intro' => 'Browse by category to see the kind of projects we take on. Project pages include the design approach, location where available, and a gallery.',
+        'banner_title' => 'Residential Homes and Design Work',
+        'banner_lead' => 'Illustrative examples of residential construction, modern homes and architectural design work.',
+        'intro' => 'Browse by category to see the kind of work presented on this site. Project pages include the design approach, location where available and a gallery.',
         'categories' => [
             'residential' => 'Residential',
             'modern-homes' => 'Modern Homes',
@@ -357,10 +360,10 @@ return [
 
     'contact' => [
         'banner_eyebrow' => 'Contact',
-        'banner_title' => 'Let\'s Talk About Your Home',
-        'banner_lead' => 'Call us, message on WhatsApp, or send an enquiry. We will get back to you as soon as we can.',
+        'banner_title' => 'Planning Your Home Construction?',
+        'banner_lead' => 'Contact us today to discuss your project and understand the next practical step.',
 
-        'info_title' => 'Reach Us Directly',
+        'info_title' => 'Contact Us Directly',
         'phone_label' => 'Phone',
         'whatsapp_label' => 'WhatsApp',
         'address_label' => 'Address',

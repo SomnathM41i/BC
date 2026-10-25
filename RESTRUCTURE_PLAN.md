@@ -309,7 +309,7 @@ One phase at a time. Each phase is a separate commit and must end green before t
 - **Accept:** `/`, `/about`, `/services`, `/portfolio`, `/contact` render on mobile + desktop; contact form stores a row and sends mail; no route leaks financial data.
 
 #### Phase 4 — as built (2026-10-25)
-- English at the root, Marathi under `/mr`; URL is the language source of truth, with `hreflang` + `x-default` on every page.
+- Marathi at the root, English under `/en`; URL is the language source of truth, with `hreflang` + `x-default` on every page.
 - Portfolio lives at `/projects` (not `/portfolio`). The legacy `projects` → `/admin/projects` redirect was **removed**; `/projects` now belongs to the public site.
 - Separate `portfolio_projects` table (never the internal `Project` model) plus an `inquiries` table for enquiries. Gallery images are a JSON column, so no separate `portfolio_images` table was needed.
 - Portfolio entries carry `is_sample` and are labelled "Illustrative sample" in the UI and on the detail page. Replace before launch.
@@ -388,7 +388,7 @@ One phase at a time. Each phase is a separate commit and must end green before t
 
 1. Brand: Bandgar Construction & Developers; phones, WhatsApp and Kargani/Atpadi address confirmed. No email, socials or map link yet.
 2. Services: 13 services, architecture → construction → interiors, ordered in `config/site.php`.
-3. Language: English + Marathi (`/mr`).
+3. Language: Marathi at the root, with English under `/en`.
 4. Portfolio: no real photographs available yet; v1 ships labelled illustrative samples and CC placeholder images.
 5. Statement links: moved to random tokens; old slug URLs answer 410 Gone.
 6. Domain: unchanged for now — root site with `/admin`.

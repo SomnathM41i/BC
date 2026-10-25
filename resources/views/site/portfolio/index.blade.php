@@ -16,12 +16,14 @@
 
             <nav class="flex flex-wrap gap-2" aria-label="{{ __('site.portfolio.filter_label') }}">
                 <a href="{{ SiteRoutes::url('portfolio.index') }}"
+                   @if ($category === '') aria-current="page" @endif
                    @class(['chip', 'chip-active' => $category === ''])>
                     {{ __('site.common.all') }}
                 </a>
 
                 @foreach ($categories as $item)
                     <a href="{{ SiteRoutes::url('portfolio.index', ['category' => $item['key']]) }}"
+                       @if ($category === $item['key']) aria-current="page" @endif
                        @class(['chip', 'chip-active' => $category === $item['key']])>
                         {{ $item['name'] }}
                     </a>

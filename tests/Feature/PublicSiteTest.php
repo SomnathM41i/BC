@@ -25,33 +25,64 @@ class PublicSiteTest extends TestCase
         ];
     }
 
-    public function test_english_pages_render(): void
+    public function test_marathi_is_the_default_language(): void
     {
         foreach (['/', '/about', '/services', '/projects', '/contact', '/credits'] as $url) {
-            $this->get($url)->assertOk();
+            $this->get($url)->assertOk()->assertSee('lang="mr-IN"', false);
         }
+
+        $this->get('/')->assertSee('तुमच्या स्वप्नातील घराला देऊया सुंदर आकार!', false);
     }
 
-    public function test_marathi_pages_render_with_marathi_content(): void
+    public function test_english_pages_render_under_the_en_prefix(): void
     {
-        $this->get('/mr')
+        $this->get('/en')
             ->assertOk()
-            ->assertSee('मुख्यपृष्ठ', false);
+            ->assertSee('lang="en-IN"', false)
+            ->assertSee('A Better Shape for Your Dream Home', false);
 
-        $this->get('/mr/services')
+        $this->get('/en/services')
             ->assertOk()
-            ->assertSee(__('site.services.banner_title', [], 'mr'), false);
+            ->assertSee(__('site.services.banner_title', [], 'en'), false);
     }
 
     public function test_language_links_switch_between_english_and_marathi(): void
     {
         $this->get('/about')
             ->assertOk()
-            ->assertSee(url('/mr/about'), false);
+            ->assertSee(url('/en/about'), false)
+            ->assertSee(url('/about'), false)
+            ->assertSee('hreflang="mr-IN"', false)
+            ->assertSee('hreflang="en-IN"', false);
 
-        $this->get('/mr/about')
+        $this->get('/en/about')
             ->assertOk()
-            ->assertSee(url('/about'), false);
+            ->assertSee(url('/about'), false)
+            ->assertSee(url('/en/about'), false);
+    }
+
+    public function test_language_switch_preserves_project_context_and_filters(): void
+    {
+        $project = PortfolioProject::factory()->create([
+            'title' => 'Courtyard Home',
+            'title_mr' => 'आंगण असलेले घर',
+            'slug' => 'courtyard-home',
+            'category' => 'modern-homes',
+        ]);
+
+        $this->get('/projects?category=modern-homes')
+            ->assertOk()
+            ->assertSee(url('/en/projects?category=modern-homes'), false);
+
+        $this->get('/projects/'.$project->slug)
+            ->assertOk()
+            ->assertSee(url('/en/projects/'.$project->slug), false);
+    }
+
+    public function test_old_marathi_urls_redirect_to_the_canonical_root(): void
+    {
+        $this->get('/mr/services')->assertRedirect('/services');
+        $this->get('/mr/projects?category=modern-homes')->assertRedirect('/projects?category=modern-homes');
     }
 
     public function test_portfolio_lists_only_published_projects(): void
@@ -124,8 +155,8 @@ class PublicSiteTest extends TestCase
         Mail::fake();
         config(['site.contact.notify_email' => 'owner@example.com']);
 
-        $this->post('/contact', $this->enquiry())
-            ->assertRedirect(url('/contact').'#enquiry-form')
+        $this->post('/en/contact', $this->enquiry())
+            ->assertRedirect(url('/en/contact').'#enquiry-form')
             ->assertSessionHas('inquiry_sent');
 
         $this->assertDatabaseHas('inquiries', [
@@ -140,10 +171,10 @@ class PublicSiteTest extends TestCase
 
     public function test_contact_form_validates_input(): void
     {
-        $this->post('/contact', [])
+        $this->post('/en/contact', [])
             ->assertSessionHasErrors(['name', 'phone', 'message']);
 
-        $this->post('/contact', $this->enquiry(['phone' => '12345']))
+        $this->post('/en/contact', $this->enquiry(['phone' => '12345']))
             ->assertSessionHasErrors(['phone']);
 
         $this->assertDatabaseCount('inquiries', 0);
@@ -151,7 +182,7 @@ class PublicSiteTest extends TestCase
 
     public function test_honeypot_submissions_are_discarded(): void
     {
-        $this->post('/contact', $this->enquiry(['company_website' => 'http://spam.example']))
+        $this->post('/en/contact', $this->enquiry(['company_website' => 'http://spam.example']))
             ->assertSessionHas('inquiry_sent');
 
         $this->assertDatabaseCount('inquiries', 0);
@@ -161,8 +192,8 @@ class PublicSiteTest extends TestCase
     {
         Mail::fake();
 
-        $this->post('/mr/contact', $this->enquiry())
-            ->assertRedirect(url('/mr/contact').'#enquiry-form');
+        $this->post('/contact', $this->enquiry())
+            ->assertRedirect(url('/contact').'#enquiry-form');
 
         $this->assertSame('mr', Inquiry::query()->firstOrFail()->locale);
     }
@@ -178,8 +209,9 @@ class PublicSiteTest extends TestCase
         $xml = $response->getContent();
 
         $this->assertStringContainsString('<loc>'.url('/').'</loc>', $xml);
-        $this->assertStringContainsString('<loc>'.url('/mr').'</loc>', $xml);
+        $this->assertStringContainsString('<loc>'.url('/en').'</loc>', $xml);
         $this->assertStringContainsString(url('/projects/sitemap-home'), $xml);
+        $this->assertStringContainsString(url('/en/projects/sitemap-home'), $xml);
         $this->assertStringContainsString('hreflang="x-default"', $xml);
     }
 
@@ -196,11 +228,12 @@ class PublicSiteTest extends TestCase
     {
         $this->get('/credits')
             ->assertOk()
-            ->assertSee('Wikimedia Commons')
+            ->assertSee(__('site.credits.view_source'), false)
             ->assertSee('CC BY-SA');
 
-        $this->get('/mr/credits')
+        $this->get('/en/credits')
             ->assertOk()
-            ->assertSee(__('site.credits.title', [], 'mr'), false);
+            ->assertSee(__('site.credits.title', [], 'en'), false)
+            ->assertSee('Wikimedia Commons');
     }
 }

@@ -30,7 +30,7 @@
     }
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ app()->getLocale() === 'mr' ? 'mr-IN' : 'en-IN' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -39,9 +39,9 @@
     <meta name="description" content="{{ $pageDescription }}">
     <link rel="canonical" href="{{ $canonical }}">
 
-    <link rel="alternate" hreflang="en" href="{{ SiteRoutes::switchUrl('en') }}">
-    <link rel="alternate" hreflang="mr" href="{{ SiteRoutes::switchUrl('mr') }}">
-    <link rel="alternate" hreflang="x-default" href="{{ SiteRoutes::switchUrl('en') }}">
+    <link rel="alternate" hreflang="mr-IN" href="{{ SiteRoutes::switchUrl('mr') }}">
+    <link rel="alternate" hreflang="en-IN" href="{{ SiteRoutes::switchUrl('en') }}">
+    <link rel="alternate" hreflang="x-default" href="{{ SiteRoutes::switchUrl('mr') }}">
 
     <meta name="theme-color" content="{{ config('site.seo.theme_color') }}">
     <meta name="robots" content="@yield('robots', 'index, follow')">
@@ -64,7 +64,7 @@
 
     <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 </head>
-<body class="min-h-screen bg-sand font-site text-ink antialiased">
+<body class="site-body min-h-screen bg-sand font-site text-ink antialiased">
     <a href="#main"
        class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-brand focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white">
         {{ __('site.nav.skip') }}

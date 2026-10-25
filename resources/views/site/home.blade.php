@@ -22,7 +22,7 @@
                         {{ __('site.home.hero_eyebrow') }}
                     </span>
 
-                    <h1 class="mt-5 font-display text-[2.4rem] font-semibold leading-[1.08] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.5rem]">
+                    <h1 class="site-hero-title mt-5 font-display text-[2.4rem] font-semibold leading-[1.08] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.5rem]">
                         {{ __('site.home.hero_title') }}
                     </h1>
 

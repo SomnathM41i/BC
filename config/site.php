@@ -28,8 +28,8 @@ return [
             'mr' => 'बंदगर',
         ],
         'taglines' => [
-            'en' => 'We Construct In Your Dream Home',
-            'mr' => 'आपल्या स्वप्नातील घर आम्ही उभारतो',
+            'en' => 'We build your dream home with care.',
+            'mr' => 'तुमच्या स्वप्नातील घर आम्ही काळजीपूर्वक उभारतो.',
         ],
     ],
 

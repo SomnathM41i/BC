@@ -188,12 +188,14 @@ Every balance change runs inside `DB::transaction` with `lockForUpdate` row lock
 
 ## 9. Routes
 
-> **Current map after the restructure (Phases 1–5).** The pre-restructure route list below it is kept for history only.
+> **Current map after the restructure (Phases 1–6).** The pre-restructure route list below it is kept for history only.
 
-### Public business website (`routes/web.php`, English at the root, Marathi under `/mr`)
+### Public business website (`routes/web.php`, Marathi at the root, English under `/en`)
 - `GET /` — home
 - `GET /about`, `GET /services`, `GET /contact`, `GET /credits`
 - `GET /projects`, `GET /projects/{slug}` — public portfolio
+- `GET /en/...` — English versions of the same public pages
+- Legacy `GET /mr/...` — permanent redirects to the Marathi canonical URLs
 - `GET /sitemap.xml` — bilingual sitemap
 - `GET /statement/{contractor:statement_token}` — public contractor statement (random token, noindex)
 - `GET /contractors/{slug}` — retired guessable statement URL, answers 410 Gone

@@ -14,7 +14,7 @@
                 </span>
             @endif
 
-            <h1 class="mt-4 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.4rem]">
+            <h1 class="site-hero-title mt-4 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.4rem]">
                 {{ $title }}
             </h1>
 

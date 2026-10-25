@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Sets the language for the public website. English is the default and has
- * no URL prefix; Marathi pages live under /mr.
+ * Sets the language for the public website. Marathi is the default and has
+ * no URL prefix; English pages live under /en.
  */
 class SetSiteLocale
 {
-    public function handle(Request $request, Closure $next, string $locale = 'en'): Response
+    public function handle(Request $request, Closure $next, string $locale = 'mr'): Response
     {
-        $locale = in_array($locale, ['en', 'mr'], true) ? $locale : 'en';
+        $locale = in_array($locale, ['en', 'mr'], true) ? $locale : 'mr';
 
         App::setLocale($locale);
         Session::put('site_locale', $locale);

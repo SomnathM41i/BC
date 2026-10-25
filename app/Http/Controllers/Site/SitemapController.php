@@ -11,7 +11,7 @@ class SitemapController extends Controller
 {
     public function __invoke(): Response
     {
-        $locales = ['en', 'mr'];
+        $locales = ['mr', 'en'];
         $pages = ['home', 'about', 'services', 'portfolio.index', 'contact', 'credits'];
 
         $urls = [];
@@ -21,9 +21,9 @@ class SitemapController extends Controller
                 $urls[] = [
                     'loc' => SiteRoutes::urlForLocale($page, $locale),
                     'alternates' => [
-                        'en' => SiteRoutes::urlForLocale($page, 'en'),
-                        'mr' => SiteRoutes::urlForLocale($page, 'mr'),
-                        'x-default' => SiteRoutes::urlForLocale($page, 'en'),
+                        'mr-IN' => SiteRoutes::urlForLocale($page, 'mr'),
+                        'en-IN' => SiteRoutes::urlForLocale($page, 'en'),
+                        'x-default' => SiteRoutes::urlForLocale($page, 'mr'),
                     ],
                 ];
             }
@@ -36,9 +36,9 @@ class SitemapController extends Controller
                 $urls[] = [
                     'loc' => SiteRoutes::urlForLocale('portfolio.show', $locale, ['portfolio' => $project->slug]),
                     'alternates' => [
-                        'en' => SiteRoutes::urlForLocale('portfolio.show', 'en', ['portfolio' => $project->slug]),
-                        'mr' => SiteRoutes::urlForLocale('portfolio.show', 'mr', ['portfolio' => $project->slug]),
-                        'x-default' => SiteRoutes::urlForLocale('portfolio.show', 'en', ['portfolio' => $project->slug]),
+                        'mr-IN' => SiteRoutes::urlForLocale('portfolio.show', 'mr', ['portfolio' => $project->slug]),
+                        'en-IN' => SiteRoutes::urlForLocale('portfolio.show', 'en', ['portfolio' => $project->slug]),
+                        'x-default' => SiteRoutes::urlForLocale('portfolio.show', 'mr', ['portfolio' => $project->slug]),
                     ],
                     'lastmod' => $project->updated_at,
                 ];

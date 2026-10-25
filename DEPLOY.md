@@ -7,7 +7,8 @@ protected page at `/deploy`.
 
 ## Site layout in this release
 
-- `https://your-domain.com` — public business website (English; Marathi under `/mr`)
+- `https://your-domain.com` — public business website in Marathi by default
+- `https://your-domain.com/en` — English version of the public website
 - `https://your-domain.com/admin` — sign-in and the internal account manager
 - `https://your-domain.com/statement/{token}` — the private contractor statement the
   owner shares with one contractor. It is deliberately unguessable and excluded from
@@ -160,7 +161,7 @@ Once you are logged in and everything works:
 ## 8. Smoke test after deployment
 
 1. `https://your-domain.com` loads with styling and no PHP error.
-2. `https://your-domain.com/mr` shows the Marathi version.
+2. `https://your-domain.com` opens in Marathi; `https://your-domain.com/en` opens in English.
 3. `https://your-domain.com/sitemap.xml` returns XML, not a 404.
 4. `https://your-domain.com/admin/login` loads; sign in with the owner account.
 5. Open **Contractors**, click a contractor name — the statement page opens from a
