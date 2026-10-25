@@ -41,6 +41,12 @@ Those old paths now redirect to `/admin`, so existing bookmarks keep working.
 The zip contains the complete application **including `vendor/` and the built
 `public/build/` assets**, so you do not need Composer or Node on the server.
 
+If you deploy from Git instead, `public/build/` is committed to the repository for
+the same reason. After changing CSS, JavaScript or any Blade class that Tailwind
+would generate, run `npm run build` locally and commit the regenerated
+`public/build/` folder before deploying. Never deploy without it: pages will fail
+with *Vite manifest not found*.
+
 You have two layout options. **Option A is the most secure; Option B is the
 easiest.**
 
@@ -186,6 +192,13 @@ again) for maintenance:
 **CSS looks broken / no styling**
 - Confirm the `public/build/` folder was uploaded. If you use Option A, make
   sure it was copied into `public_html`.
+
+**"Vite manifest not found at .../public/build/manifest.json"**
+- The compiled assets are missing from the server, not a code error.
+- Upload the local `public/build/` folder (manifest plus its `assets/` files) into
+  the server's `public/build/`, keeping the same filenames. Do not rename the
+  hashed CSS/JS files — `manifest.json` points at them.
+- If you deploy from Git, pull again after the build was committed.
 
 **"The deployment token you entered is incorrect"**
 - The value must exactly match `DEPLOY_TOKEN` in `.env`. After changing `.env`,
