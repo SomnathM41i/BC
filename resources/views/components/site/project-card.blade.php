@@ -32,13 +32,15 @@
                 {{ $project->titleFor() }}
             </h3>
 
-            <p class="mt-1 text-sm text-ink/55">
-                {{ $project->locationFor() }}
-                @if ($project->locationFor() && $project->year)
-                    ·
-                @endif
-                {{ $project->year }}
-            </p>
+            @if ($project->locationFor() || $project->year)
+                <p class="mt-1 text-sm text-ink/55">
+                    {{ $project->locationFor() }}
+                    @if ($project->locationFor() && $project->year)
+                        ·
+                    @endif
+                    {{ $project->year }}
+                </p>
+            @endif
         </div>
 
         <span class="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ink/10 text-brand transition group-hover:border-brand group-hover:bg-brand group-hover:text-white">

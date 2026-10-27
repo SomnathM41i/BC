@@ -113,6 +113,7 @@ return [
         'residential',
         'modern-homes',
         'architectural-design',
+        'interior-design',
     ],
 
     'seo' => [

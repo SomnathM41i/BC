@@ -12,9 +12,9 @@
 
     <section class="site-container py-16 lg:py-20">
         <div class="flex flex-col gap-6 border-b border-ink/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
-            <p class="max-w-2xl text-sm leading-relaxed text-ink/65">{{ __('site.portfolio.intro') }}</p>
+            <p class="max-w-xl text-sm leading-relaxed text-ink/65">{{ __('site.portfolio.intro') }}</p>
 
-            <nav class="flex flex-wrap gap-2" aria-label="{{ __('site.portfolio.filter_label') }}">
+            <nav class="flex flex-wrap gap-2 lg:max-w-[26rem]" aria-label="{{ __('site.portfolio.filter_label') }}">
                 <a href="{{ SiteRoutes::url('portfolio.index') }}"
                    @if ($category === '') aria-current="page" @endif
                    @class(['chip', 'chip-active' => $category === ''])>

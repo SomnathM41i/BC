@@ -111,7 +111,7 @@ return [
 
         'projects_eyebrow' => 'Our work',
         'projects_title' => 'Explore Our Projects',
-        'projects_lead' => 'Explore illustrative examples of residential homes, modern construction and architectural design work.',
+        'projects_lead' => 'Explore selected residential homes, modern construction and architectural design work.',
 
         'why_eyebrow' => 'Why us',
         'why_title' => 'Why Choose Bandgar Construction & Developers?',
@@ -336,12 +336,13 @@ return [
     'portfolio' => [
         'banner_eyebrow' => 'Our projects',
         'banner_title' => 'Residential Homes and Design Work',
-        'banner_lead' => 'Illustrative examples of residential construction, modern homes and architectural design work.',
+        'banner_lead' => 'Selected residential construction, modern homes and interior design work.',
         'intro' => 'Browse by category to see the kind of work presented on this site. Project pages include the design approach, location where available and a gallery.',
         'categories' => [
             'residential' => 'Residential',
             'modern-homes' => 'Modern Homes',
             'architectural-design' => 'Architectural Design',
+            'interior-design' => 'Interior Design',
         ],
         'filter_label' => 'Filter projects',
         'empty_title' => 'Projects are being added',
@@ -427,7 +428,7 @@ return [
         'contact_title' => 'Contact',
         'rights' => 'All rights reserved.',
         'staff' => 'Staff sign in',
-        'sample_note' => 'Project images on this site include illustrative samples.',
+        'sample_note' => 'Project images are design visualisations.',
         'credits' => 'Image credits',
     ],
 

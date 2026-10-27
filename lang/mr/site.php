@@ -17,7 +17,7 @@ return [
         ],
         'portfolio' => [
             'title' => 'आमचे Projects',
-            'description' => 'Bandgar Construction & Developers कडून Residential Homes, Modern Construction आणि Architectural Design Work ची illustrative झलक.',
+            'description' => 'Bandgar Construction & Developers कडून Residential Homes, Modern Construction आणि Architectural Design Work ची निवडक झलक.',
         ],
         'contact' => [
             'title' => 'Contact',
@@ -111,7 +111,7 @@ return [
 
         'projects_eyebrow' => 'आमचे Projects',
         'projects_title' => 'आमचे Projects पाहा',
-        'projects_lead' => 'Residential Homes, Modern Construction आणि Architectural Design Work ची illustrative झलक येथे पाहा.',
+        'projects_lead' => 'Residential Homes, Modern Construction आणि Architectural Design Work ची निवडक झलक येथे पाहा.',
 
         'why_eyebrow' => 'आम्हालाच का?',
         'why_title' => 'Bandgar Construction & Developers का निवडावे?',
@@ -336,24 +336,25 @@ return [
     'portfolio' => [
         'banner_eyebrow' => 'आमचे Projects',
         'banner_title' => 'Residential Homes आणि Architectural Work',
-        'banner_lead' => 'Residential Construction, Modern Homes आणि Architectural Design Work ची illustrative झलक.',
+        'banner_lead' => 'Residential Construction, Modern Homes आणि Interior Design Work ची निवडक झलक.',
         'intro' => 'Work ची झलक पाहण्यासाठी Category नुसार निवडा. प्रत्येक Project च्या Page वर Design ची माहिती, उपलब्ध असल्यास Location आणि Images दिल्या आहेत.',
         'categories' => [
             'residential' => 'Residential',
             'modern-homes' => 'Modern Homes',
             'architectural-design' => 'Architectural Design',
+            'interior-design' => 'Interior Design',
         ],
         'filter_label' => 'Projects ची Category निवडा',
         'empty_title' => 'Projects ची माहिती लवकरच जोडली जाईल',
         'empty_text' => 'आमचा Portfolio तयार होत आहे. संबंधित Work विषयी जाणून घेण्यासाठी आमच्याशी Contact करा.',
         'count' => ':count Project|:count Projects',
         'detail' => [
-            'overview' => 'Project Overview',
-            'gallery' => 'Image Gallery',
+            'overview' => 'Project ची माहिती',
+            'gallery' => 'फोटो Gallery',
             'category' => 'Category',
             'location' => 'Location',
             'year' => 'Year',
-            'related' => 'More Projects',
+            'related' => 'अजून Projects',
             'sample_note' => 'ही Entry Portfolio ची रचना दाखवण्यासाठी वापरलेली Illustrative Content आहे. हा Bandgar Construction चा पूर्ण झालेला Project नाही.',
         ],
     ],
@@ -427,7 +428,7 @@ return [
         'contact_title' => 'Contact',
         'rights' => 'All rights reserved.',
         'staff' => 'Staff Login',
-        'sample_note' => 'या Site वरील काही Project Images Illustrative Samples आहेत.',
+        'sample_note' => 'Project Images ही Design Visualisations आहेत.',
         'credits' => 'Image Credits',
     ],
 

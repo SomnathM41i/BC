@@ -57,5 +57,9 @@ class DatabaseSeeder extends Seeder
             ['type' => WalletType::Owner->value, 'project_id' => null, 'contractor_id' => null],
             ['balance' => '0.00']
         );
+
+        // Public portfolio content lives in a seeder because there is no admin
+        // screen for it yet; running this keeps a fresh deploy populated.
+        $this->call(RealPortfolioSeeder::class);
     }
 }
