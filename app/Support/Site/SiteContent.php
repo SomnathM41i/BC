@@ -9,7 +9,7 @@ namespace App\Support\Site;
 final class SiteContent
 {
     /**
-     * @return array{name: string, short_name: string, tagline: string, logo: string, phones: list<array{name: string, number: string, display: string, tel: string}>, whatsapp: string, whatsapp_url: string, email: ?string, address: list<string>, address_line: string, map_embed_url: ?string, map_link: ?string, social: array<string, string>}
+     * @return array{name: string, short_name: string, tagline: string, logo: string, logo_header: string, phones: list<array{name: string, number: string, display: string, tel: string}>, whatsapp: string, whatsapp_url: string, email: ?string, address: list<string>, address_line: string, address_short: string, address_compact: string, map_embed_url: ?string, map_link: ?string, social: array<string, string>}
      */
     public static function company(): array
     {
@@ -26,6 +26,12 @@ final class SiteContent
         $address = $config['address']['lines'][$locale]
             ?? $config['address']['lines']['en'];
 
+        $addressShort = $config['address']['short'][$locale]
+            ?? implode(', ', array_slice($address, 0, 2));
+
+        $addressCompact = $config['address']['compact'][$locale]
+            ?? $addressShort;
+
         $whatsapp = (string) $config['whatsapp'];
 
         return [
@@ -33,12 +39,15 @@ final class SiteContent
             'short_name' => $config['company']['short_names'][$locale] ?? $config['company']['short_names']['en'],
             'tagline' => $config['company']['taglines'][$locale] ?? $config['company']['taglines']['en'],
             'logo' => asset($config['company']['logo']),
+            'logo_header' => asset($config['company']['logo_header'] ?? $config['company']['logo']),
             'phones' => $phones,
             'whatsapp' => $whatsapp,
             'whatsapp_url' => 'https://wa.me/'.$whatsapp.'?text='.rawurlencode(__('site.contact.whatsapp_message')),
             'email' => $config['email'],
             'address' => $address,
             'address_line' => implode(', ', $address),
+            'address_short' => $addressShort,
+            'address_compact' => $addressCompact,
             'map_embed_url' => $config['address']['map_embed_url'],
             'map_link' => $config['address']['map_link'],
             'social' => $config['social'],

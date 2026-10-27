@@ -56,7 +56,7 @@
                     @endif
 
                     <a href="{{ SiteRoutes::url('contact') }}"
-                       class="mt-6 inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-brand transition hover:text-brand-red">
+                       class="dev-label mt-6 inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-brand transition hover:text-brand-red">
                         {{ __('site.actions.enquire_now') }}
                         <x-site.icon name="arrow-right" class="h-4 w-4" />
                     </a>

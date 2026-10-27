@@ -1,5 +1,31 @@
 @import 'tailwindcss';
 
+/*
+ * Devanagari text is self-hosted on purpose. The subsetted webfonts served by
+ * Google Fonts strip the Indic conjunct features, so clusters like "ष्ट्र" in
+ * "महाराष्ट्र" lost their rakar and rendered as separate letters. These are
+ * the full variable font files, so shaping is correct in every browser.
+ */
+@font-face {
+    font-family: 'Noto Sans Devanagari';
+    src: url('/fonts/noto-sans-devanagari-var.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8-20B9, U+20F0, U+25CC, U+A830-A839,
+        U+A8E0-A8FF, U+11B00-11B0A;
+}
+
+@font-face {
+    font-family: 'Noto Serif Devanagari';
+    src: url('/fonts/noto-serif-devanagari-var.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8-20B9, U+20F0, U+25CC, U+A830-A839,
+        U+A8E0-A8FF, U+11B00-11B0A;
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -13,6 +39,9 @@
     --font-site: 'Manrope', 'Noto Sans Devanagari', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Fraunces', 'Noto Serif Devanagari', ui-serif, Georgia, serif;
 
+    /* Header navigation appears only when the bilingual links fit on one line */
+    --breakpoint-nav: 1240px;
+
     /* Brand palette */
     --color-brand: #64151f;
     --color-brand-dark: #3d0b13;
@@ -20,6 +49,16 @@
     --color-gold: #f2c75c;
     --color-sand: #f7f7f5;
     --color-ink: #242424;
+}
+
+/* Horizontal touch strips: keep the swipe, hide the bar. */
+@utility no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 @layer base {
@@ -34,12 +73,6 @@
 
     html[lang='mr-IN'] .font-display {
         font-family: 'Noto Serif Devanagari', 'Fraunces', ui-serif, Georgia, serif;
-    }
-
-    html[lang='mr-IN'] .eyebrow,
-    html[lang='mr-IN'] .nav-link {
-        letter-spacing: 0.02em;
-        text-transform: none;
     }
 
     html[lang='mr-IN'] .site-hero-title {
@@ -71,14 +104,21 @@
     }
 
     .hero-advertisement-frame {
-        height: min(33.797vw, calc(100vh - 5rem));
-        height: min(33.797vw, calc(100dvh - 5rem));
+        height: min(33.797vw, calc(100vh - 6.6875rem));
+        height: min(33.797vw, calc(100dvh - 6.6875rem));
+    }
+
+    @media (min-width: 640px) {
+        .hero-advertisement-frame {
+            height: min(33.797vw, calc(100vh - 6.9375rem));
+            height: min(33.797vw, calc(100dvh - 6.9375rem));
+        }
     }
 
     @media (min-width: 1024px) {
         .hero-advertisement-frame {
-            height: min(33.797vw, calc(100vh - 7rem));
-            height: min(33.797vw, calc(100dvh - 7rem));
+            height: min(33.797vw, calc(100vh - 7.4375rem));
+            height: min(33.797vw, calc(100dvh - 7.4375rem));
         }
     }
 
@@ -127,7 +167,7 @@
     }
 
     .nav-link {
-        @apply relative text-sm font-medium text-ink/75 transition hover:text-brand;
+        @apply relative whitespace-nowrap text-sm font-bold text-ink/80 transition hover:text-brand;
     }
 
     .nav-link-active {
@@ -175,6 +215,18 @@
             linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
         background-size: 64px 64px;
     }
+}
+
+/*
+ * Marathi labels must not be letterspaced: wide tracking pulls the Devanagari
+ * shirorekha apart and the word looks broken. These rules are deliberately
+ * unlayered so they win over Tailwind's utilities and components layers.
+ */
+html[lang='mr-IN'] .eyebrow,
+html[lang='mr-IN'] .nav-link,
+html[lang='mr-IN'] .dev-label {
+    letter-spacing: 0.02em;
+    text-transform: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -21,13 +21,13 @@
 
     {{-- Trust strip --}}
     <section class="border-y border-gold/30 bg-gold/10">
-        <div class="site-container grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="site-container no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto py-5 sm:grid sm:snap-none sm:gap-4 sm:overflow-visible sm:py-6 sm:grid-cols-2 lg:grid-cols-4">
             @foreach (__('site.home.trust') as $item)
-                <div class="flex items-center gap-3">
-                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sand text-brand">
+                <div class="flex shrink-0 snap-start items-center gap-3 rounded-xl border border-gold/40 bg-white/80 px-4 py-3 shadow-sm sm:shrink sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand sm:bg-sand">
                         <x-site.icon :name="$item['icon']" class="h-5 w-5" />
                     </span>
-                    <p class="text-sm font-semibold text-ink/75">{{ $item['label'] }}</p>
+                    <p class="whitespace-nowrap text-sm font-semibold text-ink/75 sm:whitespace-normal">{{ $item['label'] }}</p>
                 </div>
             @endforeach
         </div>
@@ -41,7 +41,7 @@
                     <div class="absolute -left-4 -top-4 h-24 w-24 rounded-tl-2xl border-l-2 border-t-2 border-gold" aria-hidden="true"></div>
                     <div class="overflow-hidden rounded-2xl">
                         <img src="{{ asset('images/site/photos/about.jpg') }}" alt="{{ __('site.home.about_image_alt') }}"
-                             class="aspect-[4/3] w-full object-cover" loading="lazy">
+                             class="aspect-[9/16] w-full object-cover" loading="lazy">
                     </div>
                     <div class="absolute -bottom-5 right-5 rounded-xl bg-brand px-5 py-4 text-white shadow-lg sm:right-8">
                         <p class="font-display text-lg font-semibold">{{ $site['short_name'] }}</p>

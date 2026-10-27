@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function initMobileMenu() {
     const toggle = document.querySelector('[data-site-menu-toggle]');
     const panel = document.querySelector('[data-site-menu]');
+    const backdrop = document.querySelector('[data-site-menu-backdrop]');
+    const closeButton = panel?.querySelector('[data-site-menu-close]');
 
     if (!toggle || !panel) {
         return;
@@ -22,46 +24,53 @@ function initMobileMenu() {
     const openIcon = toggle.querySelector('[data-site-menu-icon="open"]');
     const menuLabel = toggle.getAttribute('aria-label') || 'Open main menu';
     const closeLabel = toggle.dataset.closeLabel || 'Close';
+    const desktop = window.matchMedia('(min-width: 1240px)');
+    let isOpen = false;
 
-    const open = () => {
-        panel.classList.remove('hidden');
-        toggle.setAttribute('aria-expanded', 'true');
-        toggle.setAttribute('aria-label', closeLabel);
-        panel.setAttribute('aria-hidden', 'false');
-        closedIcon?.classList.add('hidden');
-        openIcon?.classList.remove('hidden');
-        document.documentElement.classList.add('overflow-hidden', 'lg:overflow-auto');
-    };
+    const setState = (next) => {
+        isOpen = next;
 
-    const close = () => {
-        panel.classList.add('hidden');
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.setAttribute('aria-label', menuLabel);
-        panel.setAttribute('aria-hidden', 'true');
-        closedIcon?.classList.remove('hidden');
-        openIcon?.classList.add('hidden');
-        document.documentElement.classList.remove('overflow-hidden', 'lg:overflow-auto');
-    };
+        panel.classList.toggle('-translate-x-full', !isOpen);
+        panel.classList.toggle('translate-x-0', isOpen);
+        panel.setAttribute('aria-hidden', String(!isOpen));
+        panel.inert = !isOpen;
 
-    toggle.addEventListener('click', () => {
-        if (panel.classList.contains('hidden')) {
-            open();
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        toggle.setAttribute('aria-label', isOpen ? closeLabel : menuLabel);
+        toggle.classList.toggle('invisible', isOpen);
+        closedIcon?.classList.toggle('hidden', isOpen);
+        openIcon?.classList.toggle('hidden', !isOpen);
+
+        if (backdrop) {
+            backdrop.classList.toggle('opacity-0', !isOpen);
+            backdrop.classList.toggle('opacity-100', isOpen);
+            backdrop.classList.toggle('pointer-events-none', !isOpen);
+        }
+
+        document.documentElement.classList.toggle('overflow-hidden', isOpen);
+
+        if (isOpen) {
+            closeButton?.focus({ preventScroll: true });
         } else {
-            close();
+            toggle.focus({ preventScroll: true });
         }
-    });
+    };
 
-    panel.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+    toggle.addEventListener('click', () => setState(!isOpen));
+    closeButton?.addEventListener('click', () => setState(false));
+    backdrop?.addEventListener('click', () => setState(false));
 
-    document.addEventListener('click', (event) => {
-        if (!panel.classList.contains('hidden') && !panel.contains(event.target) && !toggle.contains(event.target)) {
-            close();
-        }
-    });
+    panel.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setState(false)));
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            close();
+        if (event.key === 'Escape' && isOpen) {
+            setState(false);
+        }
+    });
+
+    desktop.addEventListener('change', (event) => {
+        if (event.matches && isOpen) {
+            setState(false);
         }
     });
 }

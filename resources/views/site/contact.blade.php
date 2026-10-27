@@ -24,7 +24,7 @@
                                 <x-site.icon name="phone" class="h-5 w-5" />
                             </span>
                             <span class="min-w-0">
-                                <span class="block text-xs font-semibold uppercase tracking-wider text-ink/45">{{ $phone['name'] }}</span>
+                                <span class="dev-label block text-xs font-semibold uppercase tracking-wider text-ink/45">{{ $phone['name'] }}</span>
                                 <span class="block text-base font-semibold text-brand-dark">{{ $phone['display'] }}</span>
                             </span>
                         </a>

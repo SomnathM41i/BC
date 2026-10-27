@@ -57,7 +57,13 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@500;600&display=swap" rel="stylesheet">
+    {{-- Devanagari families are self-hosted in app.css so the conjunct features survive. --}}
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    @if (app()->getLocale() === 'mr')
+        <link rel="preload" href="{{ asset('fonts/noto-sans-devanagari-var.ttf') }}" as="font" type="font/ttf" crossorigin>
+        <link rel="preload" href="{{ asset('fonts/noto-serif-devanagari-var.ttf') }}" as="font" type="font/ttf" crossorigin>
+    @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')

@@ -14,7 +14,7 @@ class SiteSurfaceTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Bandgar', false)
-            ->assertSee('brand-logo.png', false)
+            ->assertSee('brand-logo-header.png', false)
             ->assertSee('hero-advertisement.png', false);
 
         $this->get('/en')

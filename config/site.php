@@ -21,6 +21,8 @@ return [
 
     'company' => [
         'logo' => 'images/site/brand-logo.png',
+        // Trimmed, transparent lockup without the tagline, sized for the header.
+        'logo_header' => 'images/site/brand-logo-header.png',
         'names' => [
             'en' => 'Bandgar Construction & Developers',
             'mr' => 'Bandgar Construction & Developers',
@@ -40,9 +42,7 @@ return [
     | "name_mr" is the Marathi transliteration used on the Marathi site.
     */
     'phones' => [
-        ['name' => 'Er. Bharat Bandgar', 'name_mr' => 'अर्ज. भरत बंदगर', 'number' => '9021113887'],
-        ['name' => 'Shri. Manorao Bandgar', 'name_mr' => 'श्री. मनोराव बंदगर', 'number' => '9420450672'],
-        ['name' => 'Shri. Vishal Bandgar', 'name_mr' => 'श्री. विशाल बंदगर', 'number' => '7387291539'],
+        ['name' => 'Er. Bharat Bandgar', 'name_mr' => 'इंजि. भरत बंडगर', 'number' => '9021113887'],
     ],
 
     // WhatsApp number in international format without "+" (used for wa.me links).
@@ -52,6 +52,16 @@ return [
     'email' => env('SITE_EMAIL'),
 
     'address' => [
+        // One-line address for the compact bar at the top of the site.
+        'short' => [
+            'en' => 'Kargani, Shetfale Road, Taluka Atpadi, Sangli',
+            'mr' => 'करगणी, शेटफळे रोड, ता. आटपाडी, जि. सांगली',
+        ],
+        // Shorter still, for phone-width screens.
+        'compact' => [
+            'en' => 'Kargani, Atpadi',
+            'mr' => 'करगणी, आटपाडी',
+        ],
         'lines' => [
             'en' => [
                 'Kargani, Shetfale Road',
@@ -61,7 +71,6 @@ return [
             ],
             'mr' => [
                 'करगणी, शेटफळे रोड',
-                'गाव नंबर २',
                 'ता. आटपाडी, जि. सांगली',
                 'महाराष्ट्र, भारत',
             ],

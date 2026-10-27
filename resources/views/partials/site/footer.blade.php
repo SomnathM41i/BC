@@ -1,20 +1,16 @@
 @use('App\Support\Site\SiteRoutes')
 
-<footer class="relative mt-20 overflow-hidden bg-brand-dark text-white">
+<footer class="relative mt-20 overflow-hidden bg-black text-white">
     <div class="absolute inset-0 bg-grid opacity-30" aria-hidden="true"></div>
 
     <div class="site-container relative grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div class="lg:pr-6">
-            <div class="flex items-center gap-3">
-                <img src="{{ $site['logo'] }}" alt="{{ $site['name'] }} logo"
-                     class="h-14 w-14 shrink-0 rounded-lg bg-white object-contain p-0.5">
-                <div class="leading-tight">
-                    <p class="font-display text-lg font-semibold">{{ $site['short_name'] }}</p>
-                    <p class="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-white/45">
-                        {{ __('site.nav.brand_sub') }}
-                    </p>
-                </div>
-            </div>
+            <a href="{{ SiteRoutes::url('home') }}"
+               class="inline-flex rounded-xl bg-white px-3 py-2 shadow-sm transition hover:shadow-md">
+                <img src="{{ $site['logo_header'] }}" alt="{{ $site['name'] }} — Construction &amp; Developers"
+                     width="800" height="193" loading="lazy" decoding="async"
+                     class="h-9 w-auto object-contain sm:h-10">
+            </a>
 
             <p class="mt-5 max-w-xs text-sm leading-relaxed text-white/60">
                 {{ __('site.footer.about') }}

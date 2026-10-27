@@ -421,7 +421,7 @@ return [
     ],
 
     'footer' => [
-        'about' => 'Kargani, Shetfale Road, Gav Number 2, Taluka Atpadi, Sangli District, Maharashtra, India येथील Residential Construction, Architectural Design आणि Interior Design Services.',
+        'about' => 'करगणी, शेटफळे रोड, ता. आटपाडी, जि. सांगली येथे Residential Construction, Architectural Design आणि Interior Design Services.',
         'quick_links' => 'Quick Links',
         'services_title' => 'Services',
         'contact_title' => 'Contact',
