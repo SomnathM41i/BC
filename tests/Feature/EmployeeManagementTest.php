@@ -125,6 +125,55 @@ class EmployeeManagementTest extends TestCase
             ->assertViewHas('absentToday', 1);
     }
 
+    public function test_pay_salary_page_shows_current_week_when_the_completed_week_has_no_attendance(): void
+    {
+        Carbon::setTestNow('2026-10-28 10:00:00');
+
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        foreach (['2026-10-23', '2026-10-24', '2026-10-25', '2026-10-26', '2026-10-27', '2026-10-28'] as $date) {
+            EmployeeAttendance::create([
+                'employee_id' => $employee->id,
+                'attendance_date' => $date,
+                'status' => 'present',
+                'payable_days' => '1.0',
+            ]);
+        }
+
+        // Reference 28 Oct: the completed Thursday week is 16-22 Oct (empty),
+        // while the week in progress is 23-29 Oct (six marked days).
+        $this->actingAs($owner)
+            ->get("/admin/pay-salary?employee_id={$employee->id}&reference_date=2026-10-28")
+            ->assertOk()
+            ->assertSee('No attendance is marked for this salary week')
+            ->assertDontSee('Record Payment')
+            ->assertSee('23-10-2026')
+            ->assertSee('29-10-2026')
+            ->assertSee('₹3,600.00');
+    }
+
+    public function test_salary_without_attendance_cannot_be_recorded(): void
+    {
+        Carbon::setTestNow('2026-10-28 10:00:00');
+
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        $this->actingAs($owner)
+            ->post('/admin/pay-salary', [
+                'employee_id' => $employee->id,
+                'period_start' => '2026-10-16',
+                'period_end' => '2026-10-22',
+                'advance_repayment' => '0',
+                'amount_paid' => '0',
+                'payment_date' => '2026-10-28',
+            ])
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, EmployeeSalaryPayment::query()->count());
+    }
+
     public function test_weekly_attendance_is_saved_and_editable_without_duplicates(): void
     {
         $owner = $this->owner();

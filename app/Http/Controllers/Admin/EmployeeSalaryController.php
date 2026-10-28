@@ -25,12 +25,24 @@ class EmployeeSalaryController extends Controller
         $employee = null;
         $period = null;
         $summary = null;
+        $currentPeriod = null;
+        $currentSummary = null;
+        $currentWeekEnded = true;
 
         if ($selectedEmployeeId) {
             $employee = Employee::find($selectedEmployeeId);
             if ($employee) {
                 $period = $employee->getWeeklyPeriod($referenceDate);
                 $summary = $this->calculateSummary($employee, $period['start_date'], $period['end_date']);
+
+                // The attendance chart edits the week containing today. Show that
+                // week too, so days marked there are visible even though only the
+                // last completed week can actually be paid.
+                $currentPeriod = $employee->getWeekContaining($referenceDate);
+                if ($currentPeriod['start_date'] !== $period['start_date']) {
+                    $currentSummary = $this->calculateSummary($employee, $currentPeriod['start_date'], $currentPeriod['end_date']);
+                    $currentWeekEnded = Carbon::parse($currentPeriod['end_date'])->lte(now()->endOfDay());
+                }
             }
         }
 
@@ -41,6 +53,9 @@ class EmployeeSalaryController extends Controller
             'employee' => $employee,
             'period' => $period,
             'summary' => $summary,
+            'currentPeriod' => $currentPeriod,
+            'currentSummary' => $currentSummary,
+            'currentWeekEnded' => $currentWeekEnded,
         ]);
     }
 
@@ -135,6 +150,12 @@ class EmployeeSalaryController extends Controller
                 }
 
                 $summary = $this->calculateSummary($employee, $periodStart, $periodEnd);
+
+                // A week with no attendance has nothing to pay. Blocking it here
+                // stops a ₹0 payment from locking the period as already paid.
+                if (Money::isZero($summary['gross_salary'])) {
+                    throw new \RuntimeException('No attendance is marked for '.Carbon::parse($periodStart)->format('d-m-Y').' to '.Carbon::parse($periodEnd)->format('d-m-Y').'. Mark attendance before recording salary.');
+                }
 
                 $gross = $summary['gross_salary'];
                 $outstandingBefore = $employee->outstandingAdvance();

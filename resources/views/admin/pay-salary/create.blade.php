@@ -6,7 +6,7 @@
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-semibold text-slate-900">Pay Salary</h1>
-            <p class="text-sm text-slate-500">Weekly salary for the last completed week ending on the employee's payment day.</p>
+            <p class="text-sm text-slate-500">Weekly salary for the last completed week ending on the employee's payment day. Attendance must be marked before payment.</p>
         </div>
         @if($employee)
             <a href="{{ route('admin.attendance.weekly', ['employee_id' => $employee->id, 'reference_date' => $referenceDate]) }}" class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Open Attendance Chart</a>
@@ -52,9 +52,31 @@
             </div>
         </div>
 
+        @if($currentSummary && ! $currentSummary['already_paid'] && ! $currentWeekEnded && ! \App\Support\Money::isZero($currentSummary['gross_salary']))
+            <div class="mb-6 rounded-xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-900">
+                <p class="font-medium">
+                    Current week ({{ \Carbon\Carbon::parse($currentSummary['period_start'])->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($currentSummary['period_end'])->format('d-m-Y') }}):
+                    {{ $currentSummary['total_payable_days'] }} payable days, @inr($currentSummary['gross_salary']) gross so far.
+                </p>
+                <p class="mt-1">
+                    This week is still in progress. It ends on {{ \Carbon\Carbon::parse($currentSummary['period_end'])->format('d-m-Y') }} and becomes payable after that date.
+                    <a href="{{ route('admin.attendance.weekly', ['employee_id' => $employee->id, 'reference_date' => $referenceDate]) }}" class="font-medium underline">Open current week chart</a>
+                </p>
+            </div>
+        @endif
+
         @if($summary['already_paid'])
             <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
                 This salary period has already been paid. You cannot pay the same period again.
+            </div>
+        @elseif(\App\Support\Money::isZero($summary['gross_salary']))
+            <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+                <p class="font-medium">No attendance is marked for this salary week.</p>
+                <p class="mt-1">
+                    {{ \Carbon\Carbon::parse($summary['period_start'])->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($summary['period_end'])->format('d-m-Y') }}
+                    has 0 payable days, so there is nothing to pay. Mark attendance for this week first; a ₹0 payment is not recorded.
+                </p>
+                <a href="{{ route('admin.attendance.weekly', ['employee_id' => $employee->id, 'reference_date' => $summary['period_end']]) }}" class="mt-2 inline-block font-medium underline">Mark attendance for this week</a>
             </div>
         @else
             <div class="max-w-2xl rounded-xl bg-white shadow-sm">
