@@ -6,6 +6,7 @@ use App\Http\Controllers\Site\ContractorStatementController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\LegacyMarathiRedirectController;
 use App\Http\Controllers\Site\PageController;
+use App\Http\Controllers\Site\PaymentTrackingController;
 use App\Http\Controllers\Site\PortfolioController;
 use App\Http\Controllers\Site\SitemapController;
 use App\Http\Middleware\SetSiteLocale;
@@ -60,6 +61,35 @@ $siteRoutes = function () {
     Route::post('contact', [ContactController::class, 'store'])
         ->middleware('throttle:'.config('site.contact.throttle'))
         ->name('contact.store');
+
+    /*
+     * Public payment tracking.
+     *
+     * The URL never carries an identity. A visitor picks what they are and
+     * confirms the mobile number registered against their record; only the
+     * match is kept, in the session, and it expires. Every page here is
+     * noindex/no-store.
+     */
+    Route::prefix('payment-tracking')
+        ->name('payment-tracking.')
+        ->middleware('payment.headers')
+        ->group(function () {
+            Route::get('/', [PaymentTrackingController::class, 'index'])->name('index');
+            Route::post('category', [PaymentTrackingController::class, 'selectCategory'])->name('category');
+            Route::get('verify', [PaymentTrackingController::class, 'showVerify'])->name('verify');
+            Route::post('lookup', [PaymentTrackingController::class, 'lookup'])
+                ->middleware('throttle:payment-lookup')
+                ->name('lookup');
+            Route::post('verify', [PaymentTrackingController::class, 'verify'])
+                ->middleware('throttle:payment-lookup')
+                ->name('verify.store');
+
+            Route::middleware('payment.verified')->group(function () {
+                Route::get('dashboard', [PaymentTrackingController::class, 'dashboard'])->name('dashboard');
+                Route::post('project', [PaymentTrackingController::class, 'switchProject'])->name('project');
+                Route::post('logout', [PaymentTrackingController::class, 'logout'])->name('logout');
+            });
+        });
 };
 
 Route::middleware(SetSiteLocale::class.':mr')->group($siteRoutes);

@@ -21,6 +21,9 @@
             <h1 class="mt-1 text-2xl font-semibold text-slate-900">{{ $project->name }}</h1>
             <p class="text-sm text-slate-500">
                 {{ $project->location ?: 'No location' }} · Contractor: {{ $project->contractor?->name ?? 'Unassigned' }}
+                @if ($project->client_name)
+                    · Client: {{ $project->client_name }}
+                @endif
             </p>
         </div>
         <div class="flex items-center gap-3">
@@ -98,6 +101,48 @@
             </p>
         </div>
     @endif
+
+    <div class="mb-6 rounded-xl bg-white p-5 shadow-sm">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <h2 class="font-semibold text-slate-900">Client Contact</h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    The client uses this mobile number on the public Track Your Payments portal to see this project's receipts.
+                </p>
+            </div>
+            @if ($project->client_mobile_normalized)
+                <span class="w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">Portal linked</span>
+            @else
+                <span class="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">Not linked</span>
+            @endif
+        </div>
+
+        <form method="POST" action="{{ route('admin.projects.client.update', $project) }}" class="mt-4 grid gap-3 sm:grid-cols-2">
+            @csrf
+            <div>
+                <label for="client_name" class="mb-1 block text-sm font-medium text-slate-700">Client Full Name</label>
+                <input id="client_name" name="client_name" type="text" value="{{ old('client_name', $project->client_name) }}" required
+                       class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                @error('client_name')
+                    <p class="mt-1 text-xs text-red-700">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="client_mobile" class="mb-1 block text-sm font-medium text-slate-700">Client Mobile Number</label>
+                <input id="client_mobile" name="client_mobile" type="tel" value="{{ old('client_mobile', $project->client_mobile) }}" required
+                       inputmode="tel" placeholder="9876543210"
+                       class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                @error('client_mobile')
+                    <p class="mt-1 text-xs text-red-700">{{ $message }}</p>
+                @enderror
+            </div>
+            <div class="sm:col-span-2">
+                <button class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+                    Save Client Contact
+                </button>
+            </div>
+        </form>
+    </div>
 
     @if ($isOwner && $project->isActive())
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Rules\IndianMobile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,6 +21,8 @@ class StoreProjectRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
+            'client_name' => ['required', 'string', 'max:255'],
+            'client_mobile' => ['required', 'string', 'max:20', new IndianMobile],
             'agreed_amount' => ['required', 'numeric', 'gte:0', 'decimal:0,2'],
             'contractor_id' => [
                 'nullable',

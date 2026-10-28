@@ -44,6 +44,8 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
 
     Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::post('projects/{project}/client', [ProjectController::class, 'updateClient'])
+        ->whereNumber('project')->name('projects.client.update');
 
     Route::post('projects/{project}/receipts', [ProjectFinanceController::class, 'storeReceipt'])
         ->whereNumber('project')->name('projects.receipts.store');

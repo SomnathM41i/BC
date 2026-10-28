@@ -21,6 +21,35 @@
                 <input id="location" name="location" type="text" value="{{ old('location') }}"
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none">
             </div>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <h2 class="text-sm font-semibold text-slate-900">Client Details</h2>
+                <p class="mt-1 text-xs text-slate-500">
+                    These are used by the public Track Your Payments portal. Enter the mobile number the client will use to look up their project.
+                </p>
+
+                <div class="mt-3 space-y-3">
+                    <div>
+                        <label for="client_name" class="mb-1 block text-sm font-medium text-slate-700">Client Full Name</label>
+                        <input id="client_name" name="client_name" type="text" value="{{ old('client_name') }}" required
+                               class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none">
+                        @error('client_name')
+                            <p class="mt-1 text-xs text-red-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="client_mobile" class="mb-1 block text-sm font-medium text-slate-700">Client Mobile Number</label>
+                        <input id="client_mobile" name="client_mobile" type="tel" value="{{ old('client_mobile') }}" required
+                               inputmode="tel" placeholder="9876543210"
+                               class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none">
+                        @error('client_mobile')
+                            <p class="mt-1 text-xs text-red-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <label for="agreed_amount" class="mb-1 block text-sm font-medium text-slate-700">Contract Value (₹)</label>
                 <input id="agreed_amount" name="agreed_amount" type="number" step="0.01" min="0"

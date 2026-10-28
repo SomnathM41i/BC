@@ -149,4 +149,12 @@ return [
         'throttle' => '5,1',
     ],
 
+    'payment_tracking' => [
+        // How long a verified public session may view its own records.
+        'session_minutes' => 30,
+        // Lookup limits: per IP + mobile number, and per IP overall.
+        'lookup_per_minute' => 5,
+        'lookup_per_hour' => 20,
+    ],
+
 ];

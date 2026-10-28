@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Enums\ProjectStatus;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreProjectRequest;
 use App\Http\Requests\Admin\TransferToContractorRequest;
+use App\Http\Requests\Admin\UpdateProjectClientRequest;
 use App\Models\Contractor;
 use App\Models\ExpenseCategory;
 use App\Models\Project;
 use App\Services\WalletService;
+use App\Support\PhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -50,6 +52,9 @@ class ProjectController extends Controller
         $project = Project::create([
             'name' => $request->validated('name'),
             'location' => $request->validated('location'),
+            'client_name' => $request->validated('client_name'),
+            'client_mobile' => trim((string) $request->validated('client_mobile')),
+            'client_mobile_normalized' => PhoneNumber::normalize($request->validated('client_mobile')),
             'agreed_amount' => $request->validated('agreed_amount'),
             'contractor_id' => $request->validated('contractor_id'),
             'status' => ProjectStatus::Active,
@@ -83,6 +88,19 @@ class ProjectController extends Controller
             'contractors' => Contractor::query()->active()->orderBy('name')->get(),
             'newContractorSentinel' => TransferToContractorRequest::NEW_CONTRACTOR,
         ]);
+    }
+
+    public function updateClient(UpdateProjectClientRequest $request, Project $project): RedirectResponse
+    {
+        $this->authorize('update', $project);
+
+        $project->update([
+            'client_name' => $request->validated('client_name'),
+            'client_mobile' => trim((string) $request->validated('client_mobile')),
+            'client_mobile_normalized' => PhoneNumber::normalize($request->validated('client_mobile')),
+        ]);
+
+        return back()->with('status', 'Client contact updated. The payment tracking portal can now find this project.');
     }
 
     public function requestClosure(Project $project): RedirectResponse

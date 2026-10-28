@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Contractor;
 use App\Models\Project;
+use App\Models\Wallet;
 use App\Services\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -33,6 +34,8 @@ class HttpWorkflowTest extends TestCase
         $this->post('/admin/projects', [
             'name' => 'Project A',
             'location' => 'Pune',
+            'client_name' => 'Somnath Mali',
+            'client_mobile' => '9021113887',
             'agreed_amount' => '1000000',
             'contractor_id' => $contractor->id,
         ])->assertRedirect();
@@ -119,7 +122,7 @@ class HttpWorkflowTest extends TestCase
             ->assertSee('Plumbing');
 
         $this->assertNotNull(
-            \App\Models\Wallet::query()->where('contractor_id', $contractor->id)->first()
+            Wallet::query()->where('contractor_id', $contractor->id)->first()
         );
     }
 }

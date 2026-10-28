@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\PhoneNumber;
 use App\Support\Site\SiteContent;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -32,6 +33,18 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by(
                 Str::lower((string) $request->input('email')).'|'.$request->ip()
             );
+        });
+
+        // Public payment lookup: limit both the IP + number pair and the IP
+        // overall, so guessing a number or spraying many numbers is expensive.
+        RateLimiter::for('payment-lookup', function (Request $request) {
+            $phone = PhoneNumber::normalize((string) $request->input('mobile'));
+            $numberKey = $request->ip().'|'.($phone === null ? 'invalid' : PhoneNumber::hash($phone));
+
+            return [
+                Limit::perMinute((int) config('site.payment_tracking.lookup_per_minute', 5))->by($numberKey),
+                Limit::perHour((int) config('site.payment_tracking.lookup_per_hour', 20))->by($request->ip()),
+            ];
         });
 
         Blade::directive('inr', function (string $expression) {

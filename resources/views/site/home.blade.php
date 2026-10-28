@@ -80,6 +80,72 @@
         </div>
     </section>
 
+    {{-- Quick payment tracking --}}
+    <section id="track-payments" class="border-b border-ink/10 bg-sand">
+        <div class="site-container py-10 sm:py-12">
+            <div class="mx-auto max-w-4xl rounded-2xl border border-ink/10 bg-white p-6 shadow-sm sm:p-8">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <span class="eyebrow">{{ __('site.payment_tracking.quick_eyebrow') }}</span>
+                        <h2 class="mt-2 font-display text-2xl font-semibold text-brand-dark">
+                            {{ __('site.payment_tracking.quick_title') }}
+                        </h2>
+                        <p class="mt-1 text-sm text-ink/60">{{ __('site.payment_tracking.quick_lead') }}</p>
+                    </div>
+                    <p class="flex items-center gap-1.5 text-xs text-ink/45">
+                        <x-site.icon name="shield" class="h-3.5 w-3.5 text-brand" />
+                        {{ __('site.payment_tracking.quick_privacy') }}
+                    </p>
+                </div>
+
+                @if (session('tracking_error'))
+                    <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
+                        {{ session('tracking_error') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ SiteRoutes::url('payment-tracking.lookup') }}" class="mt-5">
+                    @csrf
+
+                    <fieldset>
+                        <legend class="site-label">{{ __('site.payment_tracking.quick_role_label') }}</legend>
+                        <div class="flex flex-wrap gap-2.5">
+                            @foreach (['client', 'contractor', 'employee'] as $role)
+                                <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-ink/15 bg-white px-4 py-2.5 text-sm font-medium text-ink/75 transition hover:border-brand/40 has-[:checked]:border-brand has-[:checked]:bg-brand/5 has-[:checked]:text-brand">
+                                    <input type="radio" name="category" value="{{ $role }}"
+                                           class="h-4 w-4 accent-brand"
+                                           @checked(old('category', 'client') === $role)>
+                                    <span>{{ __('site.payment_tracking.roles.'.$role.'.title') }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('category')
+                            <p class="mt-2 text-xs text-red-700">{{ $message }}</p>
+                        @enderror
+                    </fieldset>
+
+                    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <div class="flex-1">
+                            <label for="tracking_mobile" class="site-label">{{ __('site.payment_tracking.verify.label') }}</label>
+                            <input id="tracking_mobile" name="mobile" type="tel" inputmode="numeric" autocomplete="tel"
+                                   value="{{ old('mobile') }}" placeholder="{{ __('site.payment_tracking.verify.placeholder') }}"
+                                   maxlength="20" required
+                                   aria-invalid="{{ $errors->has('mobile') ? 'true' : 'false' }}"
+                                   @class(['site-input', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('mobile')])>
+                            @error('mobile')
+                                <p class="mt-1 text-xs text-red-700">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <span>{{ __('site.payment_tracking.quick_submit') }}</span>
+                            <x-site.icon name="arrow-right" class="h-4 w-4" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
     {{-- About --}}
     <section class="bg-white py-20 lg:py-24">
         <div class="site-container">
