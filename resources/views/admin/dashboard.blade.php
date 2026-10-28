@@ -45,6 +45,36 @@
         </div>
     </div>
 
+    <div class="mb-6">
+        <h2 class="mb-3 text-lg font-semibold text-slate-900">Employees</h2>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+            <div class="rounded-xl bg-white p-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Total Active Employees</p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ $totalActiveEmployees ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl bg-white p-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Present Today</p>
+                <p class="mt-1 text-2xl font-semibold text-emerald-700">{{ $presentToday ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl bg-white p-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Absent Today</p>
+                <p class="mt-1 text-2xl font-semibold text-red-700">{{ $absentToday ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl bg-white p-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Outstanding Employee Advances</p>
+                <p class="mt-1 text-xl font-semibold text-slate-900">@inr($outstandingAdvances ?? '0.00')</p>
+            </div>
+            <div class="rounded-xl bg-white p-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Salary Paid This Week</p>
+                <p class="mt-1 text-xl font-semibold text-slate-900">@inr($salaryPaidThisWeek ?? '0.00')</p>
+            </div>
+            <div class="rounded-xl bg-white p-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Pending Salary Payments</p>
+                <p class="mt-1 text-2xl font-semibold text-amber-700">{{ $pendingSalaryPayments ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+
     <div class="mb-6 overflow-hidden rounded-xl bg-white shadow-sm">
         <div class="border-b border-slate-100 px-5 py-4">
             <h2 class="font-semibold text-slate-900">Projects Overview</h2>

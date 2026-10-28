@@ -27,3 +27,23 @@
     <x-icon name="users" />
     Contractors
 </a>
+<a href="{{ route('admin.employees.index') }}"
+   class="flex items-center gap-2 rounded-md px-3 py-2 {{ request()->routeIs('admin.employees.*') ? $active : $base }}">
+    <x-icon name="users" />
+    Employees
+</a>
+<a href="{{ route('admin.attendance.index') }}"
+   class="flex items-center gap-2 rounded-md px-3 py-2 {{ request()->routeIs('admin.attendance.*') ? $active : $base }}">
+    <x-icon name="transactions" />
+    Attendance
+</a>
+<a href="{{ route('admin.advances.index') }}"
+   class="flex items-center gap-2 rounded-md px-3 py-2 {{ request()->routeIs('admin.advances.*') ? $active : $base }}">
+    <x-icon name="wallet" />
+    Advances
+</a>
+<a href="{{ route('admin.pay-salary.create') }}"
+   class="flex items-center gap-2 rounded-md px-3 py-2 {{ request()->routeIs('admin.pay-salary.*') ? $active : $base }}">
+    <x-icon name="wallet" />
+    Pay Salary
+</a>

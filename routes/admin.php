@@ -3,6 +3,10 @@
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContractorController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmployeeAdvanceController;
+use App\Http\Controllers\Admin\EmployeeAttendanceController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\EmployeeSalaryController;
 use App\Http\Controllers\Admin\OwnerWalletController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\ProjectFinanceController;
@@ -59,6 +63,19 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
 
     Route::get('contractors', [ContractorController::class, 'index'])->name('contractors.index');
     Route::post('contractors', [ContractorController::class, 'store'])->name('contractors.store');
+
+    Route::resource('employees', EmployeeController::class);
+    Route::get('attendance', [EmployeeAttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('attendance/weekly', [EmployeeAttendanceController::class, 'weekly'])->name('attendance.weekly');
+    Route::post('attendance', [EmployeeAttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('advances', [EmployeeAdvanceController::class, 'index'])->name('advances.index');
+    Route::get('advances/create', [EmployeeAdvanceController::class, 'create'])->name('advances.create');
+    Route::post('advances', [EmployeeAdvanceController::class, 'store'])->name('advances.store');
+    Route::get('pay-salary', [EmployeeSalaryController::class, 'create'])->name('pay-salary.create');
+    Route::post('pay-salary/calculate', [EmployeeSalaryController::class, 'calculate'])->name('pay-salary.calculate');
+    Route::post('pay-salary/{salaryPayment}/complete', [EmployeeSalaryController::class, 'complete'])
+        ->whereNumber('salaryPayment')->name('pay-salary.complete');
+    Route::post('pay-salary', [EmployeeSalaryController::class, 'store'])->name('pay-salary.store');
 
     Route::get('owner', [OwnerWalletController::class, 'show'])->name('owner.show');
     Route::post('owner/income', [OwnerWalletController::class, 'income'])->name('owner.income');
