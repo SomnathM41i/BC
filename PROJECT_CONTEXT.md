@@ -192,7 +192,7 @@ Every balance change runs inside `DB::transaction` with `lockForUpdate` row lock
 
 ### Public business website (`routes/web.php`, Marathi at the root, English under `/en`)
 - `GET /` — home
-- `GET /about`, `GET /services`, `GET /contact`, `GET /credits`
+- `GET /about`, `GET /services`, `GET /contact`
 - `GET /projects`, `GET /projects/{slug}` — public portfolio
 - `GET /en/...` — English versions of the same public pages
 - Legacy `GET /mr/...` — permanent redirects to the Marathi canonical URLs

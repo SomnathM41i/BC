@@ -25,6 +25,18 @@
                         <a href="tel:{{ $inquiry->phone }}" style="color:#64151f;">{{ $inquiry->phone }}</a>
                     </td>
                 </tr>
+                @if ($inquiry->location)
+                    <tr>
+                        <td style="padding:6px 0;color:#78716c;">Location</td>
+                        <td style="padding:6px 0;">{{ $inquiry->location }}</td>
+                    </tr>
+                @endif
+                @if ($inquiry->budget)
+                    <tr>
+                        <td style="padding:6px 0;color:#78716c;">Budget</td>
+                        <td style="padding:6px 0;">{{ $inquiry->budget }}</td>
+                    </tr>
+                @endif
                 @if ($inquiry->email)
                     <tr>
                         <td style="padding:6px 0;color:#78716c;">Email</td>

@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
     initHeaderShadow();
     initReveal();
+    initEnquirySubmit();
 });
 
 function initMobileMenu() {
@@ -115,4 +116,48 @@ function initReveal() {
     );
 
     items.forEach((item) => observer.observe(item));
+}
+
+/**
+ * Enquiry form: show a sending state and block accidental double submits.
+ * The form posts normally, so validation and the success message still come
+ * from the server; if the request fails the browser keeps the page as it is.
+ */
+function initEnquirySubmit() {
+    document.querySelectorAll('[data-enquiry-form]').forEach((form) => {
+        const button = form.querySelector('[data-enquiry-submit]');
+        const label = button?.querySelector('span');
+        const idleLabel = label?.textContent?.trim() ?? '';
+        const sendingLabel = form.dataset.sendingLabel || idleLabel;
+
+        const setBusy = (busy) => {
+            form.dataset.submitting = busy ? 'true' : 'false';
+
+            if (button) {
+                button.disabled = busy;
+                button.classList.toggle('opacity-70', busy);
+                button.classList.toggle('cursor-not-allowed', busy);
+            }
+
+            if (label) {
+                label.textContent = busy ? sendingLabel : idleLabel;
+            }
+        };
+
+        form.addEventListener('submit', (event) => {
+            if (form.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
+
+            setBusy(true);
+        });
+
+        // Back/forward cache can restore a page mid-submit; reset the button.
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                setBusy(false);
+            }
+        });
+    });
 }

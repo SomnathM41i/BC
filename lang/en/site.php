@@ -4,32 +4,28 @@ return [
 
     'meta' => [
         'home' => [
-            'title' => 'Construction & Architectural Design in Kargani, Atpadi',
-            'description' => 'Bandgar Construction & Developers builds homes in Kargani, Shetfale Road, Gav Number 2, Atpadi — architectural design, plans and construction.',
+            'title' => 'Home Construction and Architectural Design in Atpadi, Sangli',
+            'description' => 'Bandgar Construction & Developers offers architectural design, 2D home plans, 3D visualisation and residential construction in Kargani, Atpadi, Sangli District.',
         ],
         'about' => [
-            'title' => 'About Us',
-            'description' => 'Learn about Bandgar Construction & Developers — residential construction and design based in Kargani, Shetfale Road, Atpadi, Sangli District.',
+            'title' => 'About Us — Residential Design in Atpadi, Sangli',
+            'description' => 'How Bandgar Construction & Developers plans and builds homes in Kargani, Atpadi and the Sangli district: practical design, clear estimates and careful execution.',
         ],
         'services' => [
-            'title' => 'Services',
-            'description' => 'Architectural design, 2D plans, 3D visualisation, structural design, residential construction, interiors, landscaping, electrical and plumbing design, supervision, contracting and estimation.',
+            'title' => 'Architectural Design, 2D Plans and Home Construction',
+            'description' => 'Architectural design, 2D home plans, 3D visualisation, structural coordination, residential construction, interiors and supervision in Atpadi, Sangli.',
         ],
         'portfolio' => [
-            'title' => 'Our Projects',
-            'description' => 'A selection of residential buildings, modern homes and architectural design work by Bandgar Construction & Developers.',
+            'title' => 'Residential Projects and Design Visualisations',
+            'description' => 'Selected homes, interiors and 3D design visualisations by Bandgar Construction & Developers in Kargani, Atpadi, Sangli District.',
         ],
         'contact' => [
-            'title' => 'Contact Us',
-            'description' => 'Talk to Bandgar Construction & Developers at Kargani, Shetfale Road, Gav Number 2, Taluka Atpadi, Sangli District. Call, WhatsApp or enquire.',
+            'title' => 'Contact — Kargani, Atpadi, Sangli District',
+            'description' => 'Speak to Bandgar Construction & Developers about a new home, a 2D plan or a 3D design. Kargani, Shetfale Road, Taluka Atpadi, Sangli District.',
         ],
         'sitemap' => [
             'title' => 'Sitemap',
             'description' => 'All pages on the Bandgar Construction & Developers website.',
-        ],
-        'credits' => [
-            'title' => 'Image Credits',
-            'description' => 'Photograph and rendering credits for the Bandgar Construction & Developers website.',
         ],
     ],
 
@@ -38,8 +34,8 @@ return [
         'home' => 'Home',
         'about' => 'About Us',
         'services' => 'Services',
-        'portfolio' => 'Our Projects',
-        'contact' => 'Contact Us',
+        'portfolio' => 'Projects',
+        'contact' => 'Contact',
         'menu' => 'Open main menu',
         'close' => 'Close',
         'main_navigation' => 'Main navigation',
@@ -51,14 +47,16 @@ return [
     ],
 
     'actions' => [
+        'discuss_project' => 'Discuss Your Project',
         'explore_projects' => 'Explore Our Projects',
         'contact_us' => 'Contact Us',
-        'read_about' => 'More About Us',
+        'read_about' => 'Learn More About Us',
         'view_all_services' => 'View All Services',
+        'explore_service' => 'Explore Service',
         'view_project' => 'View Project',
         'view_all_projects' => 'View All Projects',
         'call_now' => 'Call Now',
-        'whatsapp' => 'WhatsApp Us',
+        'whatsapp' => 'Chat on WhatsApp',
         'request_quote' => 'Request a Quote',
         'send_enquiry' => 'Send Enquiry',
         'enquire_now' => 'Enquire About This Service',
@@ -68,76 +66,81 @@ return [
     ],
 
     'common' => [
-        'sample_badge' => 'Illustrative sample',
-        'sample_notice' => 'Some projects shown here are illustrative samples used while the portfolio is being prepared. They are not presented as completed Bandgar projects.',
         'all' => 'All',
         'read_time' => 'min read',
     ],
 
     'home' => [
-        'hero_eyebrow' => 'Kargani · Atpadi · Sangli · Maharashtra',
-        'hero_title' => 'A Better Shape for Your Dream Home',
-        'hero_lead' => 'Thoughtful architecture, careful planning and quality-focused construction for a home made around your needs.',
-        'hero_support' => [
-            'Quality Construction',
-            'Thoughtful Design',
-            'Customer Satisfaction',
+        'hero_eyebrow' => 'Kargani · Atpadi · Sangli District',
+        'hero_title' => 'Thoughtfully Designed. Professionally Built.',
+        'hero_lead' => 'From architectural planning to the final finishing, we help you turn your vision into a well-planned home.',
+        'hero_body' => 'We bring together practical design, careful construction planning and attention to detail, so the spaces we build suit your needs, lifestyle and budget.',
+        'hero_services' => [
+            'Residential Construction',
+            'Architectural Design',
+            'Interior Design',
         ],
-        'hero_image_alt' => 'Bandgar Construction & Developers Dream Home advertisement showing a modern home and its services',
+        'hero_image_alt' => 'Modern two-storey residence designed by Bandgar Construction & Developers — 3D design visualisation',
+        'hero_image_note' => '3D design visualisation',
 
         'trust' => [
-            ['icon' => 'compass', 'label' => 'Site-responsive design'],
+            ['icon' => 'compass', 'label' => 'Design shaped around your plot'],
             ['icon' => 'shield', 'label' => 'Quality-first construction'],
-            ['icon' => 'calculator', 'label' => 'Clear, written estimates'],
+            ['icon' => 'calculator', 'label' => 'Written scope and estimate'],
             ['icon' => 'pin', 'label' => 'Based in Kargani, Atpadi'],
         ],
 
         'about_eyebrow' => 'Who we are',
-        'about_title' => 'Building More Than a House: Building Trust.',
-        'about_lead' => 'Bandgar Construction & Developers focuses on architectural planning, construction planning and quality-focused building services. We understand what each customer needs and work towards practical solutions that match their expectations.',
-        'about_body' => 'Our work covers architectural planning, building design, structural coordination and the construction services that turn a drawing into a home you can live in. We keep the process clear: understand the requirement, plan it practically, build it to the agreed drawings, and stay available after handover.',
+        'about_title' => 'Building Spaces with Purpose and Care',
+        'about_lead' => 'Every successful project begins with thoughtful planning and a clear understanding of what you need.',
+        'about_body' => 'We provide design and construction-related services tailored to individual requirements. From initial planning to construction and finishing, our approach focuses on practical solutions, clear communication and attention to detail. Whether you are planning a new home or need professional design support, we aim to make the process clear, organised and suited to you.',
         'about_points' => [
             'Residential construction and home building',
             'Architectural planning and building design',
             '2D plans, 3D views and working drawings',
-            'Construction supervision and contracting',
+            'Interior design and construction supervision',
         ],
-        'about_image_alt' => 'Illustrative contemporary house exterior with clean architectural lines',
+        'about_image_alt' => 'Two-storey home designed by Bandgar Construction & Developers — 3D design visualisation',
 
         'services_eyebrow' => 'What we do',
-        'services_title' => 'Our Construction and Design Services',
-        'services_lead' => 'Explore architectural planning, drawings, 3D design and construction-related services for your project.',
+        'services_title' => 'Design and Construction Services',
+        'services_lead' => 'Choose a single drawing or the complete journey from design to construction.',
         'services_note' => 'Structural, electrical and plumbing designs are prepared in coordination with qualified consultants where required.',
 
-        'projects_eyebrow' => 'Our work',
-        'projects_title' => 'Explore Our Projects',
-        'projects_lead' => 'Explore selected residential homes, modern construction and architectural design work.',
+        'projects_eyebrow' => 'Selected work',
+        'projects_title' => 'Homes We Have Designed',
+        'projects_lead' => 'A selection of residences, interiors and design visualisations prepared for projects in and around Atpadi.',
+        'projects_note' => 'Project images are 3D design visualisations, not photographs of completed buildings.',
 
         'why_eyebrow' => 'Why us',
-        'why_title' => 'Why Choose Bandgar Construction & Developers?',
-        'why_lead' => 'Your home deserves practical planning, clear communication and careful attention to every construction detail.',
+        'why_title' => 'A Thoughtful Approach to Every Project',
+        'why_lead' => 'A home is a long-term investment. These are the principles we work to, from the first discussion to handover.',
         'why_items' => [
-            ['title' => 'Quality-focused workmanship', 'text' => 'Materials, finishing and detailing are checked at every stage, not only at the end.'],
-            ['title' => 'Thoughtful planning', 'text' => 'Plans are made for how a family actually uses a home — light, ventilation, storage and movement.'],
-            ['title' => 'Customer-focused service', 'text' => 'Clear communication, realistic timelines and a single point of contact for your questions.'],
-            ['title' => 'Practical architectural designs', 'text' => 'Designs that respect your plot, your budget and the way you want to live.'],
-            ['title' => 'Attention to construction details', 'text' => 'The small decisions — levels, joints, waterproofing, finishes — are where a building lasts.'],
-            ['title' => 'Commitment to agreed requirements', 'text' => 'What is agreed in the drawings and estimate is what we work to, with changes discussed openly.'],
+            ['title' => 'Designs tailored to your needs', 'text' => 'Every family uses a home differently, so the plan follows your plot, budget and daily routine rather than a fixed template.'],
+            ['title' => 'Clear project estimates', 'text' => 'Scope, materials and payment stages are set out in writing before work begins, so the cost side is understood from the start.'],
+            ['title' => 'Attention to construction quality', 'text' => 'Materials, workmanship and finishing are checked stage by stage, not only at the end.'],
+            ['title' => 'Transparent communication', 'text' => 'Changes, difficulties and progress are discussed when they happen, with one point of contact for your questions.'],
+            ['title' => 'Practical, functional designs', 'text' => 'Light, ventilation, storage and movement are planned together, so the house is easy to live in every day.'],
+            ['title' => 'Planned project execution', 'text' => 'Work stages and a realistic schedule are agreed in advance, which keeps the build organised and predictable.'],
         ],
 
         'process_eyebrow' => 'How we work',
-        'process_title' => 'A Clear Process, Start to Finish',
-        'process_lead' => 'Four simple stages keep the project understandable and on track.',
+        'process_title' => 'A Clear Process from Start to Finish',
+        'process_lead' => 'Four stages keep the project understandable and moving in the right direction.',
         'process_steps' => [
-            ['title' => 'Consultation', 'text' => 'We discuss your plot, requirements, budget and timeline, and understand what the home needs to do for you.'],
-            ['title' => 'Planning and Design', 'text' => 'Concept, 2D plans, 3D views and structural coordination are prepared and reviewed with you.'],
-            ['title' => 'Construction', 'text' => 'Work is executed stage by stage with supervision, material checks and progress updates.'],
-            ['title' => 'Project Completion', 'text' => 'Finishing, snag checks and handover, with the drawings and documents you should keep.'],
+            ['title' => 'Consultation', 'text' => 'We discuss your plot, requirements, budget and expectations, and agree what the home needs to do for you.'],
+            ['title' => 'Design and Planning', 'text' => 'Proposed plans and design details are prepared and reviewed with you before anything is built.'],
+            ['title' => 'Construction and Supervision', 'text' => 'The agreed work is executed with attention to workmanship, materials and progress at each stage.'],
+            ['title' => 'Inspection and Handover', 'text' => 'Completed work is checked against the agreed requirements, and the finished home is handed over.'],
         ],
 
-        'cta_title' => 'Ready to Build Your Dream Home?',
-        'cta_text' => 'Tell us about your project, and let\'s discuss how we can help.',
-        'cta_image_alt' => 'Illustrative residential construction site with structural work in progress',
+        'testimonials_eyebrow' => 'Client feedback',
+        'testimonials_title' => 'What Clients Say',
+        'testimonials_lead' => 'Reviews are published here only after a client has agreed to share them.',
+
+        'cta_title' => 'Planning a New Home or Construction Project?',
+        'cta_text' => 'Tell us what you have in mind. Whether you need an architectural plan, a 3D home design or residential construction, share your requirements and we will suggest a practical starting point.',
+        'cta_image_alt' => 'Interior of a home designed by Bandgar Construction & Developers — 3D design visualisation',
 
         'contact_eyebrow' => 'Get in touch',
         'contact_title' => 'Talk to Us About Your Project',
@@ -146,39 +149,48 @@ return [
 
     'about' => [
         'banner_eyebrow' => 'About us',
-        'banner_title' => 'A Construction Partner for Your Home',
-        'banner_lead' => 'Residential construction and design, handled with care from the first drawing to the final finish.',
+        'banner_title' => 'A Design and Construction Partner for Your Home',
+        'banner_lead' => 'Residential design and construction, handled with care from the first drawing to the final finish.',
 
-        'intro_title' => 'Built on Careful Planning and Dependable Work',
+        'intro_title' => 'Introduction',
         'intro_body' => [
-            'Bandgar Construction & Developers works with families and property owners in Kargani, Atpadi, Sangli District and nearby areas of Maharashtra. Our focus is residential construction — homes that are planned around the people who will live in them.',
-            'We combine architectural planning, building design and construction execution under one roof, so the drawings, the estimate and the work on site stay connected. Instead of handing you a plan and leaving you to coordinate everyone else, we stay involved through the build.',
-            'Our approach is straightforward: listen carefully, design practically, build to the agreed drawings, and keep you informed. A home is a long-term investment, and it deserves that level of attention.',
+            'Bandgar Construction & Developers works with families and property owners in Kargani, Atpadi, Sangli District and nearby areas of Maharashtra. Our focus is residential work — homes planned around the people who will live in them.',
+            'We bring architectural planning, building design and construction execution together, so the drawings, the estimate and the work on site stay connected. Instead of handing over a plan and leaving you to coordinate everyone else, we stay involved through the build.',
         ],
 
-        'philosophy_title' => 'Our Design Philosophy',
-        'philosophy_body' => [
-            'Good design is not decoration. It is how a home works every day — where the morning light falls, how the kitchen connects to the dining space, where the staircase sits, how the rooms stay cool in summer.',
-            'We plan for the plot you have, the budget you have set and the life you actually live. That means practical room sizes, sensible circulation, natural ventilation and details that are buildable with local materials and skills.',
+        'company_title' => 'About the Company',
+        'company_body' => [
+            'The practice is based at Kargani, on Shetfale Road in Taluka Atpadi. From here we take on residential projects in Atpadi and the surrounding Sangli district.',
+            'Our services cover architectural design, 2D home plans, 3D visualisation, interior design, construction supervision and residential construction. You can engage us for one stage or for the whole journey from drawing to handover.',
+        ],
+
+        'approach_title' => 'Our Approach',
+        'approach_body' => [
+            'Good design is not decoration. It is how a home works every day — where the morning light falls, how the kitchen connects to the dining space, where the staircase sits, how the rooms stay cool through summer.',
+            'We plan for the plot you have, the budget you have set and the life you actually live. That means practical room sizes, sensible circulation, natural ventilation and details that can be built well with local materials and skills.',
             'A design is only finished when it is buildable, costed and clear to everyone working on it.',
         ],
-
-        'mission_title' => 'Mission',
-        'mission_body' => 'To help customers turn their construction ideas into practical, thoughtfully designed spaces through quality-focused work and dependable service.',
-
-        'vision_title' => 'Vision',
-        'vision_body' => 'To become a trusted construction and development partner known for thoughtful design, quality workmanship, and customer satisfaction.',
-
-        'values_title' => 'Core Values',
-        'values' => [
-            ['title' => 'Quality', 'text' => 'We would rather do a smaller job properly than a larger one carelessly.'],
-            ['title' => 'Trust', 'text' => 'Honest estimates, clear scope and no surprises buried in the details.'],
-            ['title' => 'Responsibility', 'text' => 'We take ownership of the work we agree to deliver, including the difficult parts.'],
-            ['title' => 'Customer Satisfaction', 'text' => 'A successful project is one the family is happy to live in.'],
-            ['title' => 'Attention to Detail', 'text' => 'The finishing, the joints and the small decisions are what people notice every day.'],
+        'approach_points' => [
+            'The plan responds to your plot and climate',
+            'Dimensions and levels are coordinated across drawings',
+            'Every square foot is used with a purpose',
         ],
 
-        'quality_title' => 'Quality and Customer Service',
+        'services_title' => 'Our Services',
+        'services_lead' => 'Engage us for a single service, or for the complete journey from design to construction.',
+        'services_note' => 'The full service list, with details of what each one includes, is on the services page.',
+
+        'principles_title' => 'Our Working Principles',
+        'principles_lead' => 'These are the standards we hold ourselves to on every project.',
+        'principles' => [
+            ['title' => 'Quality', 'text' => 'We would rather complete a smaller job properly than a larger one carelessly.'],
+            ['title' => 'Trust', 'text' => 'Honest estimates, a clear scope and no surprises buried in the details.'],
+            ['title' => 'Responsibility', 'text' => 'We take ownership of the work we agree to deliver, including the difficult parts.'],
+            ['title' => 'Clarity', 'text' => 'Drawings, costs and changes are explained in language you can act on.'],
+            ['title' => 'Attention to detail', 'text' => 'Finishing, joints and small decisions are what you notice every day.'],
+        ],
+
+        'quality_title' => 'Quality and Communication',
         'quality_body' => [
             'Quality is checked in stages: before concrete is poured, before plastering, before tiling and before handover. Problems are easier and cheaper to fix when they are found early.',
             'We keep the scope, the estimate and the drawings transparent. If something changes, we discuss it with you before it is built — not after. Questions during the project are welcome, and we would rather answer them than leave you guessing.',
@@ -191,10 +203,17 @@ return [
     'services' => [
         'banner_eyebrow' => 'Services',
         'banner_title' => 'From the First Plan to the Final Finish',
-        'banner_lead' => 'Architectural design, technical coordination and construction services for residential projects.',
+        'banner_lead' => 'Architectural design, technical coordination and construction services for residential projects in Atpadi and the Sangli district.',
 
         'intro_title' => 'Services for Your Home Project',
         'intro_body' => 'You can engage us for a single service, such as a 2D plan or a structural design, or for the complete journey from design to construction. Each service is delivered with clear drawings, a written scope and a realistic timeline.',
+
+        'engagement_title' => 'How an engagement usually starts',
+        'engagement_steps' => [
+            ['title' => 'Share the requirement', 'text' => 'Send the plot details, your requirements and a rough budget by phone, WhatsApp or the enquiry form.'],
+            ['title' => 'Agree the scope', 'text' => 'We confirm what is included, what it will cost and when it will be delivered, in writing.'],
+            ['title' => 'Start the work', 'text' => 'Drawings, models or construction work begin, with a clear point of contact for questions.'],
+        ],
 
         'items' => [
             'architectural-design' => [
@@ -209,7 +228,7 @@ return [
             ],
             '2d-plan-design' => [
                 'name' => '2D Plan Design',
-                'short' => 'Floor plans, elevations and working drawings prepared for approval and construction.',
+                'short' => 'Floor plans, elevations and working drawings for approval and construction.',
                 'description' => 'Accurate two-dimensional drawings covering floor plans, elevations, sections and working details. These are the drawings your contractor, engineer and municipal approval process will rely on.',
                 'benefits' => [
                     'Drawings ready for approval and site use',
@@ -220,7 +239,7 @@ return [
             '3d-design' => [
                 'name' => '3D Design',
                 'short' => 'See the home before construction begins.',
-                'description' => 'Three-dimensional views of the exterior and key interior spaces so you can understand proportions, materials and finishes before anything is built. Changes at this stage cost nothing compared with changes on site.',
+                'description' => 'Three-dimensional views of the exterior and the key interior spaces, so you can understand proportions, materials and finishes before anything is built. Changes at this stage cost nothing compared with changes on site.',
                 'benefits' => [
                     'Realistic exterior visualisation',
                     'Confident material and colour choices',
@@ -335,9 +354,9 @@ return [
 
     'portfolio' => [
         'banner_eyebrow' => 'Our projects',
-        'banner_title' => 'Residential Homes and Design Work',
-        'banner_lead' => 'Selected residential construction, modern homes and interior design work.',
-        'intro' => 'Browse by category to see the kind of work presented on this site. Project pages include the design approach, location where available and a gallery.',
+        'banner_title' => 'Residential Projects and Design Work',
+        'banner_lead' => 'Selected homes, interiors and design visualisations prepared by Bandgar Construction & Developers.',
+        'intro' => 'Browse by category to see the kind of work presented here. Each project page includes the design approach, the location where available, and a gallery.',
         'categories' => [
             'residential' => 'Residential',
             'modern-homes' => 'Modern Homes',
@@ -345,24 +364,27 @@ return [
             'interior-design' => 'Interior Design',
         ],
         'filter_label' => 'Filter projects',
-        'empty_title' => 'Projects are being added',
-        'empty_text' => 'Our portfolio is being prepared. Please check back shortly, or contact us to see relevant work.',
+        'empty_title' => 'Project details on request',
+        'empty_text' => 'We share work relevant to what you are planning. Call or message us and we will send the details.',
         'count' => ':count project|:count projects',
+        'visualisation_note' => 'Images on this page are 3D design visualisations.',
         'detail' => [
             'overview' => 'Project Overview',
             'gallery' => 'Gallery',
             'category' => 'Category',
             'location' => 'Location',
             'year' => 'Year',
+            'scope' => 'Scope',
             'related' => 'More Projects',
-            'sample_note' => 'This entry is illustrative sample content, shown to demonstrate the portfolio layout. It is not a completed Bandgar project.',
+            'related_services' => 'Related Services',
+            'visualisation_note' => '3D design visualisation',
         ],
     ],
 
     'contact' => [
         'banner_eyebrow' => 'Contact',
-        'banner_title' => 'Planning Your Home Construction?',
-        'banner_lead' => 'Contact us today to discuss your project and understand the next practical step.',
+        'banner_title' => 'Planning a New Home?',
+        'banner_lead' => 'Tell us about your plot and requirements, and we will suggest the next practical step.',
 
         'info_title' => 'Contact Us Directly',
         'phone_label' => 'Phone',
@@ -370,8 +392,9 @@ return [
         'address_label' => 'Address',
         'email_label' => 'Email',
         'map_title' => 'Find Us',
-        'map_note' => 'We are not claiming an exact office pin here. Use the official address above to search for our location on Google Maps.',
-        'map_link' => 'Open this address in Google Maps',
+        'map_note' => 'If the map does not load, use the address above to find us on Google Maps.',
+        'map_link' => 'Open in Google Maps',
+        'hours_label' => 'Enquiries',
 
         'form_title' => 'Send an Enquiry',
         'form_lead' => 'Tell us a little about your project. Fields marked * are required.',
@@ -383,24 +406,33 @@ return [
             'email' => 'Email address',
             'email_placeholder' => 'you@example.com',
             'email_optional' => 'optional',
+            'location' => 'Project location',
+            'location_placeholder' => 'Village or city',
+            'location_optional' => 'optional',
+            'budget' => 'Approximate budget',
+            'budget_placeholder' => 'For example, ₹25–30 lakh',
+            'budget_optional' => 'optional',
             'service' => 'Service required',
             'service_placeholder' => 'Select a service',
             'service_other' => 'Other / not sure yet',
             'message' => 'Message',
             'message_placeholder' => 'Tell us about your plot, your requirements and your timeline.',
             'submit' => 'Send Enquiry',
+            'sending' => 'Sending…',
             'privacy' => 'Your details are used only to respond to this enquiry.',
             'honeypot' => 'Leave this field empty',
         ],
         'success_title' => 'Thank you — your enquiry has been received.',
         'success_text' => 'We will contact you using the details you provided. If it is urgent, please call us directly.',
         'error_text' => 'Please check the highlighted fields and try again.',
-        'whatsapp_message' => 'Hello Bandgar Construction & Developers, I would like to enquire about your construction services.',
+        'whatsapp_message' => 'Hello Bandgar Construction & Developers, I would like to enquire about a home construction project.',
         'validation' => [
             'name_required' => 'Please enter your name.',
             'phone_required' => 'Please enter your phone number.',
             'phone_invalid' => 'Please enter a valid 10-digit Indian mobile number.',
             'email_invalid' => 'Please enter a valid email address.',
+            'location_max' => 'Please keep the location under 120 characters.',
+            'budget_max' => 'Please keep the budget under 60 characters.',
             'service_invalid' => 'Please choose a service from the list.',
             'message_required' => 'Please tell us a little about your requirement.',
             'message_min' => 'Please write at least 10 characters so we can help properly.',
@@ -408,28 +440,14 @@ return [
     ],
 
 
-    'credits' => [
-        'title' => 'Image Credits',
-        'lead' => 'Photographs and renderings used on this website.',
-        'intro' => 'Some images on this site are illustrative placeholders from Wikimedia Commons, not photographs of our own projects. They are credited below as their licences require.',
-        'note' => 'We are replacing these placeholders with real project photographs. If a credit or licence is wrong, please tell us and we will correct it.',
-        'image' => 'Image',
-        'author' => 'Author',
-        'licence' => 'Licence',
-        'source' => 'Source',
-        'view_source' => 'View on Wikimedia Commons',
-        'empty' => 'No image credits to show.',
-    ],
-
     'footer' => [
-        'about' => 'Residential construction, architectural planning and design services at Kargani, Shetfale Road, Gav Number 2, Taluka Atpadi, Sangli District, Maharashtra, India.',
+        'about' => 'Residential construction, architectural design and interior services at Kargani, Shetfale Road, Taluka Atpadi, Sangli District, Maharashtra.',
         'quick_links' => 'Quick Links',
         'services_title' => 'Services',
         'contact_title' => 'Contact',
         'rights' => 'All rights reserved.',
         'staff' => 'Staff sign in',
-        'sample_note' => 'Project images are design visualisations.',
-        'credits' => 'Image credits',
+        'visualisation_note' => 'Project images are 3D design visualisations.',
     ],
 
 ];

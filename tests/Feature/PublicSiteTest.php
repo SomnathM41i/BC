@@ -27,11 +27,11 @@ class PublicSiteTest extends TestCase
 
     public function test_marathi_is_the_default_language(): void
     {
-        foreach (['/', '/about', '/services', '/projects', '/contact', '/credits'] as $url) {
+        foreach (['/', '/about', '/services', '/projects', '/contact'] as $url) {
             $this->get($url)->assertOk()->assertSee('lang="mr-IN"', false);
         }
 
-        $this->get('/')->assertSee('hero-advertisement.png', false);
+        $this->get('/')->assertSee('modern-duplex-residence/cover.jpg', false);
     }
 
     public function test_english_pages_render_under_the_en_prefix(): void
@@ -39,7 +39,7 @@ class PublicSiteTest extends TestCase
         $this->get('/en')
             ->assertOk()
             ->assertSee('lang="en-IN"', false)
-            ->assertSee('hero-advertisement.png', false);
+            ->assertSee('modern-duplex-residence/cover.jpg', false);
 
         $this->get('/en/services')
             ->assertOk()
@@ -69,6 +69,7 @@ class PublicSiteTest extends TestCase
             ->assertSee('ता. आटपाडी, जि. सांगली', false)
             ->assertSee('इंजि. भरत बंडगर', false)
             ->assertSee('href="tel:+919021113887"', false)
+            ->assertSee('https://www.google.com/maps/embed?pb=', false)
             ->assertSee('https://www.google.com/maps/search/?api=1', false)
             ->assertDontSee('बंदगर', false)
             ->assertDontSee('संजोराव', false)
@@ -78,9 +79,9 @@ class PublicSiteTest extends TestCase
         $this->get('/en/contact')
             ->assertOk()
             ->assertSee('Kargani, Shetfale Road', false)
-            ->assertSee('Gav Number 2', false)
             ->assertSee('Taluka Atpadi, Sangli District', false)
             ->assertSee('Er. Bharat Bandgar', false)
+            ->assertDontSee('Gav Number 2', false)
             ->assertDontSee('Sanjorao', false)
             ->assertDontSee('Shetphule', false)
             ->assertDontSee('Gaothan No. 2', false);
@@ -162,17 +163,17 @@ class PublicSiteTest extends TestCase
         $this->get('/projects/missing-home')->assertNotFound();
     }
 
-    public function test_sample_projects_are_labelled(): void
+    public function test_portfolio_carries_no_template_placeholder_copy(): void
     {
-        PortfolioProject::factory()->sample()->create(['slug' => 'sample-home']);
+        PortfolioProject::factory()->create(['slug' => 'portfolio-check']);
 
-        $this->get('/projects')
-            ->assertOk()
-            ->assertSee(__('site.common.sample_notice'));
-
-        $this->get('/projects/sample-home')
-            ->assertOk()
-            ->assertSee(__('site.common.sample_badge'));
+        foreach (['/projects', '/projects/portfolio-check'] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertDontSee('Illustrative sample', false)
+                ->assertDontSee('being prepared', false)
+                ->assertDontSee('Wikimedia Commons', false);
+        }
     }
 
     public function test_contact_form_records_an_inquiry_and_notifies_the_owner(): void
@@ -203,6 +204,46 @@ class PublicSiteTest extends TestCase
             ->assertSessionHasErrors(['phone']);
 
         $this->assertDatabaseCount('inquiries', 0);
+    }
+
+    public function test_contact_form_keeps_the_project_location_and_budget(): void
+    {
+        Mail::fake();
+
+        $this->post('/en/contact', $this->enquiry([
+            'location' => 'Kargani, Atpadi',
+            'budget' => '₹25–30 lakh',
+        ]))->assertSessionHas('inquiry_sent');
+
+        $inquiry = Inquiry::query()->firstOrFail();
+
+        $this->assertSame('Kargani, Atpadi', $inquiry->location);
+        $this->assertSame('₹25–30 lakh', $inquiry->budget);
+    }
+
+    public function test_contact_page_preselects_the_service_from_the_query_string(): void
+    {
+        $this->get('/en/contact?service=3d-design')
+            ->assertOk()
+            ->assertSee('value="3d-design" selected', false);
+
+        // An unknown slug falls back to no selection rather than breaking.
+        $this->get('/en/contact?service=not-a-service')
+            ->assertOk()
+            ->assertDontSee('value="not-a-service" selected', false);
+    }
+
+    public function test_testimonials_stay_hidden_until_real_reviews_are_added(): void
+    {
+        config(['site.testimonials' => []]);
+
+        $this->get('/en')->assertOk()->assertDontSee(__('site.home.testimonials_title', [], 'en'), false);
+
+        config(['site.testimonials' => [
+            ['quote' => 'Clear communication throughout.', 'name' => 'A Client', 'context' => 'Home in Atpadi'],
+        ]]);
+
+        $this->get('/en')->assertOk()->assertSee('Clear communication throughout.', false);
     }
 
     public function test_honeypot_submissions_are_discarded(): void
@@ -249,16 +290,14 @@ class PublicSiteTest extends TestCase
         }
     }
 
-    public function test_credits_page_lists_image_sources(): void
+    public function test_credits_page_has_been_removed(): void
     {
-        $this->get('/credits')
-            ->assertOk()
-            ->assertSee(__('site.credits.view_source'), false)
-            ->assertSee('CC BY-SA');
+        $this->get('/credits')->assertNotFound();
+        $this->get('/en/credits')->assertNotFound();
 
-        $this->get('/en/credits')
+        $this->get('/en')
             ->assertOk()
-            ->assertSee(__('site.credits.title', [], 'en'), false)
-            ->assertSee('Wikimedia Commons');
+            ->assertDontSee(url('/en/credits'), false)
+            ->assertDontSee(url('/credits'), false);
     }
 }

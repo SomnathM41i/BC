@@ -50,6 +50,8 @@ final class SiteContent
             'address_compact' => $addressCompact,
             'map_embed_url' => $config['address']['map_embed_url'],
             'map_link' => $config['address']['map_link'],
+            'latitude' => $config['address']['latitude'] ?? null,
+            'longitude' => $config['address']['longitude'] ?? null,
             'social' => $config['social'],
             'seo' => $config['seo'],
         ];
@@ -116,36 +118,6 @@ final class SiteContent
         $labels = __('site.portfolio.categories');
 
         return $labels[$key] ?? $key;
-    }
-
-    /**
-     * Image credits recorded alongside the placeholder photographs.
-     *
-     * @return list<array{file: string, local_path: string, title: string, author: string, license: string, license_url: string, page: string}>
-     */
-    public static function imageCredits(): array
-    {
-        $path = public_path('images/site/ATTRIBUTION.json');
-
-        if (! is_file($path)) {
-            return [];
-        }
-
-        $rows = json_decode((string) file_get_contents($path), true);
-
-        if (! is_array($rows)) {
-            return [];
-        }
-
-        $rows = array_values(array_filter($rows, fn ($row): bool => is_array($row) && isset($row['local_path'])));
-
-        $rows = array_map(function (array $row): array {
-            $row['local_path'] = preg_replace('#^public/#', '', (string) $row['local_path']);
-
-            return $row;
-        }, $rows);
-
-        return array_values(array_filter($rows, fn (array $row): bool => is_file(public_path($row['local_path']))));
     }
 
     public static function formatPhone(string $number): string

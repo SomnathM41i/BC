@@ -79,8 +79,7 @@
             <p>&copy; {{ date('Y') }} {{ $site['name'] }}. {{ __('site.footer.rights') }}</p>
 
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <span>{{ __('site.footer.sample_note') }}</span>
-                <a href="{{ \App\Support\Site\SiteRoutes::url('credits') }}" class="transition hover:text-gold">{{ __('site.footer.credits') }}</a>
+                <span>{{ __('site.footer.visualisation_note') }}</span>
                 <a href="{{ route('admin.login') }}" class="transition hover:text-gold">{{ __('site.footer.staff') }}</a>
             </div>
         </div>

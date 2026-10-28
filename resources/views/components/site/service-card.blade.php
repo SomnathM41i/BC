@@ -34,7 +34,7 @@
     @endif
 
     <span class="mt-5 inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-brand-red">
-        {{ __('site.actions.learn_more') }}
+        {{ __('site.actions.explore_service') }}
         <x-site.icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-1" />
     </span>
 </a>

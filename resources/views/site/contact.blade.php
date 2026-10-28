@@ -75,8 +75,21 @@
                     </div>
 
                     @if ($site['map_embed_url'])
-                        <iframe src="{{ $site['map_embed_url'] }}" title="{{ __('site.contact.map_title') }}"
-                                class="h-64 w-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe src="{{ $site['map_embed_url'] }}"
+                                title="{{ $site['name'] }} — {{ __('site.contact.map_title') }}"
+                                class="h-72 w-full border-0 sm:h-80 lg:h-[420px]"
+                                loading="lazy" allowfullscreen
+                                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+
+                        @if ($site['map_link'])
+                            <div class="border-t border-ink/10 px-5 py-3">
+                                <a href="{{ $site['map_link'] }}" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brand-red">
+                                    {{ __('site.contact.map_link') }}
+                                    <x-site.icon name="arrow-up-right" class="h-4 w-4" />
+                                </a>
+                            </div>
+                        @endif
                     @elseif ($site['map_link'])
                         <div class="px-5 py-6">
                             <p class="text-sm leading-relaxed text-ink/55">{{ __('site.contact.map_note') }}</p>
@@ -115,14 +128,17 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ SiteRoutes::url('contact.store') }}" class="mt-6 space-y-5" novalidate>
+                        <form method="POST" action="{{ SiteRoutes::url('contact.store') }}"
+                              class="mt-6 space-y-5" novalidate
+                              data-enquiry-form
+                              data-sending-label="{{ __('site.contact.form.sending') }}">
                             @csrf
 
                             <div class="grid gap-5 sm:grid-cols-2">
                                 <div>
                                     <label for="name" class="site-label">{{ __('site.contact.form.name') }} *</label>
-                            <input id="name" name="name" type="text" value="{{ old('name') }}" required
-                                   aria-invalid="{{ $errors->has('name') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('name') ? 'name-error' : '' }}"
+                                    <input id="name" name="name" type="text" value="{{ old('name') }}" required aria-required="true"
+                                           aria-invalid="{{ $errors->has('name') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('name') ? 'name-error' : '' }}"
                                            autocomplete="name" placeholder="{{ __('site.contact.form.name_placeholder') }}"
                                            @class(['site-input', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('name')])>
                                     @error('name')
@@ -132,12 +148,42 @@
 
                                 <div>
                                     <label for="phone" class="site-label">{{ __('site.contact.form.phone') }} *</label>
-                            <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required
-                                   aria-invalid="{{ $errors->has('phone') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('phone') ? 'phone-error' : '' }}"
+                                    <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required aria-required="true"
+                                           aria-invalid="{{ $errors->has('phone') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('phone') ? 'phone-error' : '' }}"
                                            inputmode="tel" autocomplete="tel" placeholder="{{ __('site.contact.form.phone_placeholder') }}"
                                            @class(['site-input', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('phone')])>
                                     @error('phone')
                                         <p id="phone-error" class="mt-1.5 text-xs text-red-700">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="grid gap-5 sm:grid-cols-2">
+                                <div>
+                                    <label for="location" class="site-label">
+                                        {{ __('site.contact.form.location') }}
+                                        <span class="font-normal normal-case tracking-normal text-ink/35">({{ __('site.contact.form.location_optional') }})</span>
+                                    </label>
+                                    <input id="location" name="location" type="text" value="{{ old('location') }}"
+                                           aria-invalid="{{ $errors->has('location') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('location') ? 'location-error' : '' }}"
+                                           autocomplete="address-level2" placeholder="{{ __('site.contact.form.location_placeholder') }}"
+                                           @class(['site-input', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('location')])>
+                                    @error('location')
+                                        <p id="location-error" class="mt-1.5 text-xs text-red-700">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="budget" class="site-label">
+                                        {{ __('site.contact.form.budget') }}
+                                        <span class="font-normal normal-case tracking-normal text-ink/35">({{ __('site.contact.form.budget_optional') }})</span>
+                                    </label>
+                                    <input id="budget" name="budget" type="text" value="{{ old('budget') }}"
+                                           aria-invalid="{{ $errors->has('budget') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('budget') ? 'budget-error' : '' }}"
+                                           placeholder="{{ __('site.contact.form.budget_placeholder') }}"
+                                           @class(['site-input', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('budget')])>
+                                    @error('budget')
+                                        <p id="budget-error" class="mt-1.5 text-xs text-red-700">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
@@ -164,11 +210,11 @@
                                             @class(['site-input', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('service')])>
                                         <option value="">{{ __('site.contact.form.service_placeholder') }}</option>
                                         @foreach ($services as $service)
-                                            <option value="{{ $service['slug'] }}" @selected(old('service') === $service['slug'])>
+                                            <option value="{{ $service['slug'] }}" @selected(old('service', $selectedService) === $service['slug'])>
                                                 {{ $service['name'] }}
                                             </option>
                                         @endforeach
-                                        <option value="other" @selected(old('service') === 'other')>
+                                        <option value="other" @selected(old('service', $selectedService) === 'other')>
                                             {{ __('site.contact.form.service_other') }}
                                         </option>
                                     </select>
@@ -180,7 +226,7 @@
 
                             <div>
                                 <label for="message" class="site-label">{{ __('site.contact.form.message') }} *</label>
-                                <textarea id="message" name="message" rows="5" required
+                                <textarea id="message" name="message" rows="5" required aria-required="true"
                                           aria-invalid="{{ $errors->has('message') ? 'true' : 'false' }}" aria-describedby="{{ $errors->has('message') ? 'message-error' : '' }}"
                                           placeholder="{{ __('site.contact.form.message_placeholder') }}"
                                           @class(['site-input resize-y', 'border-red-300 focus:border-red-400 focus:ring-red-100' => $errors->has('message')])>{{ old('message') }}</textarea>
@@ -197,7 +243,7 @@
 
                             <div class="flex flex-col gap-4 border-t border-ink/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
                                 <p class="text-xs leading-relaxed text-ink/45">{{ __('site.contact.form.privacy') }}</p>
-                                <x-site.button icon="arrow-right" class="shrink-0">
+                                <x-site.button icon="arrow-right" class="shrink-0" data-enquiry-submit>
                                     {{ __('site.contact.form.submit') }}
                                 </x-site.button>
                             </div>

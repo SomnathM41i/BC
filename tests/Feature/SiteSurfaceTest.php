@@ -15,12 +15,14 @@ class SiteSurfaceTest extends TestCase
             ->assertOk()
             ->assertSee('Bandgar', false)
             ->assertSee('brand-logo-header.png', false)
-            ->assertSee('hero-advertisement.png', false);
+            ->assertSee('modern-duplex-residence/cover.jpg', false)
+            ->assertSee(__('site.home.hero_title', [], 'mr'), false);
 
         $this->get('/en')
             ->assertOk()
             ->assertSee('Bandgar Construction', false)
-            ->assertSee('hero-advertisement.png', false);
+            ->assertSee('modern-duplex-residence/cover.jpg', false)
+            ->assertSee(__('site.home.hero_title', [], 'en'), false);
     }
 
     public function test_legacy_internal_urls_redirect_under_admin(): void

@@ -42,9 +42,17 @@ class PortfolioController extends Controller
             ->limit(3)
             ->get();
 
+        $serviceSlugs = config('site.portfolio_related_services')[$portfolio->category] ?? [];
+
+        $relatedServices = array_values(array_filter(
+            SiteContent::services(),
+            fn (array $service): bool => in_array($service['slug'], $serviceSlugs, true),
+        ));
+
         return view('site.portfolio.show', [
             'project' => $portfolio,
             'related' => $related,
+            'relatedServices' => $relatedServices,
         ]);
     }
 }

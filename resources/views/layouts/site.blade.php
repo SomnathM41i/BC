@@ -25,6 +25,18 @@
         'areaServed' => ['Kargani', 'Atpadi', 'Sangli District', 'Maharashtra'],
     ];
 
+    if ($site['latitude'] && $site['longitude']) {
+        $schema['geo'] = [
+            '@type' => 'GeoCoordinates',
+            'latitude' => $site['latitude'],
+            'longitude' => $site['longitude'],
+        ];
+    }
+
+    if ($site['map_link']) {
+        $schema['hasMap'] = $site['map_link'];
+    }
+
     if ($site['social'] !== []) {
         $schema['sameAs'] = array_values($site['social']);
     }
@@ -55,14 +67,13 @@
     <meta property="og:image" content="{{ $ogImage }}">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    {{-- Devanagari families are self-hosted in app.css so the conjunct features survive. --}}
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Typefaces are self-hosted: Devanagari needs full conjunct shaping, and
+         the Latin faces are small woff2 subsets. --}}
+    <link rel="preload" href="{{ asset('fonts/archivo-var-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/inter-var-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @if (app()->getLocale() === 'mr')
         <link rel="preload" href="{{ asset('fonts/noto-sans-devanagari-var.ttf') }}" as="font" type="font/ttf" crossorigin>
-        <link rel="preload" href="{{ asset('fonts/noto-serif-devanagari-var.ttf') }}" as="font" type="font/ttf" crossorigin>
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

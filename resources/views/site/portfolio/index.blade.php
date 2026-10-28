@@ -12,7 +12,10 @@
 
     <section class="site-container py-16 lg:py-20">
         <div class="flex flex-col gap-6 border-b border-ink/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
-            <p class="max-w-xl text-sm leading-relaxed text-ink/65">{{ __('site.portfolio.intro') }}</p>
+            <div class="max-w-xl">
+                <p class="text-sm leading-relaxed text-ink/65">{{ __('site.portfolio.intro') }}</p>
+                <p class="mt-2 text-xs leading-relaxed text-ink/45">{{ __('site.portfolio.visualisation_note') }}</p>
+            </div>
 
             <nav class="flex flex-wrap gap-2 lg:max-w-[26rem]" aria-label="{{ __('site.portfolio.filter_label') }}">
                 <a href="{{ SiteRoutes::url('portfolio.index') }}"
@@ -39,12 +42,6 @@
                     </div>
                 @endforeach
             </div>
-
-            @if ($projects->contains('is_sample', true))
-                <p class="mt-10 rounded-xl border border-gold/40 bg-gold/10 p-5 text-xs leading-relaxed text-ink/60">
-                    {{ __('site.common.sample_notice') }}
-                </p>
-            @endif
         @else
             <div class="mt-10 rounded-2xl border border-dashed border-ink/15 bg-white/60 p-12 text-center">
                 <p class="font-display text-xl font-semibold text-brand-dark">{{ __('site.portfolio.empty_title') }}</p>

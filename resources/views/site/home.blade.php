@@ -5,18 +5,65 @@
 @section('description', __('site.meta.home.description'))
 
 @php
-    $whyIcons = ['shield', 'compass', 'handshake', 'home', 'layers', 'check-circle'];
+    $whyIcons = ['home', 'calculator', 'shield', 'handshake', 'compass', 'clipboard'];
+    $testimonials = config('site.testimonials', []);
 @endphp
+
+@push('head')
+    <link rel="preload" as="image" href="{{ asset('images/site/portfolio/modern-duplex-residence/cover.jpg') }}">
+@endpush
 
 @section('content')
     {{-- Hero --}}
-    <section class="overflow-hidden bg-brand-dark">
-        <div class="hero-advertisement-frame">
-            <img src="{{ asset('images/site/hero-advertisement.png') }}"
-                 alt="{{ __('site.home.hero_image_alt') }}"
-                 class="h-full w-full object-contain"
-                 fetchpriority="high">
+    <section class="relative isolate overflow-hidden bg-brand-dark">
+        <img src="{{ asset('images/site/portfolio/modern-duplex-residence/cover.jpg') }}"
+             alt="{{ __('site.home.hero_image_alt') }}"
+             class="absolute inset-0 h-full w-full object-cover object-[68%_center] sm:object-center"
+             fetchpriority="high" decoding="async">
+
+        <div class="absolute inset-0 bg-gradient-to-r from-brand-dark via-brand-dark/90 to-brand-dark/25" aria-hidden="true"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-transparent to-brand-dark/10" aria-hidden="true"></div>
+
+        <div class="site-container relative flex min-h-[540px] flex-col justify-center py-16 sm:min-h-[600px] lg:min-h-[640px] lg:py-24">
+            <div class="max-w-2xl">
+                <span class="eyebrow eyebrow-light">
+                    <span class="h-px w-7 bg-current"></span>
+                    {{ __('site.home.hero_eyebrow') }}
+                </span>
+
+                <h1 class="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-white text-balance sm:text-5xl lg:text-[3.6rem]">
+                    {{ __('site.home.hero_title') }}
+                </h1>
+
+                <p class="mt-5 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">
+                    {{ __('site.home.hero_lead') }}
+                </p>
+
+                <p class="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">
+                    {{ __('site.home.hero_body') }}
+                </p>
+
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <x-site.button :href="SiteRoutes::url('contact')" variant="gold" icon="arrow-right">
+                        {{ __('site.actions.discuss_project') }}
+                    </x-site.button>
+                    <x-site.button :href="SiteRoutes::url('portfolio.index')" variant="outline-light">
+                        {{ __('site.actions.explore_projects') }}
+                    </x-site.button>
+                </div>
+
+                <ul class="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white/60">
+                    @foreach (__('site.home.hero_services') as $service)
+                        <li class="flex items-center gap-2">
+                            <span class="h-1 w-1 rounded-full bg-gold" aria-hidden="true"></span>
+                            {{ $service }}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
+
+        <p class="absolute bottom-4 right-5 text-[0.65rem] text-white/40">{{ __('site.home.hero_image_note') }}</p>
     </section>
 
     {{-- Trust strip --}}
@@ -40,12 +87,13 @@
                 <div class="reveal relative">
                     <div class="absolute -left-4 -top-4 h-24 w-24 rounded-tl-2xl border-l-2 border-t-2 border-gold" aria-hidden="true"></div>
                     <div class="overflow-hidden rounded-2xl">
-                        <img src="{{ asset('images/site/photos/about.jpg') }}" alt="{{ __('site.home.about_image_alt') }}"
-                             class="aspect-[9/16] w-full object-cover" loading="lazy">
+                        <img src="{{ asset('images/site/portfolio/modern-duplex-residence/01.jpg') }}"
+                             alt="{{ __('site.home.about_image_alt') }}"
+                             class="aspect-[4/5] w-full object-cover" loading="lazy" decoding="async">
                     </div>
-                    <div class="absolute -bottom-5 right-5 rounded-xl bg-brand px-5 py-4 text-white shadow-lg sm:right-8">
+                    <div class="absolute -bottom-5 left-5 rounded-xl bg-brand px-5 py-4 text-white shadow-lg sm:left-8">
                         <p class="font-display text-lg font-semibold">{{ $site['short_name'] }}</p>
-                        <p class="text-[0.65rem] uppercase tracking-[0.16em] text-white/60">{{ __('site.home.hero_eyebrow') }}</p>
+                        <p class="text-[0.65rem] uppercase tracking-[0.16em] text-white/60">{{ $site['address_compact'] }}</p>
                     </div>
                 </div>
 
@@ -128,6 +176,8 @@
                         </div>
                     @endforeach
                 </div>
+
+                <p class="mt-8 text-xs leading-relaxed text-ink/45">{{ __('site.home.projects_note') }}</p>
             @else
                 <div class="mt-12 rounded-2xl border border-dashed border-ink/15 bg-white/60 p-10 text-center">
                     <p class="font-display text-xl font-semibold text-brand-dark">{{ __('site.portfolio.empty_title') }}</p>
@@ -146,7 +196,7 @@
                 :lead="__('site.home.why_lead')"
                 align="center" />
 
-            <div class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="mx-auto mt-12 grid max-w-5xl gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach (__('site.home.why_items') as $index => $item)
                     <div class="reveal border-t border-ink/10 pt-6">
                         <span class="grid h-10 w-10 place-items-center rounded-lg bg-sand text-brand">
@@ -186,11 +236,40 @@
         </div>
     </section>
 
+    {{-- Testimonials: only when real, approved reviews exist in config/site.php --}}
+    @if (! empty($testimonials))
+        <section class="site-container py-20 lg:py-24">
+            <x-site.section-heading
+                :eyebrow="__('site.home.testimonials_eyebrow')"
+                :title="__('site.home.testimonials_title')"
+                :lead="__('site.home.testimonials_lead')"
+                align="center" />
+
+            <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                @foreach ($testimonials as $review)
+                    <figure class="site-card flex h-full flex-col p-6">
+                        <x-site.icon name="star" class="h-5 w-5 text-gold" />
+                        <blockquote class="mt-4 flex-1 text-sm leading-relaxed text-ink/70">
+                            “{{ $review['quote'] }}”
+                        </blockquote>
+                        <figcaption class="mt-5 border-t border-ink/10 pt-4">
+                            <p class="text-sm font-semibold text-brand-dark">{{ $review['name'] }}</p>
+                            @isset($review['context'])
+                                <p class="mt-0.5 text-xs text-ink/50">{{ $review['context'] }}</p>
+                            @endisset
+                        </figcaption>
+                    </figure>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     {{-- CTA --}}
     <section class="relative overflow-hidden">
-        <img src="{{ asset('images/site/photos/process.jpg') }}" alt="{{ __('site.home.cta_image_alt') }}"
-             class="absolute inset-0 h-full w-full object-cover" loading="lazy">
-        <div class="absolute inset-0 bg-brand-dark/85"></div>
+        <img src="{{ asset('images/site/portfolio/interior-design-collection/cover.jpg') }}"
+             alt="{{ __('site.home.cta_image_alt') }}"
+             class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async">
+        <div class="absolute inset-0 bg-brand-dark/90"></div>
 
         <div class="site-container relative py-16 text-center sm:py-20">
             <h2 class="mx-auto max-w-2xl font-display text-3xl font-semibold leading-tight text-white text-balance sm:text-4xl">
@@ -198,12 +277,12 @@
             </h2>
             <p class="mx-auto mt-4 max-w-xl text-base text-white/70">{{ __('site.home.cta_text') }}</p>
 
-            <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
                 <x-site.button :href="SiteRoutes::url('contact')" variant="gold" icon="arrow-right">
-                    {{ __('site.actions.send_enquiry') }}
+                    {{ __('site.actions.discuss_project') }}
                 </x-site.button>
-                <x-site.button :href="$site['phones'][0]['tel']" variant="outline-light">
-                    {{ __('site.actions.call_now') }}
+                <x-site.button :href="$site['whatsapp_url']" variant="outline-light" icon="arrow-up-right">
+                    {{ __('site.actions.whatsapp') }}
                 </x-site.button>
             </div>
         </div>
@@ -223,8 +302,8 @@
                         <x-site.button :href="SiteRoutes::url('contact')" icon="arrow-right">
                             {{ __('site.actions.contact_us') }}
                         </x-site.button>
-                        <x-site.button :href="$site['whatsapp_url']" variant="outline">
-                            {{ __('site.actions.whatsapp') }}
+                        <x-site.button :href="$site['phones'][0]['tel']" variant="outline">
+                            {{ __('site.actions.call_now') }}
                         </x-site.button>
                     </div>
                 </div>

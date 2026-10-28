@@ -12,7 +12,7 @@ class SitemapController extends Controller
     public function __invoke(): Response
     {
         $locales = ['mr', 'en'];
-        $pages = ['home', 'about', 'services', 'portfolio.index', 'contact', 'credits'];
+        $pages = ['home', 'about', 'services', 'portfolio.index', 'contact'];
 
         $urls = [];
 

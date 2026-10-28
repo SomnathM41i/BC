@@ -60,8 +60,6 @@ $siteRoutes = function () {
     Route::post('contact', [ContactController::class, 'store'])
         ->middleware('throttle:'.config('site.contact.throttle'))
         ->name('contact.store');
-
-    Route::get('credits', [PageController::class, 'credits'])->name('credits');
 };
 
 Route::middleware(SetSiteLocale::class.':mr')->group($siteRoutes);

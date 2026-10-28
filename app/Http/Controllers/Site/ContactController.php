@@ -9,6 +9,7 @@ use App\Models\Inquiry;
 use App\Support\Site\SiteContent;
 use App\Support\Site\SiteRoutes;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -17,10 +18,18 @@ use Throwable;
 
 class ContactController extends Controller
 {
-    public function show(): View
+    public function show(Request $request): View
     {
+        $services = SiteContent::services();
+        $selected = (string) $request->query('service', '');
+
+        if ($selected !== 'other' && ! in_array($selected, array_column($services, 'slug'), true)) {
+            $selected = '';
+        }
+
         return view('site.contact', [
-            'services' => SiteContent::services(),
+            'services' => $services,
+            'selectedService' => $selected,
         ]);
     }
 

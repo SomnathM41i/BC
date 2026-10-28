@@ -5,6 +5,12 @@
 @section('title', $project->titleFor())
 @section('description', \Illuminate\Support\Str::limit($project->summaryFor(), 155))
 
+@if ($project->coverUrl())
+    @push('head')
+        <meta property="og:image" content="{{ $project->coverUrl() }}">
+    @endpush
+@endif
+
 @section('content')
     <section class="bg-brand-dark">
         <div class="site-container py-12 sm:py-16">
@@ -19,11 +25,9 @@
                     {{ SiteContent::categoryName($project->category) }}
                 </span>
 
-                @if ($project->is_sample)
-                    <span class="rounded-full bg-gold px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-dark">
-                        {{ __('site.common.sample_badge') }}
-                    </span>
-                @endif
+                <span class="rounded-full border border-white/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white/55">
+                    {{ __('site.portfolio.detail.visualisation_note') }}
+                </span>
             </div>
 
             <h1 class="mt-4 max-w-3xl font-display text-4xl font-semibold leading-[1.1] text-white text-balance sm:text-5xl">
@@ -37,8 +41,9 @@
     @if ($project->coverUrl())
         <div class="site-container -mt-1">
             <div class="overflow-hidden rounded-b-2xl">
-                <img src="{{ $project->coverUrl() }}" alt="{{ $project->titleFor() }}"
-                     class="max-h-[520px] w-full object-cover">
+                <img src="{{ $project->coverUrl() }}"
+                     alt="{{ $project->titleFor() }} — {{ __('site.portfolio.detail.visualisation_note') }}"
+                     class="max-h-[520px] w-full object-cover" decoding="async">
             </div>
         </div>
     @endif
@@ -54,10 +59,20 @@
                     @endforeach
                 </div>
 
-                @if ($project->is_sample)
-                    <p class="mt-8 rounded-xl border border-gold/40 bg-gold/10 p-5 text-xs leading-relaxed text-ink/60">
-                        {{ __('site.portfolio.detail.sample_note') }}
-                    </p>
+                @if (! empty($relatedServices))
+                    <div class="mt-10 border-t border-ink/10 pt-8">
+                        <h2 class="font-display text-xl font-semibold text-brand-dark">{{ __('site.portfolio.detail.related_services') }}</h2>
+
+                        <ul class="mt-4 flex flex-wrap gap-2">
+                            @foreach ($relatedServices as $service)
+                                <li>
+                                    <a href="{{ SiteRoutes::url('services') }}#{{ $service['slug'] }}" class="chip">
+                                        {{ $service['name'] }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
             </div>
 
@@ -86,7 +101,7 @@
 
                     <div class="mt-6 border-t border-ink/10 pt-5">
                         <x-site.button :href="SiteRoutes::url('contact')" size="sm" class="w-full">
-                            {{ __('site.actions.request_quote') }}
+                            {{ __('site.actions.discuss_project') }}
                         </x-site.button>
                     </div>
                 </div>
@@ -106,14 +121,19 @@
     </section>
 
     @if (count($project->galleryUrls()) > 0)
-        <section class="bg-white py-16">
+        <section class="bg-white py-16 lg:py-20">
             <div class="site-container">
-                <h2 class="font-display text-2xl font-semibold text-brand-dark">{{ __('site.portfolio.detail.gallery') }}</h2>
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <h2 class="font-display text-2xl font-semibold text-brand-dark">{{ __('site.portfolio.detail.gallery') }}</h2>
+                    <p class="text-xs text-ink/45">{{ __('site.portfolio.visualisation_note') }}</p>
+                </div>
 
                 <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($project->galleryUrls() as $image)
-                        <div class="overflow-hidden rounded-xl">
-                            <img src="{{ $image }}" alt="{{ $project->titleFor() }}" loading="lazy"
+                        <div class="overflow-hidden rounded-xl bg-sand">
+                            <img src="{{ $image }}"
+                                 alt="{{ $project->titleFor() }} — {{ __('site.portfolio.detail.gallery') }} {{ $loop->iteration }}"
+                                 loading="lazy" decoding="async"
                                  class="aspect-[4/3] w-full object-cover transition duration-700 hover:scale-[1.03]">
                         </div>
                     @endforeach

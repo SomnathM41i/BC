@@ -58,7 +58,7 @@
             </div>
 
             <x-site.button :href="$site['whatsapp_url']" variant="primary" size="sm" icon="arrow-up-right">
-                {{ __('site.actions.request_quote') }}
+                {{ __('site.actions.discuss_project') }}
             </x-site.button>
         </div>
 
