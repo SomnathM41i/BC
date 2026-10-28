@@ -174,6 +174,61 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame(0, EmployeeSalaryPayment::query()->count());
     }
 
+    public function test_employee_detail_paginates_attendance_advances_and_salary_history(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        for ($i = 0; $i < 12; $i++) {
+            EmployeeAttendance::create([
+                'employee_id' => $employee->id,
+                'attendance_date' => now()->subDays($i)->toDateString(),
+                'status' => 'present',
+                'payable_days' => '1.0',
+            ]);
+
+            EmployeeAdvance::create([
+                'employee_id' => $employee->id,
+                'advance_date' => now()->subDays($i)->toDateString(),
+                'amount' => '100.00',
+            ]);
+
+            EmployeeSalaryPayment::create([
+                'employee_id' => $employee->id,
+                'period_start' => now()->subWeeks($i + 1)->startOfWeek()->toDateString(),
+                'period_end' => now()->subWeeks($i + 1)->endOfWeek()->toDateString(),
+                'daily_salary' => '600.00',
+                'gross_salary' => '600.00',
+                'present_days' => '1.0',
+                'half_days' => '0.0',
+                'total_payable_days' => '1.0',
+                'outstanding_advance_before' => '0.00',
+                'advance_repayment' => '0.00',
+                'net_salary_payable' => '600.00',
+                'amount_paid' => $i === 0 ? '400.00' : '600.00',
+                'remaining_salary_due' => $i === 0 ? '200.00' : '0.00',
+                'remaining_advance_after' => '0.00',
+                'status' => $i === 0 ? 'partially_paid' : 'paid',
+                'payment_date' => now()->subWeeks($i + 1)->endOfWeek()->toDateString(),
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get("/admin/employees/{$employee->id}")
+            ->assertOk()
+            ->assertViewHas('attendances', fn ($paginator) => $paginator->total() === 12 && $paginator->perPage() === 5)
+            ->assertViewHas('advances', fn ($paginator) => $paginator->total() === 12 && $paginator->perPage() === 10)
+            ->assertViewHas('salaryPayments', fn ($paginator) => $paginator->total() === 12 && $paginator->perPage() === 10)
+            ->assertSee('attendance_page=2', false)
+            ->assertSee('advance_page=2', false)
+            ->assertSee('salary_page=2', false)
+            ->assertSee('Amount to pay');
+
+        $this->actingAs($owner)
+            ->get("/admin/employees/{$employee->id}?attendance_page=2&advance_page=2&salary_page=2")
+            ->assertOk();
+    }
+
     public function test_weekly_attendance_is_saved_and_editable_without_duplicates(): void
     {
         $owner = $this->owner();

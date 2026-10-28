@@ -1,23 +1,25 @@
-# BAM — Project Context Document
+# Bandgar Construction — Project Context Document
 
-> Generated: 18 October 2026
-> Location: `C:\Users\Somnath Mali\Desktop\BAM`
+> Updated: 28 October 2026
+> Location: `C:\Users\Somnath Mali\Desktop\BC`
 > Owner: Somnath Mali
+> Branch: `main` — production deploys from Git
 
 ---
 
 ## 1. Overview
 
-**Bandgar Construction — Wallet & Project Management (BAM)** is a focused Laravel application for tracking:
+The repository holds two surfaces that share one Laravel application:
 
-- Company cash (business wallet)
-- Project wallet allocations
-- Project costs (direct + manager-mediated)
-- Manager transfers and returns
-- Owner personal wallet
-- Project closure with fund release
+1. **Public business website** (`bandgarconstruction.com`) — a bilingual
+   Marathi/English site for Bandgar Construction & Developers: home, about,
+   services, portfolio and contact, plus a private contractor statement link.
+2. **Wallet & project management (BAM)** — an internal, owner-only admin app at
+   `/admin` for company cash, project wallets, contractor transfers, expenses,
+   owner money and project closure.
 
-It is deliberately **not** a full accounting/ERP system. Scope is limited to the agreed contract for Bandgar Construction.
+The public site is the shopfront; the admin app is deliberately **not** a full
+accounting/ERP system. Its scope is limited to the agreed wallet model below.
 
 ---
 
@@ -26,17 +28,136 @@ It is deliberately **not** a full accounting/ERP system. Scope is limited to the
 | Layer | Technology |
 |-------|-----------|
 | Framework | Laravel 12 (PHP 8.2+) |
-| Database | MySQL / MariaDB (XAMPP local) |
+| Database | MySQL / MariaDB (XAMPP locally) |
 | Frontend | Blade + Tailwind CSS 4 (Vite) |
+| Typefaces | Self-hosted Archivo (display), Inter (body), Noto Sans Devanagari (Marathi) |
 | Money math | `bcmath` via `App\Support\Money` (no floats) |
 | Tests | PHPUnit feature tests |
 | Local server | `php artisan serve` (port 8000) |
+| Production | Shared hosting (cPanel), no terminal, no Node |
 
-**Money columns:** `DECIMAL(14,2)` — never floats. All arithmetic goes through `App\Support\Money`.
+**Money columns:** `DECIMAL(14,2)` — never floats. All arithmetic goes through
+`App\Support\Money`.
+
+**Compiled assets are committed.** `public/build/` is part of the repository
+because production has no Node. A pre-commit hook rebuilds Vite whenever
+frontend sources are staged (see §15).
 
 ---
 
-## 3. The Wallet Model (Core Concept)
+## 3. Public Website
+
+### 3.1 Language architecture
+
+- **Marathi is canonical at the root**: `/`, `/about`, `/services`,
+  `/projects`, `/contact`.
+- **English lives under `/en`**: `/en`, `/en/about`, and so on.
+- Old `/mr/...` URLs permanently redirect to the Marathi canonical URLs.
+- `SetSiteLocale` middleware sets the locale from the route group; the URL is
+  the source of truth, so shared links stay in the language they were written
+  in.
+- Translation strings live in `lang/en/site.php` and `lang/mr/site.php`. Both
+  files must keep identical key sets — currently **319 keys each**.
+
+### 3.2 Content rules (non-negotiable)
+
+These rules came from the owner and are enforced by review, not code:
+
+- **Never invent** projects, locations, budgets, reviews, years of experience,
+  awards or certifications.
+- **Testimonials stay unpublished** until a customer has agreed in writing.
+  `config('site.testimonials')` is empty, and the section stays hidden while it
+  is empty.
+- **Design renderings are never presented as completed buildings.** Every
+  project image is labelled *"3D design visualisation"* (`portfolio.visualisation_note`,
+  `footer.visualisation_note`).
+- **Contact details come from `config/site.php`** — phones, WhatsApp, email,
+  address, map. Do not hard-code them in Blade.
+- **No template/placeholder copy.** Any "coming soon", "sample project" or
+  "portfolio being prepared" language is a bug. The credits page and the
+  sample-project UI were removed on 28 Oct 2026.
+
+### 3.3 Typography
+
+Fonts are self-hosted in `public/fonts/` and declared in `resources/css/app.css`:
+
+| Use | Family | File |
+|-----|--------|------|
+| Headings (Latin) | Archivo (variable, 400–700) | `archivo-var-latin.woff2` |
+| Body (Latin) | Inter (variable, 400–600) | `inter-var-latin.woff2` |
+| Marathi | Noto Sans Devanagari (variable) | `noto-sans-devanagari-var.ttf` |
+
+Devanagari must stay **self-hosted with the full font file**: Google's
+subsetted webfonts strip Indic conjunct features, so clusters such as "ष्ट्र"
+lose their rakar. There is no Google Fonts `<link>` or preconnect in the
+layout; Latin faces are preloaded.
+
+> `noto-serif-devanagari-var.ttf` is still on disk but unused since the switch
+> to Archivo on 28 Oct 2026.
+
+### 3.4 Pages and routes
+
+| URL (Marathi / English) | Purpose |
+|---|---|
+| `/` · `/en` | Home: hero, services, selected projects, process, enquiry call-out |
+| `/about` · `/en/about` | Company, approach, service area |
+| `/services` · `/en/services` | Full service list, each card links to the enquiry form with `?service=<slug>#enquiry-form` |
+| `/projects` · `/en/projects` | Published portfolio with category filter |
+| `/projects/{slug}` · `/en/projects/{slug}` | Project detail, gallery, related services |
+| `/contact` · `/en/contact` | Contact details, Google map, enquiry form |
+| `/sitemap.xml` | Bilingual sitemap with `hreflang` alternates |
+| `/statement/{token}` | Private contractor statement (random token, `noindex`, `no-store`) |
+| `/contractors/{slug}` | Retired guessable statement link — `410 Gone` |
+
+`/credits` and `/en/credits` were removed on 28 Oct 2026 and now return 404.
+
+### 3.5 Enquiry form
+
+`Site\ContactController` validates through `StoreInquiryRequest`, stores an
+`Inquiry` row and emails the owner via `InquiryReceived`.
+
+- Fields: name, phone, email (optional), **location**, **budget**, service,
+  message, plus a hidden honeypot named `company_website`.
+- `location` and `budget` were added on 28 Oct 2026
+  (`2026_10_28_000001_add_project_details_to_inquiries_table.php`).
+- The service card links preselect the service on the contact page.
+- Rate limit: **5 requests per minute per IP** (`site.contact.throttle`).
+- Stored metadata: `locale`, IP address, user agent, `status` (default `new`).
+- Notification recipient: `SITE_NOTIFY_EMAIL`, falling back to `site.email`.
+- Submitting disables the button and shows "Sending…"; a double-submit guard
+  prevents duplicate rows.
+
+### 3.6 Map and local SEO
+
+- The Google Maps embed URL is owner-supplied and lives in
+  `config('site.address.map_embed_url')`; the iframe is responsive (288 px
+  mobile, 320 px tablet, 420 px desktop), lazy-loaded and has a descriptive
+  title.
+- Confirmed coordinates: **17.3126691, 74.8801869**, used in the
+  `HomeAndConstructionBusiness` JSON-LD as `geo`, alongside `hasMap` pointing
+  at the business listing.
+- `seo.og_image` is the Modern Duplex cover; project pages push their own
+  `og:image`.
+- `robots.txt` disallows the internal app (`/admin`, `/deploy`, `/login`,
+  `/dashboard`, `/transactions`, `/owner`) and the tokenised statement URLs
+  (`/statement`, `/contractors`); the statement page also sends `noindex`
+  and `no-store` headers.
+
+### 3.7 Portfolio data
+
+`PortfolioProject` is database-driven with per-locale fields
+(`title_mr`, `summary_mr`, `description_mr`, `location_mr`), a category, cover
+image, gallery JSON, year, `is_published` and `sort_order` scope.
+
+- Current data: **4 published projects, 0 samples**.
+- The `is_sample` column remains in the schema but is no longer read by any
+  view; the sample badge/notice UI was removed.
+- Portfolio content is seeded (`RealPortfolioSeeder`) because there is no admin
+  screen for it yet.
+
+---
+
+## 4. The Wallet Model (Core Concept)
 
 Three wallet types exist:
 
@@ -64,55 +185,65 @@ Three wallet types exist:
 
 ```
 Free company money = Company money (total) − Σ(active project money left)
-Manager spending (net) = Given to manager − Returned by manager
-Total spending = Direct spending + Manager spending (net)
+Contractor spending = Σ contractor transfers recorded for the project
+Total spending = Direct spending + Contractor spending
 ```
+
+> Contractor returns are **not implemented** in the current ledger; only
+> `contractor_transfer` (money out) exists. If returns are needed, they require
+> a new transaction type plus wallet logic, not just a UI screen.
 
 ### Invariant
 
 > Unallocated funds = Business balance − sum(active project assigned balances)
 
-Setting aside money and closing a project do **not** change total company cash — they only reclassify money between "free" and "set aside for a project".
+Setting aside money and closing a project do **not** change total company cash
+— they only reclassify money between "free" and "set aside for a project".
 
 ---
 
-## 4. Roles
+## 5. Roles
 
 | Role | Access |
 |------|--------|
-| **Owner / Admin** | Full: projects, receipts, unallocated income, funding, expenses, manager transfers/returns, owner wallet, closure, reports |
-| **Project Manager** | Read-only. Views assigned projects and their cost transfers/returns. Cannot add expenses, issue transfers, or access company/owner wallets |
+| **Owner / Admin** | Everything: projects, receipts, unallocated income, funding, expenses, contractor transfers/returns, owner wallet, closure, reports, contractors |
+| **Contractor** | No login. Receives project transfers and can be shown a private statement via a tokenised link |
 
-Enforcement: `role` middleware, `ProjectPolicy`, `WalletService` guards. Hiding UI buttons is **not** relied upon.
+`UserRole` currently has a single case, `owner`. Contractors are payment
+recipients, not application users. Enforcement uses the `role:owner`
+middleware and `ProjectPolicy`; hiding buttons is not relied upon.
 
 ---
 
-## 5. Core Architecture
+## 6. Core Architecture
 
 ### Key files
 
 | File | Purpose |
 |------|---------|
-| `app/Services/WalletService.php` | Single source of truth for ALL money movements and balance changes (782 lines). Controllers only validate, authorise, delegate. |
+| `app/Services/WalletService.php` | Single source of truth for ALL money movements and balance changes (873 lines). Controllers validate, authorise and delegate. |
 | `app/Support/Money.php` | Exact decimal arithmetic (bcmath wrapper) |
 | `app/Enums/*` | `UserRole`, `ProjectStatus`, `WalletType`, `TransactionType` |
 | `app/Exceptions/WalletException.php` | Domain exception for wallet errors |
+| `app/Support/Site/SiteContent.php` | Company/services/category data for the public site |
+| `app/Support/Site/SiteRoutes.php` | Locale-aware URL helpers |
 
 ### Transaction safety
 
-Every balance change runs inside `DB::transaction` with `lockForUpdate` row locks. Failed operations roll back completely.
+Every balance change runs inside `DB::transaction` with `lockForUpdate` row
+locks. Failed operations roll back completely.
 
 ### Immutable ledger
 
-`wallet_transactions` is the immutable history. Returns are separate records linked to their original manager cost via `related_transaction_id`.
+`wallet_transactions` is the immutable history. Returns are separate records
+linked to their original contractor cost via `related_transaction_id`.
 
 ---
 
-## 6. Enums
+## 7. Enums
 
 ### UserRole
 - `owner` — Owner / Admin
-- `manager` — Project Manager
 
 ### ProjectStatus
 - `active` — Active
@@ -126,139 +257,172 @@ Every balance change runs inside `DB::transaction` with `lockForUpdate` row lock
 
 ### TransactionType (9 types)
 
-| Technical name | On-screen label | Business cash | Project assigned | Project cost |
-|----------------|-----------------|---------------|------------------|--------------|
-| `receipt` (project) | Money received | + | + | — |
-| `receipt` (unallocated) | Money received | + | — | — |
-| `project_expense` | Project expense (paid directly) | − | − | + |
-| `manager_transfer` | Money given to manager | − | − | + |
-| `manager_return` | Money returned by manager | + | + | − (reduces) |
-| `owner_transfer` | Money moved to owner | − | — | — |
-| `owner_expense` | Owner personal expense | — | — | — (owner wallet only) |
-| `owner_return` | Owner money returned to company | + | — | — (owner → company) |
-| `project_allocation` | Money set aside for project | — | + | — (unallocated → project) |
-| `closure_release` | Project closed, funds released | — | − | — (reclassification) |
+| Technical name | On-screen label | Company cash | Project wallet | Project cost |
+|----------------|-----------------|--------------|----------------|--------------|
+| `receipt` | Payment Received | + | + (when allocated to a project) | — |
+| `project_expense` | Project Expense (Direct) | − | − | + |
+| `contractor_transfer` | Contractor Payment | − | − | + |
+| `owner_transfer` | Transfer to Owner | − | — | — |
+| `owner_expense` | Personal Expense | — | — | — (owner wallet only) |
+| `owner_income` | Personal Income | — | — | — (owner wallet only) |
+| `owner_return` | Transfer to Company | + | — | — |
+| `project_allocation` | Project Funding | — | + | — (reclassification) |
+| `closure_release` | Funds Released (Closure) | — | − | — (reclassification) |
+
+The effects are defined in `TransactionType::businessCashEffect()`,
+`ledgerDirection()` and `isProjectCost()` rather than in views.
 
 ---
 
-## 7. Models
+## 8. Models
 
 ### User
 - Fillable: `name`, `email`, `password`, `role`, `is_active`
 - Hidden: `password`, `remember_token`
-- Roles via `UserRole` enum
+- Role via `UserRole` enum
 
 ### Project
-- Fillable: `name`, `location`, `agreed_amount`, `manager_id`, `status`, `closed_at`
+- Fillable: `name`, `location`, `agreed_amount`, `contractor_id`, `status`, `closed_at`
 - Casts: `agreed_amount` → `decimal:2`, `status` → `ProjectStatus`
-- Relations: `manager()` (belongsTo User)
+- Relations: `contractor()` (belongsTo `Contractor`)
+
+### Contractor
+- Fillable: `name`, `slug`, `phone`, `contractor_type_id`, `notes`, `is_active`
+- Relations: `type()`, `projects()`
+- Public statement token lives on this table (`statement_token`)
+
+### ContractorType
+- Groups contractors by trade/skill for the admin index
 
 ### Wallet
-- Fillable: `type`, `project_id`, `user_id`, `balance`
+- Fillable: `type`, `project_id`, `contractor_id`, `user_id`, `balance`
 - Casts: `type` → `WalletType`, `balance` → `decimal:2`
-- Relations: `project()`, `user()`
 
 ### WalletTransaction
-- Fillable: `type`, `amount`, `transaction_date`, `description`, `project_id`, `category_id`, `manager_id`, `source_wallet_id`, `destination_wallet_id`, `related_transaction_id`, `created_by`
+- Fillable: `type`, `amount`, `transaction_date`, `description`, `project_id`, `category_id`, `contractor_id`, `source_wallet_id`, `destination_wallet_id`, `related_transaction_id`, `created_by`
 - Casts: `type` → `TransactionType`, `amount` → `decimal:2`, `transaction_date` → `date`
 
 ### ExpenseCategory
 - Fillable: `name`, `context`, `is_active`
 - Scopes: `active()`, `forProject()`
 
+### PortfolioProject
+- Fillable: `title`, `title_mr`, `slug`, `category`, `location`, `location_mr`, `summary`, `summary_mr`, `description`, `description_mr`, `cover_image`, `gallery`, `year`, `is_sample`, `is_published`, `sort_order`
+- Scopes: `published()`, `ordered()`; helpers `titleFor()`, `summaryFor()`, `coverUrl()`, `galleryUrls()`
+
+### Inquiry
+- Fillable: `name`, `phone`, `email`, `location`, `budget`, `service`, `message`, `locale`, `status`, `ip_address`, `user_agent`
+
 ---
 
-## 8. Controllers
+## 9. Controllers
+
+### Public site (`app/Http/Controllers/Site`)
 
 | Controller | Responsibility |
 |------------|----------------|
-| `AuthController` | Login/logout |
+| `HomeController` | Home page data (services, selected projects, testimonial switch) |
+| `PageController` | About, services |
+| `PortfolioController` | Portfolio index with category filter, project detail |
+| `ContactController` | Contact page, enquiry validation/store, owner notification |
+| `ContractorStatementController` | Tokenised public statement, 410 for retired slugs |
+| `LegacyMarathiRedirectController` | `/mr/...` → canonical Marathi URLs |
+| `SitemapController` | Bilingual XML sitemap |
+
+### Admin (`app/Http/Controllers/Admin`, mounted at `/admin`)
+
+| Controller | Responsibility |
+|------------|----------------|
+| `AuthController` | Login/logout (rate limited) |
 | `DashboardController` | Dashboard overview |
-| `HomeController` | Public landing page |
-| `IncomeController` | Record unallocated income |
-| `InstallerController` | Browser-based deploy/migrate/seed (`/deploy`) |
-| `ManagerController` | CRUD managers |
-| `ManagerReturnController` | Record manager returns |
-| `OwnerWalletController` | Owner wallet show/transfer/return/expense |
 | `ProjectController` | Project CRUD + closure request/finalize |
 | `ProjectFinanceController` | Receipts, expenses, transfers, funding per project |
+| `ContractorController` | Contractor list/create |
+| `OwnerWalletController` | Owner wallet show/income/transfer/return/expense |
 | `TransactionController` | Transaction ledger index |
+| `InstallerController` | Browser-based deploy/migrate/seed (`/deploy`) |
+
+> `ManagerController`, `ManagerReturnController`, `IncomeController` and the
+> `StoreManagerRequest` / `TransferToManagerRequest` /
+> `RecordManagerReturnRequest` classes are leftovers from before contractors
+> replaced managers. They are not routed and should be deleted with the stale
+> `ManagerManagementTest` (see §16).
 
 ---
 
-## 9. Routes
+## 10. Routes
 
-> **Current map after the restructure (Phases 1–6).** The pre-restructure route list below it is kept for history only.
+### Public business website (`routes/web.php`)
 
-### Public business website (`routes/web.php`, Marathi at the root, English under `/en`)
+Marathi at the root, English under `/en`:
+
 - `GET /` — home
 - `GET /about`, `GET /services`, `GET /contact`
+- `POST /contact` — enquiry (throttled 5/min per IP)
 - `GET /projects`, `GET /projects/{slug}` — public portfolio
-- `GET /en/...` — English versions of the same public pages
-- Legacy `GET /mr/...` — permanent redirects to the Marathi canonical URLs
+- `GET /en/...` — English versions of the same pages
+- `GET /mr/{path?}` — permanent redirects to Marathi canonicals
 - `GET /sitemap.xml` — bilingual sitemap
-- `GET /statement/{contractor:statement_token}` — public contractor statement (random token, noindex)
-- `GET /contractors/{slug}` — retired guessable statement URL, answers 410 Gone
+- `GET /statement/{contractor:statement_token}` — public contractor statement
+- `GET /contractors/{slug}` — retired guessable URL, answers `410 Gone`
 
 ### Internal app (`routes/admin.php`, mounted at `/admin` by `bootstrap/app.php`)
-- Login, dashboard, projects, transactions, owner wallet, contractors — all under `/admin`
-- Sign-in is rate limited to 5 failed attempts per minute per account+IP; admin pages send `noindex`
-- Legacy paths (`/login`, `/dashboard`, `/owner`, `/transactions`, `/contractors`) 301 to their `/admin` equivalent
+
+- Login/logout, dashboard
+- Projects (index, create, store, show), receipts, expenses, transfers, funding,
+  closure request/finalize
+- Transactions ledger
+- Contractors (index, store)
+- Owner wallet (show, income, transfer, return, expense)
+- All admin pages send `noindex`; sign-in is rate limited to 5 failed attempts
+  per minute per account+IP
+- Legacy paths (`/login`, `/dashboard`, `/transactions`, `/contractors`,
+  `/owner`) 301 to their `/admin` equivalent
 
 ### Deployment
+
 - `GET /deploy`, `POST /deploy/run` — protected by `DEPLOY_TOKEN`
-
-### Historical route list (pre-restructure)
-
-### Public
-- `GET /` — welcome page
-- `GET /login`, `POST /login` — auth (guest only)
-- `POST /logout` — auth required
-
-### Auth required
-- `GET /dashboard`
-- `GET /projects`, `GET /projects/{id}`
-- `GET /transactions`
-
-### Owner only (`role:owner` middleware)
-- `GET /projects/create`, `POST /projects`
-- `POST /projects/{id}/receipts`
-- `POST /projects/{id}/expenses`
-- `POST /projects/{id}/transfers`
-- `POST /projects/{id}/fund`
-- `POST /transfers/{id}/returns`
-- `POST /projects/{id}/request-closure`
-- `POST /projects/{id}/finalize-closure`
-- `POST /income`
-- `GET /managers`, `POST /managers`
-- `GET /owner`, `POST /owner/transfer`, `POST /owner/return`, `POST /owner/expense`
-
-### Deploy (protected by DEPLOY_TOKEN)
-- `GET /deploy`, `POST /deploy/run`
 
 ---
 
-## 10. Views (Blade)
+## 11. Views (Blade)
 
 ```
 resources/views/
-├── auth/login.blade.php
-├── components/icon.blade.php
-├── dashboard.blade.php
-├── layouts/app.blade.php
-├── managers/index.blade.php
-├── owner/show.blade.php
-├── partials/nav-links.blade.php
-├── projects/create.blade.php
-├── projects/index.blade.php
-├── projects/show.blade.php
-├── transactions/index.blade.php
-└── welcome.blade.php
+├── admin/
+│   ├── auth/login.blade.php
+│   ├── contractors/index.blade.php
+│   ├── dashboard.blade.php
+│   ├── managers/index.blade.php          ← leftover, not routed
+│   ├── owner/show.blade.php
+│   ├── projects/{create,index,show}.blade.php
+│   └── transactions/index.blade.php
+├── components/
+│   ├── icon.blade.php
+│   └── site/{button,icon,page-hero,project-card,section-heading,service-card}.blade.php
+├── emails/inquiry.blade.php
+├── layouts/{admin,site,statement}.blade.php
+├── partials/
+│   ├── admin/nav-links.blade.php
+│   └── site/{footer,nav}.blade.php
+├── site/
+│   ├── about.blade.php
+│   ├── coming-soon.blade.php
+│   ├── contact.blade.php
+│   ├── home.blade.php
+│   ├── portfolio/{index,show}.blade.php
+│   ├── services.blade.php
+│   ├── sitemap.blade.php
+│   ├── statement.blade.php
+│   └── statement-unavailable.blade.php
 ```
+
+`resources/views/welcome.blade.php` was removed on 28 Oct 2026; the root route
+is the business home page.
 
 ---
 
-## 11. Database Schema (Migrations)
+## 12. Database Schema (Migrations)
 
 | Migration | Creates |
 |-----------|---------|
@@ -270,15 +434,26 @@ resources/views/
 | `2026_10_13_000003_create_projects_table.php` | projects |
 | `2026_10_13_000004_create_wallets_table.php` | wallets |
 | `2026_10_13_000005_create_wallet_transactions_table.php` | wallet_transactions |
+| `2026_10_18_000001_create_contractor_types_table.php` | contractor_types |
+| `2026_10_18_000002_create_contractors_table.php` | contractors |
+| `2026_10_18_000003_add_contractor_id_columns.php` | contractor_id on projects/transactions/wallets |
+| `2026_10_18_000004_migrate_managers_to_contractors.php` | copies manager rows to contractors |
+| `2026_10_18_000005_drop_manager_columns.php` | drops manager columns |
+| `2026_10_18_000006_add_slug_to_contractors_table.php` | adds `slug` |
+| `2026_10_25_000001_create_portfolio_projects_table.php` | portfolio_projects |
+| `2026_10_25_000002_create_inquiries_table.php` | inquiries |
+| `2026_10_25_000003_add_statement_token_to_contractors_table.php` | adds `statement_token` |
+| `2026_10_28_000001_add_project_details_to_inquiries_table.php` | adds `location`, `budget` to inquiries |
 
 ---
 
-## 12. Local Development Environment
+## 13. Local Development Environment
 
 ### `.env` (local)
+
 ```
 APP_NAME="Bandgar Account Manager"
-APP_ENV=production (or local)
+APP_ENV=local
 APP_URL=http://127.0.0.1:8000
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -286,39 +461,60 @@ DB_PORT=3306
 DB_DATABASE=bandgar_wallet
 DB_USERNAME=root
 DB_PASSWORD=•••• (see .env — never commit)
+SITE_EMAIL=…            # public contact address (optional locally)
+SITE_NOTIFY_EMAIL=…     # enquiry notifications (falls back to SITE_EMAIL)
+DEPLOY_TOKEN=…          # add only while installing; remove after
 ```
 
-### Database: `bandgar_wallet`
-Host: XAMPP MariaDB 10.4.32 at `C:\xampp\mysql\`
+`SITE_EMAIL`, `SITE_NOTIFY_EMAIL` and `DEPLOY_TOKEN` are not set in the local
+`.env` today; the site works without them, but enquiry emails are skipped until
+a recipient is configured.
 
-### Seeded accounts (password: `password`)
+### Database: `bandgar_wallet`
+
+Host: XAMPP MariaDB 10.4.32 at `C:\xampp\mysql\`.
+
+### Running it on this machine
+
+- PHP has no WSL install; use `/mnt/c/xampp/php/php.exe` from WSL (or
+  `C:\xampp\php\php.exe` on Windows).
+- Node/npm live in WSL (`~/.nvm/...`); `node_modules` was installed there.
+- Start the site with `php artisan serve` (port 8000) from Windows so Chrome
+  can reach `127.0.0.1:8000`.
+- Tests: `php artisan test`.
+
+### Seeded account (password: `password`)
+
 | Email | Role |
 |-------|------|
 | `owner@bandgar.test` | Owner / Admin |
-| `ramesh@bandgar.test` | Project Manager |
+
+`DatabaseSeeder` also creates expense categories and calls
+`RealPortfolioSeeder` so a fresh deploy has the published projects.
 
 ### Registered accounts (passwords unknown — bcrypt hashed)
+
 | Email | Notes |
 |-------|-------|
 | `somnath.malim46@gmail.com` | Registered via app |
 | `system@myvivah.local` | Registered via app |
 
-### Current data (as of 18 Oct 2026 recovery)
-| Database | Contents |
-|----------|----------|
-| `bandgar_wallet` | 4 users, 4 wallets, 10 transactions, 2 projects, 10 expense categories, 7 sessions |
-| `myvivah` | 20 table structures (mostly empty — schema-only) |
-| `myvivahai_chat` | 5 users, 3 conversations, 9 messages, 10 receipts |
+> Data counts in an earlier version of this document (users, transactions,
+> projects) are historical. Query the database or run `php artisan tinker`
+> before quoting numbers.
 
 ---
 
-## 13. MySQL Recovery Incident (18 Oct 2026)
+## 14. MySQL Recovery Incident (18 Oct 2026)
+
+Kept for history; the server has been stable since.
 
 ### What happened
 - XAMPP MariaDB 10.4.32 crashed with `APPCRASH` exception `0x80000003` at 11:37 AM
-- Root cause: InnoDB corruption from a bad recovery on **12 Oct** where `ib_logfile0/1` were wiped while `ibdata1` retained higher LSNs
+- Root cause: InnoDB corruption from a bad recovery on **12 Oct** where
+  `ib_logfile0/1` were wiped while `ibdata1` retained higher LSNs
 - Additional: `mysql.proxies_priv` (MyISAM) was crashed, blocking startup
-- `gtid_slave_pos.ibd` had tablespace ID mismatch
+- `gtid_slave_pos.ibd` had a tablespace ID mismatch
 
 ### Recovery actions taken
 1. Enabled `innodb_force_recovery` in `my.ini`
@@ -336,112 +532,144 @@ Host: XAMPP MariaDB 10.4.32 at `C:\xampp\mysql\`
 
 ---
 
-## 14. Deployment
+## 15. Deployment
 
-Designed for **shared hosting (cPanel)** without terminal access. Browser installer at `/deploy` (protected by `DEPLOY_TOKEN` in `.env`).
+Designed for **shared hosting (cPanel)** without terminal access. Browser
+installer at `/deploy`, protected by `DEPLOY_TOKEN`. See `DEPLOY.md` for the
+full walkthrough.
 
 ### Deploy steps
-1. Create MySQL database in cPanel
-2. Upload zip (includes `vendor/` and `public/build/`)
+1. Create the MySQL database in cPanel
+2. Upload the zip — it includes `vendor/` and the committed `public/build/`
 3. Two layout options:
-   - **Option A (secure):** App outside `public_html`, only `public/` contents inside
-   - **Option B (easy):** Everything in `public_html` with `.htaccess` rewrite
-4. Create `.env` with DB credentials + `DEPLOY_TOKEN`
-5. Set permissions: `storage/` and `bootstrap/cache/` → 775, `.env` → 600
-6. Visit `/deploy`, run: generate key → migrate+seed → create owner login → optimize
-7. **Remove `DEPLOY_TOKEN`** after setup, clear caches, confirm `/deploy` returns 404
+   - **Option A (secure):** app outside `public_html`, only `public/` inside
+   - **Option B (easy):** everything in `public_html` with `.htaccess` rewrite
+4. Create `.env` with DB credentials, `SITE_EMAIL`, `SITE_NOTIFY_EMAIL` and
+   `DEPLOY_TOKEN`
+5. Permissions: `storage/` and `bootstrap/cache/` → 775, `.env` → 600
+6. Visit `/deploy`: generate key → migrate+seed → create owner login → optimize
+7. **Remove `DEPLOY_TOKEN`** after setup, clear caches, confirm `/deploy`
+   returns 404
+
+### Assets and the pre-commit hook
+
+Production has no Node, so `public/build/` must be committed. The repository
+hook (`.git/hooks/pre-commit`, not versioned) rebuilds Vite when staged files
+match `resources/(css|js)/`, `resources/views/`, `vite.config.*`,
+`tailwind.config.*` or `package*.json`, then stages `public/build`.
+
+The checkout is used from both WSL and Windows. Windows Git has no
+`node_modules/.bin/vite.cmd` because `node_modules` was installed under WSL, so
+the hook falls back to `wsl.exe ... npm run build` instead of failing. Bypass
+once with `SKIP_BUILD=1 git commit ...` only when assets cannot change.
 
 ### Production checklist
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] Unique `APP_KEY` generated
-- [ ] Strong owner password (not seeded `password`)
+- [ ] Strong owner password (not the seeded `password`)
 - [ ] `DEPLOY_TOKEN` removed
 - [ ] `.env` not web-accessible
-- [ ] Demo accounts removed or passwords changed
+- [ ] Demo/seeded accounts removed or passwords changed
+- [ ] Enquiry notification address tested
 
 ---
 
-## 15. File Tree (app code only)
+## 16. Testing and Known Issues
+
+`php artisan test` currently runs **83 tests**:
+
+- **75 pass**, including all public-site tests (`PublicSiteTest`,
+  `SiteSurfaceTest`) and the wallet/contractor suites.
+- **8 fail** — all in `ManagerManagementTest`. The `/managers` routes were
+  replaced by `/contractors`, so that test file is stale. Fixing it means
+  deleting the test plus the leftover `ManagerController`,
+  `ManagerReturnController`, `StoreManagerRequest`, `TransferToManagerRequest`,
+  `RecordManagerReturnRequest` and `admin/managers/index.blade.php`.
+
+Public-site tests cover: locale routing, rendered copy, portfolio visibility,
+filters, enquiry storage/mail/honeypot, sitemap, robots, footer links, and the
+removal of the credits page.
+
+### Known debt / unused files
+
+- Leftover manager classes and view listed above, plus the unrouted
+  `IncomeController`.
+- `portfolio_projects.is_sample` column and model attribute are kept but no
+  longer read by any view.
+- `public/fonts/noto-serif-devanagari-var.ttf` (758 KB) is unused.
+- `public/images/site/hero-advertisement*.png` (5 files, ~11 MB) are the
+  owner's original posters, no longer referenced by the site.
+
+---
+
+## 17. File Tree (app code only)
 
 ```
-BAM/
+BC/
 ├── app/
 │   ├── Enums/
 │   │   ├── ProjectStatus.php
 │   │   ├── TransactionType.php
 │   │   ├── UserRole.php
 │   │   └── WalletType.php
-│   ├── Exceptions/
-│   │   └── WalletException.php
+│   ├── Exceptions/WalletException.php
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── AuthController.php
-│   │   │   ├── Controller.php
-│   │   │   ├── DashboardController.php
-│   │   │   ├── HomeController.php
-│   │   │   ├── IncomeController.php
-│   │   │   ├── InstallerController.php
-│   │   │   ├── ManagerController.php
-│   │   │   ├── ManagerReturnController.php
-│   │   │   ├── OwnerWalletController.php
-│   │   │   ├── ProjectController.php
-│   │   │   ├── ProjectFinanceController.php
-│   │   │   └── TransactionController.php
-│   │   ├── Middleware/
-│   │   │   └── EnsureUserHasRole.php
+│   │   │   ├── Admin/{Auth,Contractor,Dashboard,Income,Installer,Manager,
+│   │   │   │          ManagerReturn,OwnerWallet,Project,ProjectFinance,
+│   │   │   │          Transaction}Controller.php
+│   │   │   └── Site/{Contact,ContractorStatement,Home,LegacyMarathiRedirect,
+│   │   │              Page,Portfolio,Sitemap}Controller.php
+│   │   ├── Middleware/{EnsureUserHasRole,SetSiteLocale}.php
 │   │   └── Requests/
-│   │       ├── FundProjectRequest.php
-│   │       ├── ReceiveProjectPaymentRequest.php
-│   │       ├── ReceiveUnallocatedIncomeRequest.php
-│   │       ├── RecordManagerReturnRequest.php
-│   │       ├── RecordOwnerExpenseRequest.php
-│   │       ├── RecordProjectExpenseRequest.php
-│   │       ├── ReturnOwnerFundsRequest.php
-│   │       ├── StoreManagerRequest.php
-│   │       ├── StoreProjectRequest.php
-│   │       ├── TransferToManagerRequest.php
-│   │       └── TransferToOwnerRequest.php
+│   │       ├── Admin/…                ← wallet/project/contractor forms
+│   │       └── Site/StoreInquiryRequest.php
 │   ├── Models/
+│   │   ├── Contractor.php
+│   │   ├── ContractorType.php
 │   │   ├── ExpenseCategory.php
+│   │   ├── Inquiry.php
+│   │   ├── PortfolioProject.php
 │   │   ├── Project.php
 │   │   ├── User.php
 │   │   ├── Wallet.php
 │   │   └── WalletTransaction.php
-│   ├── Policies/
-│   │   └── ProjectPolicy.php
-│   ├── Providers/
-│   │   └── AppServiceProvider.php
-│   ├── Services/
-│   │   └── WalletService.php          ← core money logic (782 lines)
+│   ├── Policies/ProjectPolicy.php
+│   ├── Providers/AppServiceProvider.php
+│   ├── Services/WalletService.php      ← core money logic (873 lines)
 │   └── Support/
-│       └── Money.php                  ← bcmath decimal arithmetic
-├── config/
+│       ├── Money.php                   ← bcmath decimal arithmetic
+│       └── Site/{SiteContent,SiteRoutes}.php
+├── config/site.php                     ← company, address, map, services, SEO
 ├── database/
 │   ├── factories/
-│   ├── migrations/                    ← 8 migrations
+│   ├── migrations/                     ← 18 migrations
 │   └── seeders/
-│       └── DatabaseSeeder.php
+│       ├── DatabaseSeeder.php
+│       └── RealPortfolioSeeder.php
+├── lang/{en,mr}/site.php               ← public copy, 319 keys each
 ├── public/
-├── resources/views/                   ← 12 Blade templates
-├── routes/
-│   ├── console.php
-│   └── web.php                        ← all routes
+│   ├── build/                          ← committed Vite assets
+│   ├── fonts/                          ← self-hosted typefaces
+│   └── images/site/                    ← brand, portfolio imagery
+├── resources/
+│   ├── css/app.css                     ← fonts, theme, components
+│   ├── js/app.js                       ← nav, reveal, enquiry submit
+│   └── views/                          ← see §11
+├── routes/{web,admin}.php
 ├── storage/
-├── tests/
-├── .env                               ← local config (never commit)
-├── .env.example
-├── composer.json                      ← Laravel 12, PHP 8.2+
-├── DEPLOY.md                          ← shared hosting guide
-├── README.md
+├── tests/Feature/                      ← 12 test files
+├── .env                                ← local config (never commit)
+├── composer.json                       ← Laravel 12, PHP 8.2+
+├── DEPLOY.md                           ← shared hosting guide
+├── package.json
 ├── vite.config.js
-└── mysql_recovery_dumps/              ← 18 Oct recovery dumps
-    ├── all_databases.sql
-    └── mysql_system.sql
+└── mysql_recovery_dumps/               ← 18 Oct recovery dumps
 ```
 
 ---
 
-## 16. Related Projects (same machine)
+## 18. Related Projects (same machine)
 
 Also present in XAMPP MySQL:
 

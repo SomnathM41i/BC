@@ -58,14 +58,28 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee): View
     {
-        $employee->load([
-            'attendances' => fn ($q) => $q->orderByDesc('attendance_date')->limit(30),
-            'advances' => fn ($q) => $q->orderByDesc('advance_date'),
-            'salaryPayments' => fn ($q) => $q->orderByDesc('payment_date'),
-        ]);
+        // Each history list gets its own page parameter so paginating one
+        // table does not move the others.
+        $attendances = $employee->attendances()
+            ->orderByDesc('attendance_date')
+            ->paginate(5, ['*'], 'attendance_page')
+            ->withQueryString();
+
+        $advances = $employee->advances()
+            ->orderByDesc('advance_date')
+            ->paginate(10, ['*'], 'advance_page')
+            ->withQueryString();
+
+        $salaryPayments = $employee->salaryPayments()
+            ->orderByDesc('payment_date')
+            ->paginate(10, ['*'], 'salary_page')
+            ->withQueryString();
 
         return view('admin.employees.show', [
             'employee' => $employee,
+            'attendances' => $attendances,
+            'advances' => $advances,
+            'salaryPayments' => $salaryPayments,
             'totalAdvances' => $employee->totalAdvances(),
             'totalRepayments' => $employee->totalRepayments(),
             'outstandingAdvance' => $employee->outstandingAdvance(),
