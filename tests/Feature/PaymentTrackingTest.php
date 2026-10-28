@@ -55,8 +55,8 @@ class PaymentTrackingTest extends TestCase
 
     private function startLookup(string $category): void
     {
-        $this->post('/en/payment-tracking/category', ['category' => $category])
-            ->assertRedirect('/en/payment-tracking/verify');
+        $this->post('/payment-tracking/category', ['category' => $category])
+            ->assertRedirect('/payment-tracking/verify');
     }
 
     public function test_home_page_links_to_payment_tracking_in_both_languages(): void
@@ -66,12 +66,12 @@ class PaymentTrackingTest extends TestCase
             ->assertSee('name="category"', false)
             ->assertSee('name="mobile"', false)
             ->assertSee('/payment-tracking/lookup', false)
-            ->assertSee('तुमची देयके तपासा');
+            ->assertSee('Track Your Payments');
 
-        $this->get('/en')
+        $this->get('/mr')
             ->assertOk()
-            ->assertSee('/en/payment-tracking/lookup', false)
-            ->assertSee('Track Your Payments')
+            ->assertSee('/payment-tracking/lookup', false)
+            ->assertSee('तुमची देयके तपासा')
             ->assertSee('name="category"', false);
     }
 
@@ -80,14 +80,14 @@ class PaymentTrackingTest extends TestCase
         $project = $this->clientProject('Alpha Villa', '9021113887');
         $this->receipt($project, '50000', 'First instalment');
 
-        $this->post('/en/payment-tracking/lookup', [
+        $this->post('/payment-tracking/lookup', [
             'category' => 'client',
             'mobile' => '+91 90211 13887',
         ])
-            ->assertRedirect('/en/payment-tracking/dashboard')
+            ->assertRedirect('/payment-tracking/dashboard')
             ->assertSessionHas('payment_tracking.category', 'client');
 
-        $this->get('/en/payment-tracking/dashboard')
+        $this->get('/payment-tracking/dashboard')
             ->assertOk()
             ->assertSee('Alpha Villa')
             ->assertSee('₹50,000.00');
@@ -97,15 +97,15 @@ class PaymentTrackingTest extends TestCase
     {
         $this->clientProject('Alpha Villa', '9021113887');
 
-        $this->post('/en/payment-tracking/lookup', [
+        $this->post('/payment-tracking/lookup', [
             'category' => 'client',
             'mobile' => '9999999999',
         ])
-            ->assertRedirect('/en#track-payments')
+            ->assertRedirect(url('/').'#track-payments')
             ->assertSessionHas('tracking_error', __('site.payment_tracking.lookup_failed'))
             ->assertSessionMissing('payment_tracking.client_name');
 
-        $this->get('/en')
+        $this->get('/')
             ->assertOk()
             ->assertSee(__('site.payment_tracking.lookup_failed'))
             ->assertSee('value="9999999999"', false);
@@ -113,22 +113,22 @@ class PaymentTrackingTest extends TestCase
 
     public function test_homepage_quick_form_rejects_an_invalid_mobile(): void
     {
-        $this->post('/en/payment-tracking/lookup', [
+        $this->post('/payment-tracking/lookup', [
             'category' => 'client',
             'mobile' => '12345',
         ])
-            ->assertRedirect('/en#track-payments')
+            ->assertRedirect(url('/').'#track-payments')
             ->assertSessionHasErrors('mobile');
     }
 
     public function test_portal_renders_in_both_languages(): void
     {
-        $this->get('/payment-tracking')
+        $this->get('/mr/payment-tracking')
             ->assertOk()
             ->assertSee('तुमची देयके तपासा')
             ->assertSee('ग्राहक');
 
-        $this->get('/en/payment-tracking')
+        $this->get('/payment-tracking')
             ->assertOk()
             ->assertSee('Track Your Payments')
             ->assertSee('Client');
@@ -136,7 +136,7 @@ class PaymentTrackingTest extends TestCase
 
     public function test_payment_pages_are_noindex_and_no_store(): void
     {
-        foreach (['/en/payment-tracking', '/en/payment-tracking/verify'] as $url) {
+        foreach (['/payment-tracking', '/payment-tracking/verify'] as $url) {
             if (str_ends_with($url, 'verify')) {
                 $this->startLookup('client');
             }
@@ -162,11 +162,11 @@ class PaymentTrackingTest extends TestCase
 
         $this->startLookup('client');
 
-        $this->post('/en/payment-tracking/verify', ['mobile' => '+91 90211 13887'])
-            ->assertRedirect('/en/payment-tracking/dashboard')
+        $this->post('/payment-tracking/verify', ['mobile' => '+91 90211 13887'])
+            ->assertRedirect('/payment-tracking/dashboard')
             ->assertSessionHas('payment_tracking.category', 'client');
 
-        $this->get('/en/payment-tracking/dashboard')
+        $this->get('/payment-tracking/dashboard')
             ->assertOk()
             ->assertSee('Somnath Mali')
             ->assertSee('+91 90211 13887')
@@ -187,9 +187,9 @@ class PaymentTrackingTest extends TestCase
         $this->receipt($second, '25000');
 
         $this->startLookup('client');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9021113887']);
+        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
 
-        $this->get('/en/payment-tracking/dashboard')
+        $this->get('/payment-tracking/dashboard')
             ->assertOk()
             ->assertSee('₹15,00,000.00')
             ->assertSee('₹75,000.00')
@@ -204,13 +204,13 @@ class PaymentTrackingTest extends TestCase
         $unlinked = $this->clientProject('Secret Villa', '9032221111');
 
         $this->startLookup('client');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9021113887']);
+        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
 
-        $this->post('/en/payment-tracking/project', ['project_id' => $unlinked->id])
-            ->assertRedirect('/en/payment-tracking/dashboard')
+        $this->post('/payment-tracking/project', ['project_id' => $unlinked->id])
+            ->assertRedirect('/payment-tracking/dashboard')
             ->assertSessionHas('tracking_error', __('site.payment_tracking.project_not_available'));
 
-        $this->get('/en/payment-tracking/dashboard')
+        $this->get('/payment-tracking/dashboard')
             ->assertOk()
             ->assertSee('Alpha Villa')
             ->assertDontSee('Secret Villa');
@@ -224,13 +224,13 @@ class PaymentTrackingTest extends TestCase
 
         $this->startLookup('client');
 
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9999999999'])
-            ->assertRedirect('/en/payment-tracking/verify')
+        $this->post('/payment-tracking/verify', ['mobile' => '9999999999'])
+            ->assertRedirect('/payment-tracking/verify')
             ->assertSessionHas('tracking_error', __('site.payment_tracking.lookup_failed'))
             ->assertSessionMissing('payment_tracking.client_name');
 
-        $this->get('/en/payment-tracking/dashboard')
-            ->assertRedirect('/en/payment-tracking')
+        $this->get('/payment-tracking/dashboard')
+            ->assertRedirect('/payment-tracking')
             ->assertSessionHas('tracking_error', __('site.payment_tracking.session_expired'));
     }
 
@@ -241,8 +241,8 @@ class PaymentTrackingTest extends TestCase
 
         $this->startLookup('contractor');
 
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9000000000'])
-            ->assertRedirect('/en/payment-tracking/verify')
+        $this->post('/payment-tracking/verify', ['mobile' => '9000000000'])
+            ->assertRedirect('/payment-tracking/verify')
             ->assertSessionHas('tracking_error', __('site.payment_tracking.lookup_failed'))
             ->assertSessionMissing('payment_tracking.contractor_id');
     }
@@ -259,10 +259,10 @@ class PaymentTrackingTest extends TestCase
         $this->contractorTransfer($other, $project, '8000');
 
         $this->startLookup('contractor');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9000000001'])
-            ->assertRedirect('/en/payment-tracking/dashboard');
+        $this->post('/payment-tracking/verify', ['mobile' => '9000000001'])
+            ->assertRedirect('/payment-tracking/dashboard');
 
-        $this->get('/en/payment-tracking/dashboard')
+        $this->get('/payment-tracking/dashboard')
             ->assertOk()
             ->assertSee('Ramesh Jadhav')
             ->assertSee('Masonry')
@@ -329,10 +329,10 @@ class PaymentTrackingTest extends TestCase
         ]);
 
         $this->startLookup('employee');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9022357293'])
-            ->assertRedirect('/en/payment-tracking/dashboard');
+        $this->post('/payment-tracking/verify', ['mobile' => '9022357293'])
+            ->assertRedirect('/payment-tracking/dashboard');
 
-        $this->get('/en/payment-tracking/dashboard')
+        $this->get('/payment-tracking/dashboard')
             ->assertOk()
             ->assertSee('Ramesh Patil')
             ->assertSee('EMP-2026-0001')
@@ -348,12 +348,12 @@ class PaymentTrackingTest extends TestCase
         $this->clientProject('Alpha Villa', '9021113887');
 
         $this->startLookup('client');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9021113887']);
+        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
 
         $this->travel(31)->minutes();
 
-        $this->get('/en/payment-tracking/dashboard')
-            ->assertRedirect('/en/payment-tracking')
+        $this->get('/payment-tracking/dashboard')
+            ->assertRedirect('/payment-tracking')
             ->assertSessionHas('tracking_error', __('site.payment_tracking.session_expired'))
             ->assertSessionMissing('payment_tracking');
     }
@@ -363,11 +363,11 @@ class PaymentTrackingTest extends TestCase
         $this->startLookup('client');
 
         for ($attempt = 1; $attempt <= 5; $attempt++) {
-            $this->post('/en/payment-tracking/verify', ['mobile' => '9999999999'])
+            $this->post('/payment-tracking/verify', ['mobile' => '9999999999'])
                 ->assertRedirect();
         }
 
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9999999999'])
+        $this->post('/payment-tracking/verify', ['mobile' => '9999999999'])
             ->assertStatus(429);
     }
 
@@ -386,21 +386,21 @@ class PaymentTrackingTest extends TestCase
         ]);
 
         $this->startLookup('client');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9021113887']);
-        $this->get('/en/payment-tracking/dashboard')
+        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
+        $this->get('/payment-tracking/dashboard')
             ->assertSee(__('site.payment_tracking.client.no_receipts'));
-        $this->post('/en/payment-tracking/logout');
+        $this->post('/payment-tracking/logout');
 
         $this->startLookup('contractor');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9000000001']);
-        $this->get('/en/payment-tracking/dashboard')
+        $this->post('/payment-tracking/verify', ['mobile' => '9000000001']);
+        $this->get('/payment-tracking/dashboard')
             ->assertSee(__('site.payment_tracking.contractor.no_records'))
             ->assertSee(__('site.payment_tracking.contractor.no_history'));
-        $this->post('/en/payment-tracking/logout');
+        $this->post('/payment-tracking/logout');
 
         $this->startLookup('employee');
-        $this->post('/en/payment-tracking/verify', ['mobile' => '9022357294']);
-        $this->get('/en/payment-tracking/dashboard')
+        $this->post('/payment-tracking/verify', ['mobile' => '9022357294']);
+        $this->get('/payment-tracking/dashboard')
             ->assertSee(__('site.payment_tracking.employee.no_records'))
             ->assertSee('₹0.00');
     }
@@ -409,11 +409,11 @@ class PaymentTrackingTest extends TestCase
     {
         $this->startLookup('client');
 
-        $this->post('/en/payment-tracking/verify', ['mobile' => '12345'])
+        $this->post('/payment-tracking/verify', ['mobile' => '12345'])
             ->assertSessionHasErrors('mobile')
             ->assertSessionMissing('payment_tracking.client_name');
 
-        $this->get('/en/payment-tracking/verify')
+        $this->get('/payment-tracking/verify')
             ->assertSee(__('site.payment_tracking.invalid_mobile'));
     }
 

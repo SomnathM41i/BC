@@ -11,7 +11,7 @@ class SitemapController extends Controller
 {
     public function __invoke(): Response
     {
-        $locales = ['mr', 'en'];
+        $locales = ['en', 'mr'];
         $pages = ['home', 'about', 'services', 'portfolio.index', 'contact'];
 
         $urls = [];
@@ -23,7 +23,7 @@ class SitemapController extends Controller
                     'alternates' => [
                         'mr-IN' => SiteRoutes::urlForLocale($page, 'mr'),
                         'en-IN' => SiteRoutes::urlForLocale($page, 'en'),
-                        'x-default' => SiteRoutes::urlForLocale($page, 'mr'),
+                        'x-default' => SiteRoutes::urlForLocale($page, 'en'),
                     ],
                 ];
             }
@@ -38,7 +38,7 @@ class SitemapController extends Controller
                     'alternates' => [
                         'mr-IN' => SiteRoutes::urlForLocale('portfolio.show', 'mr', ['portfolio' => $project->slug]),
                         'en-IN' => SiteRoutes::urlForLocale('portfolio.show', 'en', ['portfolio' => $project->slug]),
-                        'x-default' => SiteRoutes::urlForLocale('portfolio.show', 'mr', ['portfolio' => $project->slug]),
+                        'x-default' => SiteRoutes::urlForLocale('portfolio.show', 'en', ['portfolio' => $project->slug]),
                     ],
                     'lastmod' => $project->updated_at,
                 ];

@@ -25,45 +25,45 @@ class PublicSiteTest extends TestCase
         ];
     }
 
-    public function test_marathi_is_the_default_language(): void
+    public function test_english_is_the_default_language(): void
     {
         foreach (['/', '/about', '/services', '/projects', '/contact'] as $url) {
-            $this->get($url)->assertOk()->assertSee('lang="mr-IN"', false);
+            $this->get($url)->assertOk()->assertSee('lang="en-IN"', false);
         }
 
         $this->get('/')->assertSee('modern-duplex-residence/cover.jpg', false);
     }
 
-    public function test_english_pages_render_under_the_en_prefix(): void
+    public function test_marathi_pages_render_under_the_mr_prefix(): void
     {
-        $this->get('/en')
+        $this->get('/mr')
             ->assertOk()
-            ->assertSee('lang="en-IN"', false)
+            ->assertSee('lang="mr-IN"', false)
             ->assertSee('modern-duplex-residence/cover.jpg', false);
 
-        $this->get('/en/services')
+        $this->get('/mr/services')
             ->assertOk()
-            ->assertSee(__('site.services.banner_title', [], 'en'), false);
+            ->assertSee(__('site.services.banner_title', [], 'mr'), false);
     }
 
     public function test_language_links_switch_between_english_and_marathi(): void
     {
         $this->get('/about')
             ->assertOk()
-            ->assertSee(url('/en/about'), false)
+            ->assertSee(url('/mr/about'), false)
             ->assertSee(url('/about'), false)
             ->assertSee('hreflang="mr-IN"', false)
             ->assertSee('hreflang="en-IN"', false);
 
-        $this->get('/en/about')
+        $this->get('/mr/about')
             ->assertOk()
             ->assertSee(url('/about'), false)
-            ->assertSee(url('/en/about'), false);
+            ->assertSee(url('/mr/about'), false);
     }
 
     public function test_public_contact_details_match_the_official_address_and_signboard_numbers(): void
     {
-        $this->get('/contact')
+        $this->get('/mr/contact')
             ->assertOk()
             ->assertSee('करगणी, शेटफळे रोड', false)
             ->assertSee('ता. आटपाडी, जि. सांगली', false)
@@ -76,7 +76,7 @@ class PublicSiteTest extends TestCase
             ->assertDontSee('शेतफुळे', false)
             ->assertDontSee('गावठाण', false);
 
-        $this->get('/en/contact')
+        $this->get('/contact')
             ->assertOk()
             ->assertSee('Kargani, Shetfale Road', false)
             ->assertSee('Taluka Atpadi, Sangli District', false)
@@ -98,17 +98,17 @@ class PublicSiteTest extends TestCase
 
         $this->get('/projects?category=modern-homes')
             ->assertOk()
-            ->assertSee(url('/en/projects?category=modern-homes'), false);
+            ->assertSee(url('/mr/projects?category=modern-homes'), false);
 
         $this->get('/projects/'.$project->slug)
             ->assertOk()
-            ->assertSee(url('/en/projects/'.$project->slug), false);
+            ->assertSee(url('/mr/projects/'.$project->slug), false);
     }
 
-    public function test_old_marathi_urls_redirect_to_the_canonical_root(): void
+    public function test_old_english_urls_redirect_to_the_canonical_root(): void
     {
-        $this->get('/mr/services')->assertRedirect('/services');
-        $this->get('/mr/projects?category=modern-homes')->assertRedirect('/projects?category=modern-homes');
+        $this->get('/en/services')->assertRedirect('/services');
+        $this->get('/en/projects?category=modern-homes')->assertRedirect('/projects?category=modern-homes');
     }
 
     public function test_portfolio_lists_only_published_projects(): void
@@ -181,8 +181,8 @@ class PublicSiteTest extends TestCase
         Mail::fake();
         config(['site.contact.notify_email' => 'owner@example.com']);
 
-        $this->post('/en/contact', $this->enquiry())
-            ->assertRedirect(url('/en/contact').'#enquiry-form')
+        $this->post('/contact', $this->enquiry())
+            ->assertRedirect(url('/contact').'#enquiry-form')
             ->assertSessionHas('inquiry_sent');
 
         $this->assertDatabaseHas('inquiries', [
@@ -197,10 +197,10 @@ class PublicSiteTest extends TestCase
 
     public function test_contact_form_validates_input(): void
     {
-        $this->post('/en/contact', [])
+        $this->post('/contact', [])
             ->assertSessionHasErrors(['name', 'phone', 'message']);
 
-        $this->post('/en/contact', $this->enquiry(['phone' => '12345']))
+        $this->post('/contact', $this->enquiry(['phone' => '12345']))
             ->assertSessionHasErrors(['phone']);
 
         $this->assertDatabaseCount('inquiries', 0);
@@ -210,7 +210,7 @@ class PublicSiteTest extends TestCase
     {
         Mail::fake();
 
-        $this->post('/en/contact', $this->enquiry([
+        $this->post('/contact', $this->enquiry([
             'location' => 'Kargani, Atpadi',
             'budget' => '₹25–30 lakh',
         ]))->assertSessionHas('inquiry_sent');
@@ -223,12 +223,12 @@ class PublicSiteTest extends TestCase
 
     public function test_contact_page_preselects_the_service_from_the_query_string(): void
     {
-        $this->get('/en/contact?service=3d-design')
+        $this->get('/contact?service=3d-design')
             ->assertOk()
             ->assertSee('value="3d-design" selected', false);
 
         // An unknown slug falls back to no selection rather than breaking.
-        $this->get('/en/contact?service=not-a-service')
+        $this->get('/contact?service=not-a-service')
             ->assertOk()
             ->assertDontSee('value="not-a-service" selected', false);
     }
@@ -237,18 +237,18 @@ class PublicSiteTest extends TestCase
     {
         config(['site.testimonials' => []]);
 
-        $this->get('/en')->assertOk()->assertDontSee(__('site.home.testimonials_title', [], 'en'), false);
+        $this->get('/')->assertOk()->assertDontSee(__('site.home.testimonials_title', [], 'en'), false);
 
         config(['site.testimonials' => [
             ['quote' => 'Clear communication throughout.', 'name' => 'A Client', 'context' => 'Home in Atpadi'],
         ]]);
 
-        $this->get('/en')->assertOk()->assertSee('Clear communication throughout.', false);
+        $this->get('/')->assertOk()->assertSee('Clear communication throughout.', false);
     }
 
     public function test_honeypot_submissions_are_discarded(): void
     {
-        $this->post('/en/contact', $this->enquiry(['company_website' => 'http://spam.example']))
+        $this->post('/contact', $this->enquiry(['company_website' => 'http://spam.example']))
             ->assertSessionHas('inquiry_sent');
 
         $this->assertDatabaseCount('inquiries', 0);
@@ -258,8 +258,8 @@ class PublicSiteTest extends TestCase
     {
         Mail::fake();
 
-        $this->post('/contact', $this->enquiry())
-            ->assertRedirect(url('/contact').'#enquiry-form');
+        $this->post('/mr/contact', $this->enquiry())
+            ->assertRedirect(url('/mr/contact').'#enquiry-form');
 
         $this->assertSame('mr', Inquiry::query()->firstOrFail()->locale);
     }
@@ -275,9 +275,9 @@ class PublicSiteTest extends TestCase
         $xml = $response->getContent();
 
         $this->assertStringContainsString('<loc>'.url('/').'</loc>', $xml);
-        $this->assertStringContainsString('<loc>'.url('/en').'</loc>', $xml);
+        $this->assertStringContainsString('<loc>'.url('/mr').'</loc>', $xml);
         $this->assertStringContainsString(url('/projects/sitemap-home'), $xml);
-        $this->assertStringContainsString(url('/en/projects/sitemap-home'), $xml);
+        $this->assertStringContainsString(url('/mr/projects/sitemap-home'), $xml);
         $this->assertStringContainsString('hreflang="x-default"', $xml);
     }
 
@@ -293,11 +293,11 @@ class PublicSiteTest extends TestCase
     public function test_credits_page_has_been_removed(): void
     {
         $this->get('/credits')->assertNotFound();
-        $this->get('/en/credits')->assertNotFound();
+        $this->get('/en/credits')->assertRedirect('/credits');
 
-        $this->get('/en')
+        $this->get('/')
             ->assertOk()
-            ->assertDontSee(url('/en/credits'), false)
+            ->assertDontSee(url('/credits'), false)
             ->assertDontSee(url('/credits'), false);
     }
 }

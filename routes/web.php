@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\InstallerController;
 use App\Http\Controllers\Site\ContactController;
 use App\Http\Controllers\Site\ContractorStatementController;
 use App\Http\Controllers\Site\HomeController;
-use App\Http\Controllers\Site\LegacyMarathiRedirectController;
+use App\Http\Controllers\Site\LegacyEnglishRedirectController;
 use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\PaymentTrackingController;
 use App\Http\Controllers\Site\PortfolioController;
@@ -44,7 +44,7 @@ Route::prefix('deploy')->group(function () {
 | Business website
 |--------------------------------------------------------------------------
 |
-| Marathi lives at the root, English under /en. The URL is the source of
+| English lives at the root, Marathi under /mr. The URL is the source of
 | truth for the language, so shared links and search results always open
 | in the language they were written in.
 |
@@ -92,15 +92,15 @@ $siteRoutes = function () {
         });
 };
 
-Route::middleware(SetSiteLocale::class.':mr')->group($siteRoutes);
+Route::middleware(SetSiteLocale::class.':en')->group($siteRoutes);
 
-Route::prefix('en')
-    ->name('en.')
-    ->middleware(SetSiteLocale::class.':en')
+Route::prefix('mr')
+    ->name('mr.')
+    ->middleware(SetSiteLocale::class.':mr')
     ->group($siteRoutes);
 
-// Keep old Marathi URLs working while making the root Marathi canonical.
-Route::any('mr/{path?}', LegacyMarathiRedirectController::class)
+// Keep old English URLs working while making the root English canonical.
+Route::any('en/{path?}', LegacyEnglishRedirectController::class)
     ->where('path', '.*');
 
 Route::get('sitemap.xml', SitemapController::class)->name('sitemap');

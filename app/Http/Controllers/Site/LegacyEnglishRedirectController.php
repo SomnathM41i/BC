@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-class LegacyMarathiRedirectController extends Controller
+class LegacyEnglishRedirectController extends Controller
 {
     public function __invoke(Request $request, ?string $path = null): RedirectResponse
     {

@@ -53,7 +53,7 @@
 
     <link rel="alternate" hreflang="mr-IN" href="{{ SiteRoutes::switchUrl('mr') }}">
     <link rel="alternate" hreflang="en-IN" href="{{ SiteRoutes::switchUrl('en') }}">
-    <link rel="alternate" hreflang="x-default" href="{{ SiteRoutes::switchUrl('mr') }}">
+    <link rel="alternate" hreflang="x-default" href="{{ SiteRoutes::switchUrl('en') }}">
 
     <meta name="theme-color" content="{{ config('site.seo.theme_color') }}">
     <meta name="robots" content="@yield('robots', 'index, follow')">

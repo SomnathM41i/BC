@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Route;
 /**
  * Locale-aware URL helpers for the public website.
  *
- * Marathi lives at the root (/about) and English under /en (/en/about).
- * Route names are identical in both groups, with the English ones prefixed
- * by "en." — these helpers pick the right one for the active locale.
+ * English lives at the root (/about) and Marathi under /mr (/mr/about).
+ * Route names are identical in both groups, with the Marathi ones prefixed
+ * by "mr." — these helpers pick the right one for the active locale.
  */
 final class SiteRoutes
 {
@@ -35,7 +35,7 @@ final class SiteRoutes
             return self::urlForLocale('home', $locale);
         }
 
-        $base = str_starts_with($current, 'en.') ? substr($current, 3) : $current;
+        $base = str_starts_with($current, 'mr.') ? substr($current, 3) : $current;
 
         // Only pages that exist in both languages can be switched.
         if (! Route::has($base)) {
@@ -54,7 +54,7 @@ final class SiteRoutes
 
     public static function urlForLocale(string $name, string $locale, array $parameters = []): string
     {
-        $localized = $locale === 'mr' ? $name : "en.{$name}";
+        $localized = $locale === 'mr' ? "mr.{$name}" : $name;
 
         return Route::has($localized)
             ? route($localized, $parameters)
@@ -63,7 +63,7 @@ final class SiteRoutes
 
     public static function locale(): string
     {
-        return app()->getLocale() === 'en' ? 'en' : 'mr';
+        return app()->getLocale() === 'mr' ? 'mr' : 'en';
     }
 
     /**
@@ -77,7 +77,7 @@ final class SiteRoutes
             return false;
         }
 
-        $base = str_starts_with($current, 'en.') ? substr($current, 3) : $current;
+        $base = str_starts_with($current, 'mr.') ? substr($current, 3) : $current;
 
         return in_array($base, $names, true);
     }
@@ -86,6 +86,6 @@ final class SiteRoutes
     {
         $locale = self::locale();
 
-        return $locale === 'mr' ? $name : "en.{$name}";
+        return $locale === 'mr' ? "mr.{$name}" : $name;
     }
 }
