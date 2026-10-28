@@ -67,7 +67,10 @@ class EmployeeManagementTest extends TestCase
             ->get("/admin/attendance/weekly?employee_id={$employee->id}&reference_date=2026-10-28")
             ->assertOk()
             ->assertSee('23-10-2026')
-            ->assertSee('29-10-2026');
+            ->assertSee('29-10-2026')
+            ->assertSee('type="radio"', false)
+            ->assertSee("name=\"weekly[{$employee->id}][2026-10-23]\"", false)
+            ->assertDontSee('<select name="weekly', false);
     }
 
     public function test_pay_salary_page_shows_the_last_completed_salary_week(): void

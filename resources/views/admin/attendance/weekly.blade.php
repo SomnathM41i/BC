@@ -71,12 +71,32 @@
                                         @if($d['before_joining'])
                                             <span class="text-xs text-slate-400">Before joining</span>
                                         @else
-                                            <select name="weekly[{{ $employee->id }}][{{ $d['date'] }}]" class="weekly-status rounded-md border border-slate-300 px-3 py-2 text-sm">
-                                                <option value="">Not Marked</option>
-                                                <option value="present" data-payable="1.0" @selected($existingStatus === 'present')>Present (1.0)</option>
-                                                <option value="half_day" data-payable="0.5" @selected($existingStatus === 'half_day')>Half Day (0.5)</option>
-                                                <option value="absent" data-payable="0.0" @selected($existingStatus === 'absent')>Absent (0.0)</option>
-                                            </select>
+                                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                                <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-600">
+                                                    <input type="radio" name="weekly[{{ $employee->id }}][{{ $d['date'] }}]" value=""
+                                                           class="weekly-status h-4 w-4 border-slate-300"
+                                                           @checked(! $existingStatus)>
+                                                    Not Marked
+                                                </label>
+                                                <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
+                                                    <input type="radio" name="weekly[{{ $employee->id }}][{{ $d['date'] }}]" value="present"
+                                                           class="weekly-status h-4 w-4 accent-emerald-600"
+                                                           @checked($existingStatus === 'present')>
+                                                    Present (1.0)
+                                                </label>
+                                                <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
+                                                    <input type="radio" name="weekly[{{ $employee->id }}][{{ $d['date'] }}]" value="half_day"
+                                                           class="weekly-status h-4 w-4 accent-amber-500"
+                                                           @checked($existingStatus === 'half_day')>
+                                                    Half Day (0.5)
+                                                </label>
+                                                <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
+                                                    <input type="radio" name="weekly[{{ $employee->id }}][{{ $d['date'] }}]" value="absent"
+                                                           class="weekly-status h-4 w-4 accent-red-600"
+                                                           @checked($existingStatus === 'absent')>
+                                                    Absent (0.0)
+                                                </label>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>
@@ -99,16 +119,14 @@
         </form>
 
         <script>
+            const weeklyPayable = { present: 1, half_day: 0.5, absent: 0 };
+
             function recalcWeekly() {
                 let present = 0, absent = 0, half = 0, total = 0;
-                document.querySelectorAll('.weekly-status').forEach(sel => {
-                    const opt = sel.options[sel.selectedIndex];
-                    const val = sel.value;
-                    const p = opt && opt.dataset.payable !== undefined ? parseFloat(opt.dataset.payable) : 0;
-                    if (val === 'present') { present++; total += p; }
-                    else if (val === 'absent') { absent++; total += p; }
-                    else if (val === 'half_day') { half++; total += p; }
-                    else { /* not marked */ }
+                document.querySelectorAll('.weekly-status:checked').forEach(radio => {
+                    if (radio.value === 'present') { present++; total += weeklyPayable.present; }
+                    else if (radio.value === 'absent') { absent++; total += weeklyPayable.absent; }
+                    else if (radio.value === 'half_day') { half++; total += weeklyPayable.half_day; }
                 });
                 document.getElementById('w-present').textContent = present;
                 document.getElementById('w-absent').textContent = absent;
