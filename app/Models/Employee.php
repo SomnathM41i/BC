@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -16,6 +17,7 @@ class Employee extends Model
         'employee_id',
         'full_name',
         'phone_number',
+        'employee_type_id',
         'daily_salary',
         'weekly_salary_payment_day',
         'joining_date',
@@ -28,6 +30,11 @@ class Employee extends Model
             'daily_salary' => 'decimal:2',
             'joining_date' => 'date',
         ];
+    }
+
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(EmployeeType::class, 'employee_type_id');
     }
 
     public function attendances(): HasMany
@@ -58,6 +65,18 @@ class Employee extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Whether a salary payment already covers this date. Paid weeks are locked
+     * so attendance can never drift away from what was actually paid.
+     */
+    public function isDatePaid(string $date): bool
+    {
+        return $this->salaryPayments()
+            ->whereDate('period_start', '<=', $date)
+            ->whereDate('period_end', '>=', $date)
+            ->exists();
     }
 
     public function totalAdvances(): string

@@ -15,6 +15,7 @@ class EmployeeAttendance extends Model
         'attendance_date',
         'status',
         'payable_days',
+        'amount',
     ];
 
     protected function casts(): array
@@ -22,21 +23,12 @@ class EmployeeAttendance extends Model
         return [
             'attendance_date' => 'date',
             'payable_days' => 'decimal:1',
+            'amount' => 'decimal:2',
         ];
     }
 
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
-    }
-
-    public static function payableDaysFor(string $status): string
-    {
-        return match ($status) {
-            'present' => '1.0',
-            'half_day' => '0.5',
-            'absent' => '0.0',
-            default => '0.0',
-        };
     }
 }

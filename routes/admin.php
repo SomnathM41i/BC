@@ -68,7 +68,6 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
 
     Route::resource('employees', EmployeeController::class);
     Route::get('attendance', [EmployeeAttendanceController::class, 'index'])->name('attendance.index');
-    Route::get('attendance/weekly', [EmployeeAttendanceController::class, 'weekly'])->name('attendance.weekly');
     Route::post('attendance', [EmployeeAttendanceController::class, 'store'])->name('attendance.store');
     Route::get('advances', [EmployeeAdvanceController::class, 'index'])->name('advances.index');
     Route::get('advances/create', [EmployeeAdvanceController::class, 'create'])->name('advances.create');

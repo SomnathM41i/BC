@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEmployeeRequest;
 use App\Http\Requests\Admin\UpdateEmployeeRequest;
 use App\Models\Employee;
+use App\Models\EmployeeType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +15,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Employee::query();
+        $query = Employee::query()->with('type');
 
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
@@ -41,7 +42,9 @@ class EmployeeController extends Controller
 
     public function create(): View
     {
-        return view('admin.employees.create');
+        return view('admin.employees.create', [
+            'employeeTypes' => $this->employeeTypes(),
+        ]);
     }
 
     public function store(StoreEmployeeRequest $request): RedirectResponse
@@ -90,6 +93,7 @@ class EmployeeController extends Controller
     {
         return view('admin.employees.edit', [
             'employee' => $employee,
+            'employeeTypes' => $this->employeeTypes(),
         ]);
     }
 
@@ -112,5 +116,10 @@ class EmployeeController extends Controller
         }
 
         return redirect()->route('admin.employees.index')->with('status', 'Employee already inactive.');
+    }
+
+    private function employeeTypes()
+    {
+        return EmployeeType::query()->ordered()->get();
     }
 }

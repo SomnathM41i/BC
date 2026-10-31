@@ -10,7 +10,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('admin.employees.edit', $employee) }}" class="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Edit</a>
-            <a href="{{ route('admin.attendance.weekly', ['employee_id' => $employee->id, 'reference_date' => now()->toDateString()]) }}" class="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Mark Attendance</a>
+            <a href="{{ route('admin.attendance.index', ['employee_id' => $employee->id, 'reference_date' => now()->toDateString()]) }}" class="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Mark Attendance</a>
             <a href="{{ route('admin.advances.create', ['employee_id' => $employee->id]) }}" class="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Add Advance</a>
             <a href="{{ route('admin.pay-salary.create', ['employee_id' => $employee->id]) }}" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">Pay Salary</a>
             <form method="POST" action="{{ route('admin.employees.destroy', $employee) }}">
@@ -35,8 +35,8 @@
             <p class="mt-2 text-lg font-semibold text-slate-900 sm:text-xl">@inr($outstandingAdvance)</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm sm:p-5">
-            <p class="text-xs text-slate-500 sm:text-sm">Daily Salary</p>
-            <p class="mt-2 text-lg font-semibold text-slate-900 sm:text-xl">@inr($employee->daily_salary)</p>
+            <p class="text-xs text-slate-500 sm:text-sm">Employee Type</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 sm:text-xl">{{ $employee->type?->name ?? '—' }}</p>
         </div>
     </div>
 
@@ -55,8 +55,8 @@
                     <dd class="text-slate-900 sm:text-right">{{ $employee->phone_number }}</dd>
                 </div>
                 <div class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:px-5">
-                    <dt class="text-slate-500">Daily Salary</dt>
-                    <dd class="text-slate-900 sm:text-right">@inr($employee->daily_salary)</dd>
+                    <dt class="text-slate-500">Employee Type</dt>
+                    <dd class="text-slate-900 sm:text-right">{{ $employee->type?->name ?? '—' }}</dd>
                 </div>
                 <div class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:px-5">
                     <dt class="text-slate-500">Weekly Salary Payment Day</dt>
@@ -83,15 +83,17 @@
                         <tr>
                             <th class="px-3 py-2 sm:px-4">Date</th>
                             <th class="px-3 py-2 sm:px-4">Status</th>
-                            <th class="px-3 py-2 sm:px-4">Payable Days</th>
+                            <th class="px-3 py-2 sm:px-4">Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($attendances as $att)
                             <tr>
                                 <td class="whitespace-nowrap px-3 py-2 text-slate-900 sm:px-4">{{ $att->attendance_date->format('d-m-Y') }}</td>
-                                <td class="px-3 py-2 text-slate-600 sm:px-4">{{ str_replace('_', ' ', ucfirst($att->status)) }}</td>
-                                <td class="px-3 py-2 text-slate-600 sm:px-4">{{ $att->payable_days }}</td>
+                                <td class="px-3 py-2 text-slate-600 sm:px-4">{{ ucfirst($att->status) }}</td>
+                                <td class="px-3 py-2 text-slate-600 sm:px-4">
+                                    @inr($att->amount)
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -161,7 +163,6 @@
                             <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Partially Paid</span>
                         @endif
                     </div>
-
                     <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
                         <div>
                             <dt class="text-xs text-slate-500">Gross</dt>
@@ -218,7 +219,9 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($salaryPayments as $pay)
                         <tr>
-                            <td class="whitespace-nowrap px-4 py-3 text-slate-900">{{ $pay->period_start->format('d-m-Y') }} - {{ $pay->period_end->format('d-m-Y') }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-slate-900">
+                                {{ $pay->period_start->format('d-m-Y') }} - {{ $pay->period_end->format('d-m-Y') }}
+                            </td>
                             <td class="px-4 py-3 text-slate-600">@inr($pay->gross_salary)</td>
                             <td class="px-4 py-3 text-slate-600">@inr($pay->advance_repayment)</td>
                             <td class="px-4 py-3 text-slate-600">@inr($pay->net_salary_payable)</td>

@@ -16,10 +16,12 @@ The repository holds two surfaces that share one Laravel application:
    services, portfolio and contact, plus a private contractor statement link.
 2. **Wallet & project management (BAM)** — an internal, owner-only admin app at
    `/admin` for company cash, project wallets, contractor transfers, expenses,
-   owner money and project closure.
+   owner money, project closure and employees (attendance, advances and weekly
+   salary).
 
 The public site is the shopfront; the admin app is deliberately **not** a full
-accounting/ERP system. Its scope is limited to the agreed wallet model below.
+accounting/ERP system. Its scope is limited to the agreed wallet model and the
+employee module described below.
 
 ---
 
@@ -206,7 +208,7 @@ Setting aside money and closing a project do **not** change total company cash
 
 | Role | Access |
 |------|--------|
-| **Owner / Admin** | Everything: projects, receipts, unallocated income, funding, expenses, contractor transfers/returns, owner wallet, closure, reports, contractors |
+| **Owner / Admin** | Everything: projects, receipts, unallocated income, funding, expenses, contractor transfers/returns, owner wallet, closure, reports, contractors, employees, attendance, advances, salary |
 | **Contractor** | No login. Receives project transfers and can be shown a private statement via a tokenised link |
 
 `UserRole` currently has a single case, `owner`. Contractors are payment
@@ -294,6 +296,37 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 ### ContractorType
 - Groups contractors by trade/skill for the admin index
 
+### Employee
+- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `daily_salary`, `weekly_salary_payment_day`, `joining_date`, `status`
+- Casts: `daily_salary` → `decimal:2`, `joining_date` → `date`
+- `daily_salary` is legacy and no longer used for pay; new employees leave it null
+- Relations: `type()`, `attendances()`, `advances()`, `salaryPayments()`
+- `isDatePaid()` tells whether a salary payment covers a date
+- Scopes `active()` / `inactive()`; `isActive()` helper
+- `generateEmployeeId()` produces `EMP-YYYY-NNNN`, continuing the current year's sequence
+- `getWeeklyPeriod($reference)` — last completed salary week: the 7 days ending on the most recent payment day on or before the reference date (used by Pay Salary)
+- `getWeekContaining($reference)` — the 7 days ending on the next payment day on or after the reference date (used by the attendance chart, so today is always inside the edited week)
+- `totalAdvances()`, `totalRepayments()` and `outstandingAdvance()`; repayments are summed from `employee_salary_payments.advance_repayment`
+
+### EmployeeAttendance
+- Fillable: `employee_id`, `attendance_date`, `status`, `payable_days`, `amount`
+- Casts: `attendance_date` → `date`, `payable_days` → `decimal:1`, `amount` → `decimal:2`
+- Unique `(employee_id, attendance_date)`
+
+### EmployeeType
+- Fixed and seeded by migration: Labour, Mistri, Other. It is a label only and sets no pay
+
+### EmployeeAdvance
+- Fillable: `employee_id`, `advance_date`, `amount`, `notes`
+- Casts: `advance_date` → `date`, `amount` → `decimal:2`
+
+### EmployeeSalaryPayment
+- `daily_salary` is `0.00` on new payments; `half_days` stays 0
+- Fillable: `employee_id`, `period_start`, `period_end`, `daily_salary`, `gross_salary`, `present_days`, `half_days`, `total_payable_days`, `outstanding_advance_before`, `advance_repayment`, `net_salary_payable`, `amount_paid`, `remaining_salary_due`, `remaining_advance_after`, `status`, `payment_date`, `notes`
+- Casts: dates for periods/payment date; money columns → `decimal:2`; day columns → `decimal:1`
+- Status: `paid` or `partially_paid`
+- Unique `(employee_id, period_start, period_end)` stops the same week being paid twice
+
 ### Wallet
 - Fillable: `type`, `project_id`, `contractor_id`, `user_id`, `balance`
 - Casts: `type` → `WalletType`, `balance` → `decimal:2`
@@ -338,6 +371,10 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 | `ProjectController` | Project CRUD + closure request/finalize |
 | `ProjectFinanceController` | Receipts, expenses, transfers, funding per project |
 | `ContractorController` | Contractor list/create |
+| `EmployeeController` | Employee CRUD; detail page paginates attendance (5/page), advances and salary history (10/page) |
+| `EmployeeAttendanceController` | Select an employee and edit their salary week; rejects pre-joining dates and paid weeks and upserts one row per employee/day |
+| `EmployeeAdvanceController` | Advance list and create |
+| `EmployeeSalaryController` | Weekly salary calculation, payment recording and partial-balance top-up |
 | `OwnerWalletController` | Owner wallet show/income/transfer/return/expense |
 | `TransactionController` | Transaction ledger index |
 | `InstallerController` | Browser-based deploy/migrate/seed (`/deploy`) |
@@ -347,6 +384,17 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 > `RecordManagerReturnRequest` classes are leftovers from before contractors
 > replaced managers. They are not routed and should be deleted with the stale
 > `ManagerManagementTest` (see §16).
+
+### Employee rules
+
+- **Attendance**: select an employee, then mark each day of their salary week Present or Absent and enter the amount. One row per employee per date. A present day needs an amount; an absent day is ₹0. Days before `joining_date` are never saved, and unmarked days are skipped.
+- **Salary**: there is no fixed salary. Gross is the sum of the week's amounts.
+- **Paid-week lock**: attendance inside a paid salary week cannot change; the employee row is locked during saves so this cannot race with a payment.
+- **Salary week**: Pay Salary uses the last completed week ending on the employee's `weekly_salary_payment_day`. The period is re-derived server-side from `period_end`, so hidden form fields cannot shift or split a week. A week ending after today is refused, and the in-progress week is shown as a read-only summary instead of a payment form.
+- **No double pay**: `(employee_id, period_start, period_end)` is unique, and a transaction locks the employee row before the duplicate check. A week with zero gross (no attendance) is refused so a ₹0 payment cannot lock the period.
+- **Advances**: outstanding = total advances − repayments. A repayment is stored once, on `employee_salary_payments.advance_repayment`, and cannot exceed the outstanding balance.
+- **Salary amounts**: net payable = gross − advance repayment; amount paid cannot exceed net payable. The payment is `paid` when nothing remains and `partially_paid` otherwise. `complete()` tops up the remaining due without creating a second payment or recording the repayment again.
+- **Dashboard cards**: active employees, present today, absent today (based on attendance rows, not employee status), outstanding advances, salary paid this calendar week (Mon–Sun by `payment_date`), and the count of `partially_paid` payments.
 
 ---
 
@@ -373,6 +421,10 @@ Marathi at the root, English under `/en`:
   closure request/finalize
 - Transactions ledger
 - Contractors (index, store)
+- Employees (`/admin/employees` resource: index, create, store, show, edit, update, destroy/deactivate)
+- Attendance: `GET|POST /admin/attendance`
+- Advances: `/admin/advances`, `/admin/advances/create`, `POST /admin/advances`
+- Pay Salary: `GET|POST /admin/pay-salary`, `POST /admin/pay-salary/calculate`, `POST /admin/pay-salary/{payment}/complete` (top up a partial payment)
 - Owner wallet (show, income, transfer, return, expense)
 - All admin pages send `noindex`; sign-in is rate limited to 5 failed attempts
   per minute per account+IP
@@ -390,11 +442,15 @@ Marathi at the root, English under `/en`:
 ```
 resources/views/
 ├── admin/
+│   ├── advances/{create,index}.blade.php
+│   ├── attendance/index.blade.php
 │   ├── auth/login.blade.php
 │   ├── contractors/index.blade.php
 │   ├── dashboard.blade.php
+│   ├── employees/{create,edit,index,show}.blade.php
 │   ├── managers/index.blade.php          ← leftover, not routed
 │   ├── owner/show.blade.php
+│   ├── pay-salary/create.blade.php
 │   ├── projects/{create,index,show}.blade.php
 │   └── transactions/index.blade.php
 ├── components/
@@ -420,6 +476,20 @@ resources/views/
 `resources/views/welcome.blade.php` was removed on 28 Oct 2026; the root route
 is the business home page.
 
+### Employee detail page
+
+`admin/employees/show.blade.php` uses independent pagination for its three
+history lists: attendance **5 per page** (`attendance_page`), advances and
+salary history **10 per page** (`advance_page`, `salary_page`). Each paginator
+keeps the other query strings via `withQueryString()` and only renders a
+pagination bar when it has more than one page.
+
+On phones the summary cards become a 2×2 grid, Profile labels stack above their
+values, and Salary History switches from the 8-column table to stacked cards
+below the `xl` breakpoint. The Profile and Attendance cards use equal-height
+layout, with attendance pagination pinned to the bottom so the two cards line up
+on desktop.
+
 ---
 
 ## 12. Database Schema (Migrations)
@@ -444,6 +514,15 @@ is the business home page.
 | `2026_10_25_000002_create_inquiries_table.php` | inquiries |
 | `2026_10_25_000003_add_statement_token_to_contractors_table.php` | adds `statement_token` |
 | `2026_10_28_000001_add_project_details_to_inquiries_table.php` | adds `location`, `budget` to inquiries |
+| `2026_10_28_072204_create_employees_table.php` | employees |
+| `2026_10_28_072213_create_employee_attendances_table.php` | employee_attendances (unique employee/date) |
+| `2026_10_28_072214_create_employee_advances_table.php` | employee_advances |
+| `2026_10_28_072216_create_employee_salary_payments_table.php` | employee_salary_payments (unique employee/period) |
+| `2026_10_28_080000_drop_salary_payment_id_from_employee_advances.php` | drops the unused advance → salary-payment link |
+| `2026_10_31_000001_create_employee_types_and_pay_rates_tables.php` | employee_types, employee_pay_rates (seeded), employee_pay_rate_overrides |
+| `2026_10_31_000002_add_work_pay_columns_to_employee_tables.php` | adds type, day amount, adjustment and breakdown columns; makes `daily_salary` nullable |
+| `2026_10_31_000003_backfill_employee_pay_data.php` | moves existing employees to Other and fills attendance amounts |
+| `2026_10_31_000004_simplify_employee_pay_to_daily_amounts.php` | removes pay rates, levels and adjustments, keeping each day's amount |
 
 ---
 
@@ -491,6 +570,33 @@ Host: XAMPP MariaDB 10.4.32 at `C:\xampp\mysql\`.
 
 `DatabaseSeeder` also creates expense categories and calls
 `RealPortfolioSeeder` so a fresh deploy has the published projects.
+
+### Demo employee records (local review)
+
+`DemoEmployeeSeeder` is **local-only** (it throws outside the `local`
+environment) and never touches the real employee `EMP-2026-0001`. Each run
+resets only the two demo employees' histories, so it is safe to repeat while
+reviewing:
+
+```bash
+php artisan db:seed --class=DemoEmployeeSeeder
+```
+
+| Employee | Salary | Pay day | Joining | Demo data |
+|----------|--------|---------|---------|-----------|
+| Ramesh Patil `EMP-2026-0002` | ₹700/day | Saturday | 15 Sep 2026 | ₹5,000 advance, 21 attendance rows, 18–24 Oct week paid in full |
+| Suresh Jadhav `EMP-2026-0003` | ₹650/day | Wednesday | 1 Oct 2026 | ₹3,000 advance, 21 attendance rows, 22–28 Oct week partially paid (₹770 due) |
+
+That produces 2 present / 1 absent today, ₹5,000 outstanding advances and one
+pending (partially paid) salary payment on the dashboard. To remove the demo
+data:
+
+```bash
+php artisan tinker --execute="App\Models\Employee::whereIn('employee_id', ['EMP-2026-0002','EMP-2026-0003'])->delete();"
+```
+
+The foreign keys cascade, so attendance, advances and salary payments for those
+two employees go with them.
 
 ### Registered accounts (passwords unknown — bcrypt hashed)
 
@@ -551,6 +657,11 @@ full walkthrough.
 7. **Remove `DEPLOY_TOKEN`** after setup, clear caches, confirm `/deploy`
    returns 404
 
+> The employee module adds five migrations. After pulling it, run the installer's
+> **Run migrations** action (or `php artisan migrate --force` with terminal
+> access) before opening `/admin/employees`. Never use **Reset database** on
+> production.
+
 ### Assets and the pre-commit hook
 
 Production has no Node, so `public/build/` must be committed. The repository
@@ -576,10 +687,10 @@ once with `SKIP_BUILD=1 git commit ...` only when assets cannot change.
 
 ## 16. Testing and Known Issues
 
-`php artisan test` currently runs **83 tests**:
+`php artisan test` currently runs **99 tests** (462 assertions):
 
-- **75 pass**, including all public-site tests (`PublicSiteTest`,
-  `SiteSurfaceTest`) and the wallet/contractor suites.
+- **91 pass**, including all public-site tests (`PublicSiteTest`,
+  `SiteSurfaceTest`), the wallet/contractor suites and `EmployeeManagementTest`.
 - **8 fail** — all in `ManagerManagementTest`. The `/managers` routes were
   replaced by `/contractors`, so that test file is stale. Fixing it means
   deleting the test plus the leftover `ManagerController`,
@@ -589,6 +700,12 @@ once with `SKIP_BUILD=1 git commit ...` only when assets cannot change.
 Public-site tests cover: locale routing, rendered copy, portfolio visibility,
 filters, enquiry storage/mail/honeypot, sitemap, robots, footer links, and the
 removal of the credits page.
+
+`EmployeeManagementTest` has **16 tests / 82 assertions**: generated employee
+IDs, dashboard cards, weekly-chart period selection, completed vs current salary
+weeks, zero-attendance pay guard, duplicate-period guard, pre-joining attendance
+locks, advance-repayment limits, amount-paid limits, partial top-up without a
+second repayment, and detail-page pagination.
 
 ### Known debt / unused files
 
@@ -615,18 +732,23 @@ BC/
 │   ├── Exceptions/WalletException.php
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Admin/{Auth,Contractor,Dashboard,Income,Installer,Manager,
-│   │   │   │          ManagerReturn,OwnerWallet,Project,ProjectFinance,
-│   │   │   │          Transaction}Controller.php
+│   │   │   ├── Admin/{Auth,Contractor,Dashboard,Employee,EmployeeAdvance,
+│   │   │   │          EmployeeAttendance,EmployeeSalary,Income,Installer,
+│   │   │   │          Manager,ManagerReturn,OwnerWallet,Project,
+│   │   │   │          ProjectFinance,Transaction}Controller.php
 │   │   │   └── Site/{Contact,ContractorStatement,Home,LegacyMarathiRedirect,
 │   │   │              Page,Portfolio,Sitemap}Controller.php
 │   │   ├── Middleware/{EnsureUserHasRole,SetSiteLocale}.php
 │   │   └── Requests/
-│   │       ├── Admin/…                ← wallet/project/contractor forms
+│   │       ├── Admin/…                ← wallet/project/contractor/employee forms
 │   │       └── Site/StoreInquiryRequest.php
 │   ├── Models/
 │   │   ├── Contractor.php
 │   │   ├── ContractorType.php
+│   │   ├── Employee.php
+│   │   ├── EmployeeAdvance.php
+│   │   ├── EmployeeAttendance.php
+│   │   ├── EmployeeSalaryPayment.php
 │   │   ├── ExpenseCategory.php
 │   │   ├── Inquiry.php
 │   │   ├── PortfolioProject.php
@@ -643,9 +765,10 @@ BC/
 ├── config/site.php                     ← company, address, map, services, SEO
 ├── database/
 │   ├── factories/
-│   ├── migrations/                     ← 18 migrations
+│   ├── migrations/                     ← 23 migrations
 │   └── seeders/
 │       ├── DatabaseSeeder.php
+│       ├── DemoEmployeeSeeder.php      ← local-only review data
 │       └── RealPortfolioSeeder.php
 ├── lang/{en,mr}/site.php               ← public copy, 319 keys each
 ├── public/
@@ -658,7 +781,7 @@ BC/
 │   └── views/                          ← see §11
 ├── routes/{web,admin}.php
 ├── storage/
-├── tests/Feature/                      ← 12 test files
+├── tests/Feature/                      ← 13 test files
 ├── .env                                ← local config (never commit)
 ├── composer.json                       ← Laravel 12, PHP 8.2+
 ├── DEPLOY.md                           ← shared hosting guide

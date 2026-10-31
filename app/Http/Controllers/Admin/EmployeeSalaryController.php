@@ -90,6 +90,7 @@ class EmployeeSalaryController extends Controller
         $present = 0;
         $half = 0;
         $payable = '0.0';
+        $gross = '0.00';
         foreach ($attendances as $att) {
             if ($att->status === 'present') {
                 $present++;
@@ -97,10 +98,8 @@ class EmployeeSalaryController extends Controller
                 $half++;
             }
             $payable = bcadd($payable, (string) $att->payable_days, 1);
+            $gross = Money::add($gross, $att->amount);
         }
-
-        $daily = Money::normalize($employee->daily_salary);
-        $gross = bcmul($daily, $payable, 2);
         $outstanding = $employee->outstandingAdvance();
         $netPayable = $gross; // before repayment selection; repayment applied on payment
 
@@ -110,7 +109,6 @@ class EmployeeSalaryController extends Controller
             'present_days' => $present,
             'half_days' => $half,
             'total_payable_days' => $payable,
-            'daily_salary' => $daily,
             'gross_salary' => $gross,
             'outstanding_advance' => $outstanding,
             'net_salary_payable_before_repayment' => $netPayable,
@@ -185,7 +183,7 @@ class EmployeeSalaryController extends Controller
                     'employee_id' => $employee->id,
                     'period_start' => $periodStart,
                     'period_end' => $periodEnd,
-                    'daily_salary' => $summary['daily_salary'],
+                    'daily_salary' => '0.00',
                     'gross_salary' => $gross,
                     'present_days' => $summary['present_days'],
                     'half_days' => $summary['half_days'],

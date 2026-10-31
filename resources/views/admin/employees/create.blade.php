@@ -19,19 +19,22 @@
                 <label class="mb-1 block text-sm font-medium text-slate-700">Phone Number</label>
                 <input type="text" name="phone_number" value="{{ old('phone_number') }}" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Daily Salary (₹)</label>
-                    <input type="number" step="0.01" name="daily_salary" value="{{ old('daily_salary') }}" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Weekly Salary Payment Day</label>
-                    <select name="weekly_salary_payment_day" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                        @foreach(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
-                            <option value="{{ $day }}" @selected(old('weekly_salary_payment_day') === $day)>{{ ucfirst($day) }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Employee Type</label>
+                <select name="employee_type_id" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Select Type</option>
+                    @foreach($employeeTypes as $type)
+                        <option value="{{ $type->id }}" @selected((string) old('employee_type_id') === (string) $type->id)>{{ $type->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Weekly Salary Payment Day</label>
+                <select name="weekly_salary_payment_day" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    @foreach(['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
+                        <option value="{{ $day }}" @selected(old('weekly_salary_payment_day') === $day)>{{ ucfirst($day) }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>

@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\EmployeeAdvance;
 use App\Models\EmployeeAttendance;
 use App\Models\EmployeeSalaryPayment;
+use App\Models\EmployeeType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -27,11 +28,169 @@ class EmployeeManagementTest extends TestCase
             'employee_id' => 'EMP-2026-0001',
             'full_name' => 'Ramesh Patil',
             'phone_number' => '9022357293',
-            'daily_salary' => '600.00',
+            'employee_type_id' => $this->type('Labour')->id,
             'weekly_salary_payment_day' => 'thursday',
             'joining_date' => '2026-10-01',
             'status' => 'active',
         ], $attributes));
+    }
+
+    private function type(string $name): EmployeeType
+    {
+        return EmployeeType::query()->where('name', $name)->firstOrFail();
+    }
+
+    private function attendanceOn(Employee $employee, string $date): EmployeeAttendance
+    {
+        return EmployeeAttendance::query()
+            ->where('employee_id', $employee->id)
+            ->whereDate('attendance_date', $date)
+            ->firstOrFail();
+    }
+
+    private function markWeek(Employee $employee, array $days)
+    {
+        return $this->actingAs($this->owner())->post('/admin/attendance', [
+            'employee_id' => $employee->id,
+            'reference_date' => '2026-10-28',
+            'days' => $days,
+        ]);
+    }
+
+    public function test_attendance_page_shows_the_selected_employees_week(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        $this->actingAs($owner)->get('/admin/attendance')
+            ->assertOk()
+            ->assertSee('Select an employee to mark attendance');
+
+        // 28 Oct 2026 is a Wednesday, so the Thursday-to-Thursday salary week
+        // containing it runs 23 Oct (Fri) to 29 Oct (Thu).
+        $this->actingAs($owner)
+            ->get("/admin/attendance?employee_id={$employee->id}&reference_date=2026-10-28")
+            ->assertOk()
+            ->assertSee('23-10-2026')
+            ->assertSee('29-10-2026')
+            ->assertSee('name="days[2026-10-23][status]"', false)
+            ->assertSee('name="days[2026-10-23][amount]"', false);
+    }
+
+    public function test_present_day_saves_the_entered_amount_and_can_be_edited(): void
+    {
+        $employee = $this->employee();
+
+        $this->markWeek($employee, [
+            '2026-10-23' => ['status' => 'present', 'amount' => '600'],
+            '2026-10-24' => ['status' => 'present', 'amount' => '950'],
+            '2026-10-25' => ['status' => 'absent', 'amount' => null],
+            '2026-10-26' => ['status' => null, 'amount' => null],
+        ])->assertSessionHas('status');
+
+        $this->assertSame(3, EmployeeAttendance::query()->count());
+        $this->assertSame('950.00', $this->attendanceOn($employee, '2026-10-24')->amount);
+        $this->assertSame('0.00', $this->attendanceOn($employee, '2026-10-25')->amount);
+
+        $this->markWeek($employee, ['2026-10-23' => ['status' => 'absent', 'amount' => null]]);
+
+        $this->assertSame(3, EmployeeAttendance::query()->count());
+        $this->assertSame('absent', $this->attendanceOn($employee, '2026-10-23')->status);
+        $this->assertSame('0.00', $this->attendanceOn($employee, '2026-10-23')->amount);
+    }
+
+    public function test_present_day_needs_an_amount_and_other_days_still_save(): void
+    {
+        $employee = $this->employee();
+
+        $this->markWeek($employee, [
+            '2026-10-23' => ['status' => 'present', 'amount' => null],
+            '2026-10-24' => ['status' => 'present', 'amount' => '700'],
+        ])->assertSessionHas('error');
+
+        $this->assertSame(1, EmployeeAttendance::query()->count());
+        $this->assertSame('700.00', $this->attendanceOn($employee, '2026-10-24')->amount);
+    }
+
+    public function test_salary_is_the_total_of_the_days_amounts(): void
+    {
+        Carbon::setTestNow('2026-10-30 10:00:00');
+
+        $employee = $this->employee();
+
+        $this->markWeek($employee, [
+            '2026-10-23' => ['status' => 'present', 'amount' => '600'],
+            '2026-10-24' => ['status' => 'present', 'amount' => '750.50'],
+            '2026-10-25' => ['status' => 'absent', 'amount' => null],
+        ]);
+
+        $this->actingAs($this->owner())->post('/admin/pay-salary', [
+            'employee_id' => $employee->id,
+            'period_start' => '2026-10-23',
+            'period_end' => '2026-10-29',
+            'advance_repayment' => '0',
+            'amount_paid' => '1350.50',
+            'payment_date' => '2026-10-30',
+        ])->assertRedirect();
+
+        $payment = EmployeeSalaryPayment::query()->firstOrFail();
+
+        $this->assertSame('1350.50', $payment->gross_salary);
+        $this->assertSame('2.0', $payment->present_days);
+        $this->assertSame('paid', $payment->status);
+    }
+
+    public function test_paid_week_attendance_is_locked(): void
+    {
+        Carbon::setTestNow('2026-10-30 10:00:00');
+
+        $employee = $this->employee();
+        $this->markWeek($employee, ['2026-10-23' => ['status' => 'present', 'amount' => '600']]);
+
+        $this->actingAs($this->owner())->post('/admin/pay-salary', [
+            'employee_id' => $employee->id,
+            'period_start' => '2026-10-23',
+            'period_end' => '2026-10-29',
+            'advance_repayment' => '0',
+            'amount_paid' => '600',
+            'payment_date' => '2026-10-30',
+        ])->assertRedirect();
+
+        $this->markWeek($employee, ['2026-10-23' => ['status' => 'present', 'amount' => '900']])
+            ->assertSessionHas('error');
+
+        $this->assertSame('600.00', $this->attendanceOn($employee, '2026-10-23')->amount);
+
+        $this->actingAs($this->owner())
+            ->get("/admin/attendance?employee_id={$employee->id}&reference_date=2026-10-23")
+            ->assertSee('Salary paid, locked')
+            ->assertDontSee('name="days[2026-10-23][amount]"', false);
+    }
+
+    public function test_attendance_before_joining_is_ignored(): void
+    {
+        $employee = $this->employee(['joining_date' => '2026-10-24']);
+
+        $this->markWeek($employee, [
+            '2026-10-23' => ['status' => 'present', 'amount' => '600'],
+            '2026-10-24' => ['status' => 'present', 'amount' => '600'],
+        ])->assertSessionHas('status');
+
+        $this->assertSame(1, EmployeeAttendance::query()->count());
+    }
+
+    public function test_employee_pages_show_type_without_a_fixed_salary(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        $this->actingAs($owner)->get('/admin/employees')->assertOk()->assertSee('Labour');
+        $this->actingAs($owner)->get('/admin/employees/create')
+            ->assertOk()
+            ->assertSee('name="employee_type_id"', false)
+            ->assertDontSee('name="daily_salary"', false);
+        $this->actingAs($owner)->get("/admin/employees/{$employee->id}/edit")->assertOk();
+        $this->actingAs($owner)->get("/admin/employees/{$employee->id}")->assertOk()->assertSee('Labour');
     }
 
     public function test_employee_is_created_with_a_generated_id(): void
@@ -42,7 +201,7 @@ class EmployeeManagementTest extends TestCase
             ->post('/admin/employees', [
                 'full_name' => 'Somnath Mali',
                 'phone_number' => '9022357293',
-                'daily_salary' => '800',
+                'employee_type_id' => $this->type('Labour')->id,
                 'weekly_salary_payment_day' => 'thursday',
                 'joining_date' => '2026-10-22',
                 'status' => 'active',
@@ -52,25 +211,7 @@ class EmployeeManagementTest extends TestCase
         $employee = Employee::query()->where('full_name', 'Somnath Mali')->firstOrFail();
 
         $this->assertSame('EMP-'.now()->format('Y').'-0001', $employee->employee_id);
-        $this->assertSame('800.00', $employee->daily_salary);
         $this->assertTrue($employee->isActive());
-    }
-
-    public function test_weekly_attendance_chart_uses_the_week_containing_the_reference_date(): void
-    {
-        $owner = $this->owner();
-        $employee = $this->employee();
-
-        // 28 Oct 2026 is a Wednesday, so the Thursday-to-Thursday salary week
-        // containing it runs 23 Oct (Fri) to 29 Oct (Thu).
-        $this->actingAs($owner)
-            ->get("/admin/attendance/weekly?employee_id={$employee->id}&reference_date=2026-10-28")
-            ->assertOk()
-            ->assertSee('23-10-2026')
-            ->assertSee('29-10-2026')
-            ->assertSee('type="radio"', false)
-            ->assertSee("name=\"weekly[{$employee->id}][2026-10-23]\"", false)
-            ->assertDontSee('<select name="weekly', false);
     }
 
     public function test_pay_salary_page_shows_the_last_completed_salary_week(): void
@@ -97,6 +238,7 @@ class EmployeeManagementTest extends TestCase
             'attendance_date' => now()->toDateString(),
             'status' => 'present',
             'payable_days' => '1.0',
+            'amount' => '600.00',
         ]);
 
         $absent = $this->employee([
@@ -138,6 +280,7 @@ class EmployeeManagementTest extends TestCase
                 'attendance_date' => $date,
                 'status' => 'present',
                 'payable_days' => '1.0',
+                'amount' => '600.00',
             ]);
         }
 
@@ -185,6 +328,7 @@ class EmployeeManagementTest extends TestCase
                 'attendance_date' => now()->subDays($i)->toDateString(),
                 'status' => 'present',
                 'payable_days' => '1.0',
+                'amount' => '600.00',
             ]);
 
             EmployeeAdvance::create([
@@ -229,107 +373,6 @@ class EmployeeManagementTest extends TestCase
             ->assertOk();
     }
 
-    public function test_weekly_attendance_is_saved_and_editable_without_duplicates(): void
-    {
-        $owner = $this->owner();
-        $employee = $this->employee();
-
-        $this->actingAs($owner)
-            ->post('/admin/attendance', [
-                'weekly' => [
-                    $employee->id => [
-                        '2026-10-23' => 'present',
-                        '2026-10-24' => 'half_day',
-                    ],
-                ],
-                'weekly_employee_id' => $employee->id,
-                'weekly_reference_date' => '2026-10-28',
-            ])
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('employee_attendances', [
-            'employee_id' => $employee->id,
-            'attendance_date' => '2026-10-23 00:00:00',
-            'status' => 'present',
-            'payable_days' => '1.0',
-        ]);
-        $this->assertDatabaseHas('employee_attendances', [
-            'employee_id' => $employee->id,
-            'attendance_date' => '2026-10-24 00:00:00',
-            'status' => 'half_day',
-            'payable_days' => '0.5',
-        ]);
-
-        // Saving the same day again updates it instead of creating a second row.
-        $this->actingAs($owner)
-            ->post('/admin/attendance', [
-                'weekly' => [
-                    $employee->id => [
-                        '2026-10-23' => 'absent',
-                    ],
-                ],
-                'weekly_employee_id' => $employee->id,
-                'weekly_reference_date' => '2026-10-28',
-            ])
-            ->assertRedirect();
-
-        $this->assertSame(2, EmployeeAttendance::query()->where('employee_id', $employee->id)->count());
-        $this->assertDatabaseHas('employee_attendances', [
-            'employee_id' => $employee->id,
-            'attendance_date' => '2026-10-23 00:00:00',
-            'status' => 'absent',
-            'payable_days' => '0.0',
-        ]);
-    }
-
-    public function test_weekly_attendance_ignores_days_before_joining(): void
-    {
-        $owner = $this->owner();
-        $employee = $this->employee(['joining_date' => '2026-10-22']);
-
-        $this->actingAs($owner)
-            ->post('/admin/attendance', [
-                'weekly' => [
-                    $employee->id => [
-                        '2026-10-20' => 'present',
-                        '2026-10-22' => 'present',
-                    ],
-                ],
-                'weekly_employee_id' => $employee->id,
-                'weekly_reference_date' => '2026-10-22',
-            ])
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('employee_attendances', [
-            'employee_id' => $employee->id,
-            'attendance_date' => '2026-10-20 00:00:00',
-        ]);
-        $this->assertDatabaseHas('employee_attendances', [
-            'employee_id' => $employee->id,
-            'attendance_date' => '2026-10-22 00:00:00',
-            'status' => 'present',
-        ]);
-    }
-
-    public function test_daily_attendance_ignores_days_before_joining(): void
-    {
-        $owner = $this->owner();
-        $employee = $this->employee(['joining_date' => '2026-10-22']);
-
-        $this->actingAs($owner)
-            ->post('/admin/attendance', [
-                'attendance_date' => '2026-10-20',
-                'attendance' => [
-                    ['employee_id' => $employee->id, 'status' => 'present'],
-                ],
-            ])
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('employee_attendances', [
-            'employee_id' => $employee->id,
-        ]);
-    }
-
     public function test_partial_salary_payment_records_advance_repayment_once(): void
     {
         Carbon::setTestNow('2026-10-30 10:00:00');
@@ -350,6 +393,7 @@ class EmployeeManagementTest extends TestCase
                 'attendance_date' => $date,
                 'status' => 'present',
                 'payable_days' => '1.0',
+                'amount' => '600.00',
             ]);
         }
 
@@ -399,6 +443,7 @@ class EmployeeManagementTest extends TestCase
                 'attendance_date' => $date,
                 'status' => 'present',
                 'payable_days' => '1.0',
+                'amount' => '600.00',
             ]);
         }
 
@@ -445,6 +490,7 @@ class EmployeeManagementTest extends TestCase
             'attendance_date' => '2026-10-23',
             'status' => 'present',
             'payable_days' => '1.0',
+            'amount' => '600.00',
         ]);
 
         $this->actingAs($owner)->post('/admin/pay-salary', [
@@ -482,6 +528,7 @@ class EmployeeManagementTest extends TestCase
             'attendance_date' => '2026-10-23',
             'status' => 'present',
             'payable_days' => '1.0',
+            'amount' => '600.00',
         ]);
 
         $payload = [
@@ -517,6 +564,7 @@ class EmployeeManagementTest extends TestCase
             'attendance_date' => '2026-10-23',
             'status' => 'present',
             'payable_days' => '1.0',
+            'amount' => '600.00',
         ]);
 
         $this->actingAs($owner)
@@ -552,6 +600,7 @@ class EmployeeManagementTest extends TestCase
                 'attendance_date' => $date,
                 'status' => 'present',
                 'payable_days' => '1.0',
+                'amount' => '600.00',
             ]);
         }
 

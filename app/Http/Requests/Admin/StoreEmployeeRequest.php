@@ -18,7 +18,7 @@ class StoreEmployeeRequest extends FormRequest
         return [
             'full_name' => ['required', 'string', 'max:255'],
             'phone_number' => ['required', 'string', 'max:20'],
-            'daily_salary' => ['required', 'numeric', 'gte:0', 'decimal:0,2'],
+            'employee_type_id' => ['required', 'integer', 'exists:employee_types,id'],
             'weekly_salary_payment_day' => ['required', 'string', 'in:'.implode(',', $days)],
             'joining_date' => ['required', 'date'],
             'status' => ['required', 'in:active,inactive'],

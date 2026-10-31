@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEmployeeAttendanceRequest;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
+use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,30 +17,6 @@ class EmployeeAttendanceController extends Controller
 {
     public function index(Request $request): View
     {
-        $date = $request->input('date', now()->toDateString());
-        $employees = Employee::query()->orderBy('full_name')->get();
-
-        $existing = EmployeeAttendance::query()
-            ->whereDate('attendance_date', $date)
-            ->get()
-            ->keyBy('employee_id');
-
-        // Employees who had not joined yet on the selected date cannot be marked.
-        $lockedEmployeeIds = $employees
-            ->filter(fn (Employee $employee) => $employee->joining_date->gt($date))
-            ->pluck('id')
-            ->all();
-
-        return view('admin.attendance.index', [
-            'employees' => $employees,
-            'date' => $date,
-            'existing' => $existing,
-            'lockedEmployeeIds' => $lockedEmployeeIds,
-        ]);
-    }
-
-    public function weekly(Request $request): View
-    {
         $employees = Employee::query()->orderBy('full_name')->get();
         $employeeId = $request->input('employee_id');
         $referenceDate = $request->input('reference_date', now()->toDateString());
@@ -47,7 +24,6 @@ class EmployeeAttendanceController extends Controller
         $employee = null;
         $dates = [];
         $existing = collect();
-        $beforeJoining = false;
 
         if ($employeeId) {
             $employee = Employee::find($employeeId);
@@ -59,14 +35,13 @@ class EmployeeAttendanceController extends Controller
                 $end = Carbon::parse($period['end_date']);
                 $joining = $employee->joining_date->copy()->startOfDay();
 
-                $beforeJoining = Carbon::parse($referenceDate)->lt($joining);
-
                 for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
                     $dates[] = [
                         'date' => $date->toDateString(),
                         'label' => $date->format('D'),
                         'full' => $date->format('d-m-Y'),
                         'before_joining' => $date->lt($joining),
+                        'paid' => $employee->isDatePaid($date->toDateString()),
                         'is_today' => $date->isToday(),
                     ];
                 }
@@ -80,123 +55,91 @@ class EmployeeAttendanceController extends Controller
             }
         }
 
-        return view('admin.attendance.weekly', [
+        return view('admin.attendance.index', [
             'employees' => $employees,
             'employeeId' => $employeeId,
             'referenceDate' => $referenceDate,
             'employee' => $employee,
             'dates' => $dates,
             'existing' => $existing,
-            'beforeJoining' => $beforeJoining,
         ]);
     }
 
     public function store(StoreEmployeeAttendanceRequest $request): RedirectResponse
     {
-        // Weekly attendance save
-        if ($request->has('weekly')) {
-            $weekly = $request->input('weekly', []);
+        $data = $request->validated();
+        $problems = [];
 
-            DB::transaction(function () use ($weekly) {
-                foreach ($weekly as $employeeId => $days) {
-                    if (! is_array($days)) {
-                        continue;
-                    }
+        DB::transaction(function () use ($data, &$problems) {
+            // Lock the employee so a salary payment cannot be recorded for this
+            // week while its attendance is being changed.
+            $employee = Employee::query()->whereKey($data['employee_id'])->lockForUpdate()->firstOrFail();
 
-                    $employee = Employee::find($employeeId);
-                    if (! $employee) {
-                        continue;
-                    }
-
-                    foreach ($days as $date => $status) {
-                        if (! in_array($status, ['present', 'absent', 'half_day'], true)) {
-                            continue;
-                        }
-
-                        // Never record attendance before the joining date.
-                        if (Carbon::parse($date)->lt($employee->joining_date->copy()->startOfDay())) {
-                            continue;
-                        }
-
-                        $this->saveAttendance($employee->id, $date, $status);
-                    }
-                }
-            });
-
-            $employeeId = $request->input('weekly_employee_id');
-            $ref = $request->input('weekly_reference_date');
-
-            if ($employeeId && $ref) {
-                return redirect()
-                    ->route('admin.attendance.weekly', ['employee_id' => $employeeId, 'reference_date' => $ref])
-                    ->with('status', 'Weekly attendance saved.');
-            }
-
-            return redirect()->route('admin.attendance.weekly')->with('status', 'Weekly attendance saved.');
-        }
-
-        // Single day attendance save
-        $date = $request->validated('attendance_date');
-        $attendance = $request->validated('attendance');
-
-        DB::transaction(function () use ($date, $attendance) {
-            $employees = Employee::query()
-                ->whereIn('id', collect($attendance)->pluck('employee_id')->filter()->unique())
-                ->get()
-                ->keyBy('id');
-
-            foreach ($attendance as $row) {
-                $employeeId = $row['employee_id'] ?? null;
-                $status = $row['status'] ?? null;
-
-                if (! $employeeId || ! in_array($status, ['present', 'absent', 'half_day'], true)) {
-                    continue;
-                }
-
-                $employee = $employees->get((int) $employeeId);
-                if (! $employee) {
-                    continue;
-                }
+            foreach ($data['days'] as $date => $day) {
+                $status = $day['status'] ?? null;
 
                 // Never record attendance before the joining date.
-                if (Carbon::parse($date)->lt($employee->joining_date->copy()->startOfDay())) {
+                if (! $status || Carbon::parse($date)->lt($employee->joining_date->copy()->startOfDay())) {
                     continue;
                 }
 
-                $this->saveAttendance($employee->id, $date, $status);
+                $problems[] = $this->saveDay($employee, $date, $status, $day['amount'] ?? null);
             }
         });
 
-        return redirect()
-            ->route('admin.attendance.index', ['date' => $date])
-            ->with('status', 'Attendance saved.');
+        $redirect = redirect()->route('admin.attendance.index', [
+            'employee_id' => $data['employee_id'],
+            'reference_date' => $data['reference_date'],
+        ]);
+        $problems = array_filter($problems);
+
+        return $problems === []
+            ? $redirect->with('status', 'Attendance saved.')
+            : $redirect->with('error', 'Some days were not saved. '.implode(' ', $problems));
     }
 
     /**
-     * Upsert one employee's attendance for a date. whereDate keeps the match
-     * working on both MySQL (DATE column) and SQLite (datetime text).
+     * Upsert one day and return why it could not be saved, if so. whereDate
+     * keeps the match working on both MySQL (DATE column) and SQLite (datetime
+     * text).
      */
-    private function saveAttendance(int $employeeId, string $date, string $status): void
+    private function saveDay(Employee $employee, string $date, string $status, ?string $amount): ?string
     {
+        $day = Carbon::parse($date)->format('d-m-Y');
+
+        if ($employee->isDatePaid($date)) {
+            return "{$day}: this salary week is already paid.";
+        }
+
+        $amount = Money::normalize($amount ?? '0');
+
+        if ($status === 'present' && Money::isZero($amount)) {
+            return "{$day}: enter the amount for a present day.";
+        }
+
+        $values = [
+            'status' => $status,
+            'payable_days' => $status === 'present' ? '1.0' : '0.0',
+            'amount' => $status === 'present' ? $amount : '0.00',
+        ];
+
         $existing = EmployeeAttendance::query()
-            ->where('employee_id', $employeeId)
+            ->where('employee_id', $employee->id)
             ->whereDate('attendance_date', $date)
             ->first();
 
         if ($existing) {
-            $existing->update([
-                'status' => $status,
-                'payable_days' => EmployeeAttendance::payableDaysFor($status),
-            ]);
+            $existing->update($values);
 
-            return;
+            return null;
         }
 
         EmployeeAttendance::create([
-            'employee_id' => $employeeId,
+            'employee_id' => $employee->id,
             'attendance_date' => $date,
-            'status' => $status,
-            'payable_days' => EmployeeAttendance::payableDaysFor($status),
+            ...$values,
         ]);
+
+        return null;
     }
 }
