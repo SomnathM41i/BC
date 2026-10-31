@@ -18,7 +18,6 @@ class Employee extends Model
         'full_name',
         'phone_number',
         'employee_type_id',
-        'daily_salary',
         'weekly_salary_payment_day',
         'joining_date',
         'status',
@@ -27,7 +26,6 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
-            'daily_salary' => 'decimal:2',
             'joining_date' => 'date',
         ];
     }

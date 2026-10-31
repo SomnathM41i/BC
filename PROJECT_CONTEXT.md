@@ -94,9 +94,6 @@ subsetted webfonts strip Indic conjunct features, so clusters such as "ष्ट
 lose their rakar. There is no Google Fonts `<link>` or preconnect in the
 layout; Latin faces are preloaded.
 
-> `noto-serif-devanagari-var.ttf` is still on disk but unused since the switch
-> to Archivo on 28 Oct 2026.
-
 ### 3.4 Pages and routes
 
 | URL (Marathi / English) | Purpose |
@@ -297,9 +294,8 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 - Groups contractors by trade/skill for the admin index
 
 ### Employee
-- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `daily_salary`, `weekly_salary_payment_day`, `joining_date`, `status`
-- Casts: `daily_salary` → `decimal:2`, `joining_date` → `date`
-- `daily_salary` is legacy and no longer used for pay; new employees leave it null
+- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `weekly_salary_payment_day`, `joining_date`, `status`
+- Casts: `joining_date` → `date`
 - Relations: `type()`, `attendances()`, `advances()`, `salaryPayments()`
 - `isDatePaid()` tells whether a salary payment covers a date
 - Scopes `active()` / `inactive()`; `isActive()` helper
@@ -321,7 +317,7 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 - Casts: `advance_date` → `date`, `amount` → `decimal:2`
 
 ### EmployeeSalaryPayment
-- `daily_salary` is `0.00` on new payments; `half_days` stays 0
+- `daily_salary` and `half_days` only hold history on older payments; new payments store `0`
 - Fillable: `employee_id`, `period_start`, `period_end`, `daily_salary`, `gross_salary`, `present_days`, `half_days`, `total_payable_days`, `outstanding_advance_before`, `advance_repayment`, `net_salary_payable`, `amount_paid`, `remaining_salary_due`, `remaining_advance_after`, `status`, `payment_date`, `notes`
 - Casts: dates for periods/payment date; money columns → `decimal:2`; day columns → `decimal:1`
 - Status: `paid` or `partially_paid`
@@ -378,12 +374,6 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 | `OwnerWalletController` | Owner wallet show/income/transfer/return/expense |
 | `TransactionController` | Transaction ledger index |
 | `InstallerController` | Browser-based deploy/migrate/seed (`/deploy`) |
-
-> `ManagerController`, `ManagerReturnController`, `IncomeController` and the
-> `StoreManagerRequest` / `TransferToManagerRequest` /
-> `RecordManagerReturnRequest` classes are leftovers from before contractors
-> replaced managers. They are not routed and should be deleted with the stale
-> `ManagerManagementTest` (see §16).
 
 ### Employee rules
 
@@ -448,7 +438,6 @@ resources/views/
 │   ├── contractors/index.blade.php
 │   ├── dashboard.blade.php
 │   ├── employees/{create,edit,index,show}.blade.php
-│   ├── managers/index.blade.php          ← leftover, not routed
 │   ├── owner/show.blade.php
 │   ├── pay-salary/create.blade.php
 │   ├── projects/{create,index,show}.blade.php
@@ -463,7 +452,6 @@ resources/views/
 │   └── site/{footer,nav}.blade.php
 ├── site/
 │   ├── about.blade.php
-│   ├── coming-soon.blade.php
 │   ├── contact.blade.php
 │   ├── home.blade.php
 │   ├── portfolio/{index,show}.blade.php
@@ -519,10 +507,7 @@ on desktop.
 | `2026_10_28_072214_create_employee_advances_table.php` | employee_advances |
 | `2026_10_28_072216_create_employee_salary_payments_table.php` | employee_salary_payments (unique employee/period) |
 | `2026_10_28_080000_drop_salary_payment_id_from_employee_advances.php` | drops the unused advance → salary-payment link |
-| `2026_10_31_000001_create_employee_types_and_pay_rates_tables.php` | employee_types, employee_pay_rates (seeded), employee_pay_rate_overrides |
-| `2026_10_31_000002_add_work_pay_columns_to_employee_tables.php` | adds type, day amount, adjustment and breakdown columns; makes `daily_salary` nullable |
-| `2026_10_31_000003_backfill_employee_pay_data.php` | moves existing employees to Other and fills attendance amounts |
-| `2026_10_31_000004_simplify_employee_pay_to_daily_amounts.php` | removes pay rates, levels and adjustments, keeping each day's amount |
+| `2026_10_31_000001_add_employee_types_and_daily_amounts.php` | adds employee types and the per-day amount, copies the old salary onto marked days, then drops `employees.daily_salary` |
 
 ---
 
@@ -687,33 +672,18 @@ once with `SKIP_BUILD=1 git commit ...` only when assets cannot change.
 
 ## 16. Testing and Known Issues
 
-`php artisan test` currently runs **99 tests** (462 assertions):
-
-- **91 pass**, including all public-site tests (`PublicSiteTest`,
-  `SiteSurfaceTest`), the wallet/contractor suites and `EmployeeManagementTest`.
-- **8 fail** — all in `ManagerManagementTest`. The `/managers` routes were
-  replaced by `/contractors`, so that test file is stale. Fixing it means
-  deleting the test plus the leftover `ManagerController`,
-  `ManagerReturnController`, `StoreManagerRequest`, `TransferToManagerRequest`,
-  `RecordManagerReturnRequest` and `admin/managers/index.blade.php`.
+`php artisan test` currently runs **112 tests** (626 assertions), all passing.
 
 Public-site tests cover: locale routing, rendered copy, portfolio visibility,
 filters, enquiry storage/mail/honeypot, sitemap, robots, footer links, and the
 removal of the credits page.
 
-`EmployeeManagementTest` has **16 tests / 82 assertions**: generated employee
-IDs, dashboard cards, weekly-chart period selection, completed vs current salary
-weeks, zero-attendance pay guard, duplicate-period guard, pre-joining attendance
-locks, advance-repayment limits, amount-paid limits, partial top-up without a
-second repayment, and detail-page pagination.
+`EmployeeManagementTest` covers generated employee IDs, the attendance page, saved day amounts, salary totals, paid-week locks, pre-joining days, advance and payment limits, and detail-page pagination.
 
 ### Known debt / unused files
 
-- Leftover manager classes and view listed above, plus the unrouted
-  `IncomeController`.
 - `portfolio_projects.is_sample` column and model attribute are kept but no
   longer read by any view.
-- `public/fonts/noto-serif-devanagari-var.ttf` (758 KB) is unused.
 - `public/images/site/hero-advertisement*.png` (5 files, ~11 MB) are the
   owner's original posters, no longer referenced by the site.
 
@@ -733,8 +703,8 @@ BC/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/{Auth,Contractor,Dashboard,Employee,EmployeeAdvance,
-│   │   │   │          EmployeeAttendance,EmployeeSalary,Income,Installer,
-│   │   │   │          Manager,ManagerReturn,OwnerWallet,Project,
+│   │   │   │          EmployeeAttendance,EmployeeSalary,Installer,
+│   │   │   │          OwnerWallet,Project,
 │   │   │   │          ProjectFinance,Transaction}Controller.php
 │   │   │   └── Site/{Contact,ContractorStatement,Home,LegacyMarathiRedirect,
 │   │   │              Page,Portfolio,Sitemap}Controller.php
