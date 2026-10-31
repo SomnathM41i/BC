@@ -5,7 +5,7 @@
     $pageTitle = trim(html_entity_decode($__env->yieldContent('title'), ENT_QUOTES)) ?: __('site.meta.home.title');
     $pageDescription = trim(html_entity_decode($__env->yieldContent('description'), ENT_QUOTES)) ?: __('site.meta.home.description');
     $canonical = url()->current();
-    $ogImage = asset(config('site.seo.og_image'));
+    $ogImage = trim(html_entity_decode($__env->yieldContent('og_image'), ENT_QUOTES)) ?: asset(config('site.seo.og_image'));
 
     $schema = [
         '@context' => 'https://schema.org',
@@ -14,7 +14,7 @@
         'url' => SiteRoutes::url('home'),
         'image' => $ogImage,
         'description' => __('site.meta.home.description'),
-        'telephone' => array_values(array_column($site['phones'], 'tel')),
+        'telephone' => array_map(fn ($phone) => substr($phone['tel'], 4), $site['phones']),
         'address' => [
             '@type' => 'PostalAddress',
             'streetAddress' => $site['address_line'],
@@ -55,11 +55,14 @@
     <link rel="alternate" hreflang="en-IN" href="{{ SiteRoutes::switchUrl('en') }}">
     <link rel="alternate" hreflang="x-default" href="{{ SiteRoutes::switchUrl('en') }}">
 
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+
     <meta name="theme-color" content="{{ config('site.seo.theme_color') }}">
     <meta name="robots" content="@yield('robots', 'index, follow')">
 
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="{{ config('site.seo.title_suffix') }}">
+    <meta property="og:site_name" content="{{ $site['name'] }}">
     <meta property="og:locale" content="{{ app()->getLocale() === 'mr' ? 'mr_IN' : 'en_IN' }}">
     <meta property="og:title" content="{{ $pageTitle }}">
     <meta property="og:description" content="{{ $pageDescription }}">
@@ -73,7 +76,7 @@
     <link rel="preload" href="{{ asset('fonts/inter-var-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @if (app()->getLocale() === 'mr')
-        <link rel="preload" href="{{ asset('fonts/noto-sans-devanagari-var.ttf') }}" as="font" type="font/ttf" crossorigin>
+        <link rel="preload" href="{{ asset('fonts/noto-sans-devanagari-var.woff2') }}" as="font" type="font/woff2" crossorigin>
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

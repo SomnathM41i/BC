@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Contracts\SmsGateway;
 use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Models\Contractor;
@@ -16,14 +17,22 @@ use App\Support\Site\SiteRoutes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
+use Throwable;
 
 class PaymentTrackingController extends Controller
 {
     private const CATEGORIES = ['client', 'contractor', 'employee'];
 
-    public function __construct(private readonly WalletService $wallets) {}
+    private const OTP_KEY = 'payment_tracking_otp';
+
+    public function __construct(
+        private readonly WalletService $wallets,
+        private readonly SmsGateway $sms,
+    ) {}
 
     public function index(): View
     {
@@ -36,53 +45,10 @@ class PaymentTrackingController extends Controller
             'category' => ['required', 'string', 'in:client,contractor,employee'],
         ]);
 
-        $request->session()->forget('payment_tracking');
+        $request->session()->forget(['payment_tracking', self::OTP_KEY]);
         $request->session()->put('payment_tracking.pending_category', $validated['category']);
 
         return redirect()->to(SiteRoutes::url('payment-tracking.verify'));
-    }
-
-    /**
-     * One-step lookup used by the homepage quick form: role and mobile in a
-     * single POST, so visitors do not have to go through two screens.
-     */
-    public function lookup(Request $request): RedirectResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'category' => ['required', 'string', 'in:client,contractor,employee'],
-            'mobile' => ['required', 'string', 'max:20'],
-        ], [
-            'category.required' => __('site.payment_tracking.choose_category'),
-            'category.in' => __('site.payment_tracking.choose_category'),
-            'mobile.required' => __('site.payment_tracking.invalid_mobile'),
-            'mobile.max' => __('site.payment_tracking.invalid_mobile'),
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->to(SiteRoutes::url('home').'#track-payments')
-                ->withInput($request->only('category', 'mobile'))
-                ->withErrors($validator);
-        }
-
-        $validated = $validator->validated();
-        $mobile = PhoneNumber::normalize((string) $validated['mobile']);
-
-        if ($mobile === null) {
-            return redirect()
-                ->to(SiteRoutes::url('home').'#track-payments')
-                ->withInput($request->only('category', 'mobile'))
-                ->withErrors(['mobile' => __('site.payment_tracking.invalid_mobile')]);
-        }
-
-        $request->session()->forget('payment_tracking');
-        $request->session()->put('payment_tracking.pending_category', $validated['category']);
-
-        return match ($validated['category']) {
-            'client' => $this->verifyClient($request, $mobile, true),
-            'contractor' => $this->verifyContractor($request, $mobile, true),
-            'employee' => $this->verifyEmployee($request, $mobile, true),
-        };
     }
 
     public function showVerify(Request $request): View|RedirectResponse
@@ -126,11 +92,75 @@ class PaymentTrackingController extends Controller
                 ->withErrors(['mobile' => __('site.payment_tracking.invalid_mobile')]);
         }
 
-        return match ($category) {
-            'client' => $this->verifyClient($request, $mobile),
-            'contractor' => $this->verifyContractor($request, $mobile),
-            'employee' => $this->verifyEmployee($request, $mobile),
-        };
+        return $this->sendCode($request, $mobile, match ($category) {
+            'client' => $this->clientIdentity($mobile),
+            'contractor' => $this->contractorIdentity($mobile),
+            'employee' => $this->employeeIdentity($mobile),
+        });
+    }
+
+    public function showOtp(Request $request): View|RedirectResponse
+    {
+        $pending = $request->session()->get(self::OTP_KEY);
+
+        if (! is_array($pending)) {
+            return $this->expireSession($request);
+        }
+
+        return view('site.payment-tracking.otp', [
+            'maskedMobile' => '******'.substr((string) $pending['mobile'], -4),
+        ]);
+    }
+
+    public function verifyOtp(Request $request): RedirectResponse
+    {
+        $pending = $request->session()->get(self::OTP_KEY);
+
+        if (! is_array($pending)) {
+            return $this->expireSession($request);
+        }
+
+        $expired = (now()->timestamp - (int) $pending['sent_at']) > ((int) config('site.payment_tracking.otp_minutes', 5) * 60);
+        $locked = (int) $pending['attempts'] >= (int) config('site.payment_tracking.otp_max_attempts', 5);
+
+        if ($expired || $locked) {
+            $request->session()->forget(self::OTP_KEY);
+
+            return redirect()
+                ->to(SiteRoutes::url('payment-tracking.verify'))
+                ->with('tracking_error', __($locked ? 'site.payment_tracking.otp.locked' : 'site.payment_tracking.otp.expired'));
+        }
+
+        $code = (string) $request->input('code');
+
+        if ($pending['code_hash'] === null || ! hash_equals($pending['code_hash'], $this->hashCode($code))) {
+            $request->session()->put(self::OTP_KEY.'.attempts', (int) $pending['attempts'] + 1);
+
+            return redirect()
+                ->to(SiteRoutes::url('payment-tracking.otp'))
+                ->withErrors(['code' => __('site.payment_tracking.otp.invalid')]);
+        }
+
+        $request->session()->forget(self::OTP_KEY);
+
+        return $this->verified($request, $pending['identity']);
+    }
+
+    public function resendOtp(Request $request): RedirectResponse
+    {
+        $pending = $request->session()->get(self::OTP_KEY);
+
+        if (! is_array($pending)) {
+            return $this->expireSession($request);
+        }
+
+        if ((now()->timestamp - (int) $pending['sent_at']) < (int) config('site.payment_tracking.otp_resend_seconds', 60)) {
+            return redirect()
+                ->to(SiteRoutes::url('payment-tracking.otp'))
+                ->with('tracking_error', __('site.payment_tracking.otp.wait'));
+        }
+
+        return $this->sendCode($request, (string) $pending['mobile'], $pending['identity']);
     }
 
     public function dashboard(Request $request): View|RedirectResponse
@@ -172,7 +202,7 @@ class PaymentTrackingController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        $request->session()->forget('payment_tracking');
+        $request->session()->forget(['payment_tracking', self::OTP_KEY]);
         $request->session()->regenerate();
 
         return redirect()
@@ -180,58 +210,126 @@ class PaymentTrackingController extends Controller
             ->with('tracking_status', __('site.payment_tracking.logged_out'));
     }
 
-    private function verifyClient(Request $request, string $mobile, bool $fromHome = false): RedirectResponse
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function clientIdentity(string $mobile): ?array
     {
-        $projects = Project::query()
+        $projectIds = Project::query()
             ->where('client_mobile_normalized', $mobile)
             ->orderBy('name')
-            ->get();
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
-        if ($projects->isEmpty()) {
-            return $this->lookupFailed($request, $fromHome);
+        if ($projectIds === []) {
+            return null;
         }
 
-        $projectIds = $projects->pluck('id')->map(fn ($id) => (int) $id)->all();
-
-        return $this->verified($request, [
+        return [
             'category' => 'client',
             'project_ids' => $projectIds,
             'selected_project_id' => $projectIds[0],
-        ]);
+        ];
     }
 
-    private function verifyContractor(Request $request, string $mobile, bool $fromHome = false): RedirectResponse
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function contractorIdentity(string $mobile): ?array
     {
         $matches = Contractor::query()
             ->get()
             ->filter(fn (Contractor $contractor) => PhoneNumber::normalize($contractor->phone) === $mobile)
             ->values();
 
-        if ($matches->count() !== 1) {
-            return $this->lookupFailed($request, $fromHome);
-        }
-
-        return $this->verified($request, [
-            'category' => 'contractor',
-            'contractor_id' => (int) $matches->first()->id,
-        ]);
+        return $this->hasSingleMatch('contractor', $matches)
+            ? ['category' => 'contractor', 'contractor_id' => (int) $matches->first()->id]
+            : null;
     }
 
-    private function verifyEmployee(Request $request, string $mobile, bool $fromHome = false): RedirectResponse
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function employeeIdentity(string $mobile): ?array
     {
         $matches = Employee::query()
             ->get()
             ->filter(fn (Employee $employee) => PhoneNumber::normalize($employee->phone_number) === $mobile)
             ->values();
 
-        if ($matches->count() !== 1) {
-            return $this->lookupFailed($request, $fromHome);
+        return $this->hasSingleMatch('employee', $matches)
+            ? ['category' => 'employee', 'employee_id' => (int) $matches->first()->id]
+            : null;
+    }
+
+    /**
+     * A number shared by two records cannot say whose payments to show, so it
+     * gets no access; the log tells the office which records to correct.
+     */
+    private function hasSingleMatch(string $category, Collection $matches): bool
+    {
+        if ($matches->count() > 1) {
+            Log::warning('Payment tracking: one mobile number matches several records.', [
+                'category' => $category,
+                'ids' => $matches->pluck('id')->all(),
+            ]);
         }
 
-        return $this->verified($request, [
-            'category' => 'employee',
-            'employee_id' => (int) $matches->first()->id,
+        return $matches->count() === 1;
+    }
+
+    /**
+     * Unknown numbers go through the same steps with no code behind them, so
+     * the form never reveals whether a number is on record.
+     *
+     * @param  array<string, mixed>|null  $identity
+     */
+    private function sendCode(Request $request, string $mobile, ?array $identity): RedirectResponse
+    {
+        $limiterKey = 'payment-otp:'.PhoneNumber::hash($mobile);
+
+        if (RateLimiter::tooManyAttempts($limiterKey, (int) config('site.payment_tracking.otp_per_number_per_hour', 5))) {
+            return redirect()
+                ->to(SiteRoutes::url('payment-tracking.verify'))
+                ->with('tracking_error', __('site.payment_tracking.otp.too_many'));
+        }
+
+        $codeHash = null;
+
+        if ($identity !== null) {
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $minutes = (int) config('site.payment_tracking.otp_minutes', 5);
+
+            try {
+                $this->sms->send($mobile, __('site.payment_tracking.otp.sms', ['code' => $code, 'minutes' => $minutes]));
+            } catch (Throwable $exception) {
+                Log::error('Payment tracking code could not be sent.', ['error' => $exception->getMessage()]);
+
+                return redirect()
+                    ->to(SiteRoutes::url('payment-tracking.verify'))
+                    ->with('tracking_error', __('site.payment_tracking.otp.unavailable'));
+            }
+
+            $codeHash = $this->hashCode($code);
+        }
+
+        RateLimiter::hit($limiterKey, 3600);
+
+        $request->session()->put(self::OTP_KEY, [
+            'identity' => $identity,
+            'code_hash' => $codeHash,
+            'mobile' => $mobile,
+            'attempts' => 0,
+            'sent_at' => now()->timestamp,
         ]);
+
+        return redirect()->to(SiteRoutes::url('payment-tracking.otp'));
+    }
+
+    private function hashCode(string $code): string
+    {
+        return hash_hmac('sha256', $code, (string) config('app.key'));
     }
 
     /**
@@ -247,17 +345,6 @@ class PaymentTrackingController extends Controller
         return redirect()
             ->to(SiteRoutes::url('payment-tracking.dashboard'))
             ->with('tracking_status', __('site.payment_tracking.verified'));
-    }
-
-    private function lookupFailed(Request $request, bool $fromHome = false): RedirectResponse
-    {
-        $redirect = $fromHome
-            ? redirect()->to(SiteRoutes::url('home').'#track-payments')
-            : redirect()->to(SiteRoutes::url('payment-tracking.verify'));
-
-        return $redirect
-            ->withInput($request->only('category', 'mobile'))
-            ->with('tracking_error', __('site.payment_tracking.lookup_failed'));
     }
 
     private function expireSession(Request $request): RedirectResponse

@@ -6,9 +6,7 @@
 @section('description', \Illuminate\Support\Str::limit($project->summaryFor(), 155))
 
 @if ($project->coverUrl())
-    @push('head')
-        <meta property="og:image" content="{{ $project->coverUrl() }}">
-    @endpush
+    @section('og_image', $project->coverUrl())
 @endif
 
 @section('content')

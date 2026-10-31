@@ -65,9 +65,10 @@ $siteRoutes = function () {
     /*
      * Public payment tracking.
      *
-     * The URL never carries an identity. A visitor picks what they are and
-     * confirms the mobile number registered against their record; only the
-     * match is kept, in the session, and it expires. Every page here is
+     * The URL never carries an identity. A visitor picks what they are, gives
+     * the mobile number registered against their record and proves they hold
+     * it with a one-time code; only the match is kept, in the session, and it
+     * expires. Every page here is
      * noindex/no-store.
      */
     Route::prefix('payment-tracking')
@@ -77,12 +78,16 @@ $siteRoutes = function () {
             Route::get('/', [PaymentTrackingController::class, 'index'])->name('index');
             Route::post('category', [PaymentTrackingController::class, 'selectCategory'])->name('category');
             Route::get('verify', [PaymentTrackingController::class, 'showVerify'])->name('verify');
-            Route::post('lookup', [PaymentTrackingController::class, 'lookup'])
-                ->middleware('throttle:payment-lookup')
-                ->name('lookup');
             Route::post('verify', [PaymentTrackingController::class, 'verify'])
                 ->middleware('throttle:payment-lookup')
                 ->name('verify.store');
+            Route::get('otp', [PaymentTrackingController::class, 'showOtp'])->name('otp');
+            Route::post('otp', [PaymentTrackingController::class, 'verifyOtp'])
+                ->middleware('throttle:payment-lookup')
+                ->name('otp.store');
+            Route::post('otp/resend', [PaymentTrackingController::class, 'resendOtp'])
+                ->middleware('throttle:payment-lookup')
+                ->name('otp.resend');
 
             Route::middleware('payment.verified')->group(function () {
                 Route::get('dashboard', [PaymentTrackingController::class, 'dashboard'])->name('dashboard');

@@ -22,6 +22,15 @@
     <x-icon name="wallet" />
     Personal Wallet
 </a>
+@php($newInquiries = \App\Models\Inquiry::query()->new()->count())
+<a href="{{ route('admin.inquiries.index') }}"
+   class="flex items-center gap-2 rounded-md px-3 py-2 {{ request()->routeIs('admin.inquiries.*') ? $active : $base }}">
+    <x-icon name="users" />
+    Enquiries
+    @if ($newInquiries > 0)
+        <span class="ml-auto rounded-full bg-amber-400 px-2 text-xs font-semibold text-slate-900">{{ $newInquiries }}</span>
+    @endif
+</a>
 <a href="{{ route('admin.contractors.index') }}"
    class="flex items-center gap-2 rounded-md px-3 py-2 {{ request()->routeIs('admin.contractors.*') ? $active : $base }}">
     <x-icon name="users" />

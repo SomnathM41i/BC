@@ -1,6 +1,6 @@
 # Bandgar Construction — Project Context Document
 
-> Updated: 28 October 2026
+> Updated: 31 October 2026
 > Location: `C:\Users\Somnath Mali\Desktop\BC`
 > Owner: Somnath Mali
 > Branch: `main` — production deploys from Git
@@ -51,15 +51,16 @@ frontend sources are staged (see §15).
 
 ### 3.1 Language architecture
 
-- **Marathi is canonical at the root**: `/`, `/about`, `/services`,
+- **English is canonical at the root**: `/`, `/about`, `/services`,
   `/projects`, `/contact`.
-- **English lives under `/en`**: `/en`, `/en/about`, and so on.
-- Old `/mr/...` URLs permanently redirect to the Marathi canonical URLs.
+- **Marathi lives under `/mr`**: `/mr`, `/mr/about`, and so on.
+- Old `/en/...` URLs redirect to the English root URLs
+  (`LegacyEnglishRedirectController`).
 - `SetSiteLocale` middleware sets the locale from the route group; the URL is
   the source of truth, so shared links stay in the language they were written
   in.
 - Translation strings live in `lang/en/site.php` and `lang/mr/site.php`. Both
-  files must keep identical key sets — currently **319 keys each**.
+  files must keep identical key sets — currently **446 keys each**.
 
 ### 3.2 Content rules (non-negotiable)
 
@@ -87,7 +88,7 @@ Fonts are self-hosted in `public/fonts/` and declared in `resources/css/app.css`
 |-----|--------|------|
 | Headings (Latin) | Archivo (variable, 400–700) | `archivo-var-latin.woff2` |
 | Body (Latin) | Inter (variable, 400–600) | `inter-var-latin.woff2` |
-| Marathi | Noto Sans Devanagari (variable) | `noto-sans-devanagari-var.ttf` |
+| Marathi | Noto Sans Devanagari (variable) | `noto-sans-devanagari-var.woff2` |
 
 Devanagari must stay **self-hosted with the full font file**: Google's
 subsetted webfonts strip Indic conjunct features, so clusters such as "ष्ट्र"
@@ -96,14 +97,14 @@ layout; Latin faces are preloaded.
 
 ### 3.4 Pages and routes
 
-| URL (Marathi / English) | Purpose |
+| URL (English / Marathi) | Purpose |
 |---|---|
-| `/` · `/en` | Home: hero, services, selected projects, process, enquiry call-out |
-| `/about` · `/en/about` | Company, approach, service area |
-| `/services` · `/en/services` | Full service list, each card links to the enquiry form with `?service=<slug>#enquiry-form` |
-| `/projects` · `/en/projects` | Published portfolio with category filter |
-| `/projects/{slug}` · `/en/projects/{slug}` | Project detail, gallery, related services |
-| `/contact` · `/en/contact` | Contact details, Google map, enquiry form |
+| `/` · `/mr` | Home: hero, services, selected projects, process, enquiry call-out |
+| `/about` · `/mr/about` | Company, approach, service area |
+| `/services` · `/mr/services` | Full service list, each card links to the enquiry form with `?service=<slug>#enquiry-form` |
+| `/projects` · `/mr/projects` | Published portfolio with category filter |
+| `/projects/{slug}` · `/mr/projects/{slug}` | Project detail, gallery, related services |
+| `/contact` · `/mr/contact` | Contact details, Google map, enquiry form |
 | `/sitemap.xml` | Bilingual sitemap with `hreflang` alternates |
 | `/statement/{token}` | Private contractor statement (random token, `noindex`, `no-store`) |
 | `/contractors/{slug}` | Retired guessable statement link — `410 Gone` |
@@ -123,8 +124,26 @@ layout; Latin faces are preloaded.
 - Rate limit: **5 requests per minute per IP** (`site.contact.throttle`).
 - Stored metadata: `locale`, IP address, user agent, `status` (default `new`).
 - Notification recipient: `SITE_NOTIFY_EMAIL`, falling back to `site.email`.
+- Every enquiry is readable at `/admin/inquiries`, with a new-count badge in
+  the admin menu, so none depend on email alone.
 - Submitting disables the button and shows "Sending…"; a double-submit guard
   prevents duplicate rows.
+
+### 3.5a Payment tracking
+
+Visitors pick client, contractor or employee, enter their registered mobile
+number and confirm a 6-digit code before any record is shown.
+
+- Codes last 5 minutes, allow 5 tries, can be resent after 60 seconds, and at
+  most 5 are sent per number per hour (`site.payment_tracking`).
+- Unknown numbers reach the same code screen with no code behind them, so the
+  form does not reveal who is on record.
+- SMS goes through `App\Contracts\SmsGateway`, bound in `AppServiceProvider`.
+  **No real provider is connected yet.** `LogSmsGateway` writes codes to the log
+  and throws in production, so tracking stays closed there until a provider
+  class is bound.
+- A number shared by two contractors or employees gets no access; a warning is
+  logged naming the records to correct.
 
 ### 3.6 Map and local SEO
 
@@ -355,7 +374,7 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 | `PortfolioController` | Portfolio index with category filter, project detail |
 | `ContactController` | Contact page, enquiry validation/store, owner notification |
 | `ContractorStatementController` | Tokenised public statement, 410 for retired slugs |
-| `LegacyMarathiRedirectController` | `/mr/...` → canonical Marathi URLs |
+| `LegacyEnglishRedirectController` | `/en/...` → English root URLs |
 | `SitemapController` | Bilingual XML sitemap |
 
 ### Admin (`app/Http/Controllers/Admin`, mounted at `/admin`)
@@ -367,6 +386,7 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 | `ProjectController` | Project CRUD + closure request/finalize |
 | `ProjectFinanceController` | Receipts, expenses, transfers, funding per project |
 | `ContractorController` | Contractor list/create |
+| `InquiryController` | Website enquiry list and status |
 | `EmployeeController` | Employee CRUD; detail page paginates attendance (5/page), advances and salary history (10/page) |
 | `EmployeeAttendanceController` | Select an employee and edit their salary week; rejects pre-joining dates and paid weeks and upserts one row per employee/day |
 | `EmployeeAdvanceController` | Advance list and create |
@@ -393,14 +413,15 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 
 ### Public business website (`routes/web.php`)
 
-Marathi at the root, English under `/en`:
+English at the root, Marathi under `/mr`:
 
 - `GET /` — home
 - `GET /about`, `GET /services`, `GET /contact`
 - `POST /contact` — enquiry (throttled 5/min per IP)
 - `GET /projects`, `GET /projects/{slug}` — public portfolio
-- `GET /en/...` — English versions of the same pages
-- `GET /mr/{path?}` — permanent redirects to Marathi canonicals
+- `GET /mr/...` — Marathi versions of the same pages
+- `/en/{path?}` — redirects to the English root URLs
+- `/payment-tracking` — choose role → mobile number → one-time code → dashboard
 - `GET /sitemap.xml` — bilingual sitemap
 - `GET /statement/{contractor:statement_token}` — public contractor statement
 - `GET /contractors/{slug}` — retired guessable URL, answers `410 Gone`
@@ -668,12 +689,13 @@ once with `SKIP_BUILD=1 git commit ...` only when assets cannot change.
 - [ ] `.env` not web-accessible
 - [ ] Demo/seeded accounts removed or passwords changed
 - [ ] Enquiry notification address tested
+- [ ] SMS provider bound to `SmsGateway` and a code received on a real phone
 
 ---
 
 ## 16. Testing and Known Issues
 
-`php artisan test` currently runs **112 tests** (626 assertions), all passing.
+Run `php artisan test`; the suite passed in full on 31 Oct 2026.
 
 Public-site tests cover: locale routing, rendered copy, portfolio visibility,
 filters, enquiry storage/mail/honeypot, sitemap, robots, footer links, and the
@@ -685,8 +707,6 @@ removal of the credits page.
 
 - `portfolio_projects.is_sample` column and model attribute are kept but no
   longer read by any view.
-- `public/images/site/hero-advertisement*.png` (5 files, ~11 MB) are the
-  owner's original posters, no longer referenced by the site.
 
 ---
 
@@ -707,7 +727,7 @@ BC/
 │   │   │   │          EmployeeAttendance,EmployeeSalary,Installer,
 │   │   │   │          OwnerWallet,Project,
 │   │   │   │          ProjectFinance,Transaction}Controller.php
-│   │   │   └── Site/{Contact,ContractorStatement,Home,LegacyMarathiRedirect,
+│   │   │   └── Site/{Contact,ContractorStatement,Home,LegacyEnglishRedirect,
 │   │   │              Page,Portfolio,Sitemap}Controller.php
 │   │   ├── Middleware/{EnsureUserHasRole,SetSiteLocale}.php
 │   │   └── Requests/
@@ -741,7 +761,7 @@ BC/
 │       ├── DatabaseSeeder.php
 │       ├── DemoEmployeeSeeder.php      ← local-only review data
 │       └── RealPortfolioSeeder.php
-├── lang/{en,mr}/site.php               ← public copy, 319 keys each
+├── lang/{en,mr}/site.php               ← public copy, 446 keys each
 ├── public/
 │   ├── build/                          ← committed Vite assets
 │   ├── fonts/                          ← self-hosted typefaces

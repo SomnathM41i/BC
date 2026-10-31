@@ -99,10 +99,5 @@
         @endif
 
         @include('site.payment-tracking.partials.'.$category)
-
-        <p class="mt-8 flex items-start gap-2 text-xs leading-relaxed text-ink/45">
-            <x-site.icon name="shield" class="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>{{ __('site.payment_tracking.dashboard.privacy') }}</span>
-        </p>
     </section>
 @endsection

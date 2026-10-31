@@ -4,23 +4,23 @@ return [
 
     'meta' => [
         'home' => [
-            'title' => 'Home Construction and Architectural Design in Atpadi, Sangli',
+            'title' => 'Home Construction & Design in Atpadi, Sangli',
             'description' => 'Bandgar Construction & Developers offers architectural design, 2D home plans, 3D visualisation and residential construction in Kargani, Atpadi, Sangli District.',
         ],
         'about' => [
-            'title' => 'About Us — Residential Design in Atpadi, Sangli',
+            'title' => 'About Us — Home Design in Atpadi',
             'description' => 'How Bandgar Construction & Developers plans and builds homes in Kargani, Atpadi and the Sangli district: practical design, clear estimates and careful execution.',
         ],
         'services' => [
-            'title' => 'Architectural Design, 2D Plans and Home Construction',
+            'title' => 'Home Design & Construction Services',
             'description' => 'Architectural design, 2D home plans, 3D visualisation, structural coordination, residential construction, interiors and supervision in Atpadi, Sangli.',
         ],
         'portfolio' => [
-            'title' => 'Residential Projects and Design Visualisations',
+            'title' => 'Residential Projects & 3D Designs',
             'description' => 'Selected homes, interiors and 3D design visualisations by Bandgar Construction & Developers in Kargani, Atpadi, Sangli District.',
         ],
         'contact' => [
-            'title' => 'Contact — Kargani, Atpadi, Sangli District',
+            'title' => 'Contact Us — Kargani, Atpadi',
             'description' => 'Speak to Bandgar Construction & Developers about a new home, a 2D plan or a 3D design. Kargani, Shetfale Road, Taluka Atpadi, Sangli District.',
         ],
         'sitemap' => [
@@ -42,7 +42,6 @@ return [
         'language' => 'Language',
         'language_marathi' => 'मराठी',
         'language_english' => 'English',
-        'staff' => 'Staff sign in',
         'skip' => 'Skip to main content',
     ],
 
@@ -74,7 +73,6 @@ return [
         'hero_eyebrow' => 'Kargani · Atpadi · Sangli District',
         'hero_title' => 'Thoughtfully Designed. Professionally Built.',
         'hero_lead' => 'From architectural planning to the final finishing, we help you turn your vision into a well-planned home.',
-        'hero_body' => 'We bring together practical design, careful construction planning and attention to detail, so the spaces we build suit your needs, lifestyle and budget.',
         'hero_services' => [
             'Residential Construction',
             'Architectural Design',
@@ -152,15 +150,15 @@ return [
         'banner_title' => 'A Design and Construction Partner for Your Home',
         'banner_lead' => 'Residential design and construction, handled with care from the first drawing to the final finish.',
 
-        'intro_title' => 'Introduction',
+        'intro_title' => 'Who We Are',
         'intro_body' => [
             'Bandgar Construction & Developers works with families and property owners in Kargani, Atpadi, Sangli District and nearby areas of Maharashtra. Our focus is residential work — homes planned around the people who will live in them.',
             'We bring architectural planning, building design and construction execution together, so the drawings, the estimate and the work on site stay connected. Instead of handing over a plan and leaving you to coordinate everyone else, we stay involved through the build.',
         ],
 
-        'company_title' => 'About the Company',
+        'company_title' => 'Where We Work',
         'company_body' => [
-            'The practice is based at Kargani, on Shetfale Road in Taluka Atpadi. From here we take on residential projects in Atpadi and the surrounding Sangli district.',
+            'Our office is at Kargani, on Shetfale Road in Taluka Atpadi. From here we take on residential projects in Atpadi and the surrounding Sangli district.',
             'Our services cover architectural design, 2D home plans, 3D visualisation, interior design, construction supervision and residential construction. You can engage us for one stage or for the whole journey from drawing to handover.',
         ],
 
@@ -337,9 +335,9 @@ return [
                 ],
             ],
             'video-vr-animation' => [
-                'name' => 'Video and VR Animation',
+                'name' => 'Video Walkthrough',
                 'short' => 'Walk through the design before it is built.',
-                'description' => 'Walkthrough videos and VR-ready visualisations of the planned home. Useful for family discussions, approvals and for presenting a design clearly to everyone involved.',
+                'description' => 'Walkthrough videos and 3D presentations of the planned home. Useful for family discussions, approvals and for presenting a design clearly to everyone involved.',
                 'benefits' => [
                     'A clear walkthrough of the design',
                     'Better decisions before construction',
@@ -349,7 +347,7 @@ return [
         ],
 
         'cta_title' => 'Not Sure Which Service You Need?',
-        'cta_text' => 'Tell us what you are planning — a new home, a renovation or a single drawing — and we will guide you to the right starting point.',
+        'cta_text' => 'Tell us what you are planning — a new home or a single drawing — and we will guide you to the right starting point.',
     ],
 
     'portfolio' => [
@@ -419,7 +417,7 @@ return [
             'message_placeholder' => 'Tell us about your plot, your requirements and your timeline.',
             'submit' => 'Send Enquiry',
             'sending' => 'Sending…',
-            'privacy' => 'Your details are used only to respond to this enquiry.',
+            'privacy' => 'We use your details to respond to this enquiry, and keep basic technical details to help stop spam.',
             'honeypot' => 'Leave this field empty',
         ],
         'success_title' => 'Thank you — your enquiry has been received.',
@@ -441,21 +439,15 @@ return [
 
     'payment_tracking' => [
         'meta' => [
-            'title' => 'Track Your Payments — Bandgar Construction & Developers',
+            'title' => 'Track Your Payments',
             'description' => 'Check the payments recorded against your registered mobile number with Bandgar Construction & Developers.',
         ],
         'eyebrow' => 'Payment Tracking',
         'title' => 'Track Your Payments',
-        'lead' => 'Choose how you are connected to us, then confirm the mobile number we have on record. No password or OTP is needed.',
-        'privacy_note' => 'Your number is used only to find your records. Nothing is shown until it matches, and access closes automatically after :minutes minutes.',
-        'choose_title' => 'Who are you?',
+        'lead' => 'Choose how you are connected to us, then enter the mobile number we have on record. We will send a one-time code to confirm it is you.',
+        'privacy_note' => 'Your number is used only to find your records. Nothing is shown until the code is confirmed, and access closes automatically after :minutes minutes.',
+        'choose_title' => 'I am a…',
         'choose_lead' => 'Select the option that matches your records so we show the right information.',
-        'quick_eyebrow' => 'Payment Tracking',
-        'quick_title' => 'Track Your Payments',
-        'quick_lead' => 'Choose your role and enter the mobile number registered with us.',
-        'quick_privacy' => 'No password or OTP needed.',
-        'quick_role_label' => 'Who are you?',
-        'quick_submit' => 'View',
         'roles' => [
             'client' => [
                 'title' => 'Client',
@@ -472,27 +464,41 @@ return [
         ],
         'continue' => 'Continue',
         'verify' => [
-            'title' => 'Confirm your mobile number',
+            'title' => 'Enter your mobile number',
             'lead' => 'Enter the 10-digit mobile number registered with us.',
-            'for' => 'Looking up: :role',
+            'for' => ':role records',
             'label' => 'Registered mobile number',
             'placeholder' => '9876543210',
-            'submit' => 'View my payments',
+            'submit' => 'Send Code',
             'back' => 'Choose a different option',
             'help' => 'Use the number you gave us. If it has changed, please contact the office.',
         ],
+        'otp' => [
+            'title' => 'Enter your one-time code',
+            'lead' => 'If this number is registered with us, we have sent a 6-digit code to :mobile.',
+            'label' => '6-digit code',
+            'submit' => 'View My Payments',
+            'resend' => 'Send the code again',
+            'change_number' => 'Use a different number',
+            'help' => 'No code? Check the number and try again, or contact the office. The number on our records may be different.',
+            'sms' => ':code is your Bandgar Construction code. It is valid for :minutes minutes. Do not share it with anyone.',
+            'invalid' => 'That code is not correct. Please check it and try again.',
+            'expired' => 'That code has expired. Please ask for a new one.',
+            'locked' => 'Too many incorrect tries. Please ask for a new code.',
+            'wait' => 'Please wait a minute before asking for another code.',
+            'too_many' => 'Too many codes have been requested for this number. Please try again later.',
+            'unavailable' => 'We could not send your code right now. Please try later or contact the office.',
+        ],
         'invalid_mobile' => 'Enter a valid 10-digit Indian mobile number.',
-        'lookup_failed' => 'We could not find records for that mobile number. Check the number and try again, or contact the office.',
         'choose_category' => 'Please choose who you are first.',
-        'session_expired' => 'Your secure session has ended. Please confirm your number again.',
+        'session_expired' => 'Your access has ended. Please confirm your number again.',
         'verified' => 'Your number is confirmed. Showing your records.',
         'logged_out' => 'You have been signed out of payment tracking.',
         'project_not_available' => 'That project is not linked to your number.',
         'dashboard' => [
             'title' => 'Your payments',
             'logout' => 'Sign out',
-            'verified_until' => 'Secure access until :time',
-            'privacy' => 'Only records linked to your confirmed number are shown. This page is not indexed or cached.',
+            'verified_until' => 'Access ends at :time',
         ],
         'client' => [
             'summary_title' => 'Overall summary',
@@ -580,13 +586,29 @@ return [
         ],
     ],
 
+    'errors' => [
+        'eyebrow' => 'Something went wrong',
+        'home' => 'Go to Home Page',
+        'not_found' => [
+            'title' => 'Page Not Found',
+            'text' => 'This page does not exist or may have moved.',
+        ],
+        'expired' => [
+            'title' => 'This Page Has Expired',
+            'text' => 'The page was open for too long. Please go back, refresh it and try again.',
+        ],
+        'too_many' => [
+            'title' => 'Too Many Attempts',
+            'text' => 'Please wait a few minutes and try again.',
+        ],
+    ],
+
     'footer' => [
         'about' => 'Residential construction, architectural design and interior services at Kargani, Shetfale Road, Taluka Atpadi, Sangli District, Maharashtra.',
-        'quick_links' => 'Quick Links',
         'services_title' => 'Services',
         'contact_title' => 'Contact',
+        'payment_tracking' => 'Track Your Payments',
         'rights' => 'All rights reserved.',
-        'staff' => 'Staff sign in',
         'visualisation_note' => 'Project images are 3D design visualisations.',
     ],
 

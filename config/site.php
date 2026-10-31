@@ -74,7 +74,6 @@ return [
                 'महाराष्ट्र, भारत',
             ],
         ],
-        // Coordinates remain unset because an exact office pin is not verified.
         // Coordinates come from the owner-supplied Google Maps listing.
         'latitude' => 17.3126691,
         'longitude' => 74.8801869,
@@ -136,7 +135,7 @@ return [
     ],
 
     'seo' => [
-        'title_suffix' => 'Bandgar Construction & Developers',
+        'title_suffix' => 'Bandgar Construction',
         'default_description' => 'Residential construction, architectural planning, structural and interior design services in Kargani, Shetfale Road, Taluka Atpadi, Sangli District, Maharashtra, India.',
         'og_image' => 'images/site/portfolio/modern-duplex-residence/cover.jpg',
         'theme_color' => '#64151F',
@@ -155,6 +154,11 @@ return [
         // Lookup limits: per IP + mobile number, and per IP overall.
         'lookup_per_minute' => 5,
         'lookup_per_hour' => 20,
+        // One-time code sent to the registered number before records are shown.
+        'otp_minutes' => 5,
+        'otp_max_attempts' => 5,
+        'otp_resend_seconds' => 60,
+        'otp_per_number_per_hour' => 5,
     ],
 
 ];

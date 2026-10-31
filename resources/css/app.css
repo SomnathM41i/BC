@@ -8,7 +8,7 @@
  */
 @font-face {
     font-family: 'Noto Sans Devanagari';
-    src: url('/fonts/noto-sans-devanagari-var.ttf') format('truetype');
+    src: url('/fonts/noto-sans-devanagari-var.woff2') format('woff2');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;

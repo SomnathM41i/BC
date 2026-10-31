@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\EmployeeAdvanceController;
 use App\Http\Controllers\Admin\EmployeeAttendanceController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\EmployeeSalaryController;
+use App\Http\Controllers\Admin\InquiryController;
 use App\Http\Controllers\Admin\OwnerWalletController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\ProjectFinanceController;
@@ -77,6 +78,10 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
     Route::post('pay-salary/{salaryPayment}/complete', [EmployeeSalaryController::class, 'complete'])
         ->whereNumber('salaryPayment')->name('pay-salary.complete');
     Route::post('pay-salary', [EmployeeSalaryController::class, 'store'])->name('pay-salary.store');
+
+    Route::get('inquiries', [InquiryController::class, 'index'])->name('inquiries.index');
+    Route::post('inquiries/{inquiry}/status', [InquiryController::class, 'updateStatus'])
+        ->whereNumber('inquiry')->name('inquiries.status');
 
     Route::get('owner', [OwnerWalletController::class, 'show'])->name('owner.show');
     Route::post('owner/income', [OwnerWalletController::class, 'income'])->name('owner.income');

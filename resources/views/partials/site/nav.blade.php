@@ -22,7 +22,7 @@
     <div class="site-container flex items-center justify-between gap-4 py-3 sm:gap-6">
         <a href="{{ SiteRoutes::url('home') }}" class="flex shrink-0 items-center">
             <img src="{{ $site['logo_header'] }}"
-                 alt="{{ $site['name'] }} — Construction &amp; Developers"
+                 alt="{{ $site['name'] }}"
                  width="800" height="193" decoding="async" fetchpriority="high"
                  class="h-11 w-auto max-w-[11.5rem] object-contain sm:h-12 sm:max-w-[13rem] lg:h-14 lg:max-w-none">
         </a>
@@ -57,7 +57,7 @@
                 </a>
             </div>
 
-            <x-site.button :href="$site['whatsapp_url']" variant="primary" size="sm" icon="arrow-up-right">
+            <x-site.button :href="SiteRoutes::url('contact')" variant="primary" size="sm" icon="arrow-right">
                 {{ __('site.actions.discuss_project') }}
             </x-site.button>
         </div>
@@ -82,7 +82,7 @@
 
     <div class="flex items-center justify-between gap-3 border-b border-ink/10 px-4 py-3">
         <a href="{{ SiteRoutes::url('home') }}" class="flex items-center" aria-label="{{ $site['name'] }}">
-            <img src="{{ $site['logo_header'] }}" alt="{{ $site['name'] }} — Construction &amp; Developers"
+            <img src="{{ $site['logo_header'] }}" alt="{{ $site['name'] }}"
                  width="800" height="193" decoding="async"
                  class="h-9 w-auto max-w-[9.5rem] object-contain">
         </a>

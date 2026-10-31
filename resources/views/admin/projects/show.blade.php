@@ -153,7 +153,7 @@
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                 <input type="date" name="transaction_date" value="{{ $today }}" required
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                <input type="text" name="description" placeholder="Description (optional)"
+                <input type="text" name="description" placeholder="Description (optional, visible on Payment Tracking)"
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                 <button class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500">
                     <x-icon name="in" />
@@ -174,7 +174,7 @@
                 </select>
                 <input type="date" name="transaction_date" value="{{ $today }}" required
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                <input type="text" name="description" placeholder="Description (optional)"
+                <input type="text" name="description" placeholder="Description (optional, visible on Payment Tracking)"
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                 <button class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-500">
                     <x-icon name="out" />
@@ -230,7 +230,7 @@
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                 <input type="date" name="transaction_date" value="{{ $today }}" required
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                <input type="text" name="description" placeholder="Description (optional)"
+                <input type="text" name="description" placeholder="Description (optional, visible on Payment Tracking)"
                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                 <button class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
                     <x-icon name="fund" />

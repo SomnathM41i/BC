@@ -7,7 +7,7 @@
         <div class="lg:pr-6">
             <a href="{{ SiteRoutes::url('home') }}"
                class="inline-flex rounded-xl bg-white px-3 py-2 shadow-sm transition hover:shadow-md">
-                <img src="{{ $site['logo_header'] }}" alt="{{ $site['name'] }} — Construction &amp; Developers"
+                <img src="{{ $site['logo_header'] }}" alt="{{ $site['name'] }}"
                      width="800" height="193" loading="lazy" decoding="async"
                      class="h-9 w-auto object-contain sm:h-10">
             </a>
@@ -16,7 +16,7 @@
                 {{ __('site.footer.about') }}
             </p>
 
-            <a href="{{ $site['whatsapp_url'] }}" class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-gold transition hover:text-white">
+            <a href="{{ $site['whatsapp_url'] }}" target="_blank" rel="noopener" class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-gold transition hover:text-white">
                 <x-site.icon name="whatsapp" class="h-4 w-4" />
                 {{ __('site.actions.whatsapp') }}
             </a>
@@ -31,6 +31,7 @@
                     'services' => __('site.nav.services'),
                     'portfolio.index' => __('site.nav.portfolio'),
                     'contact' => __('site.nav.contact'),
+                    'payment-tracking.index' => __('site.footer.payment_tracking'),
                 ] as $routeName => $label)
                     <li>
                         <a href="{{ SiteRoutes::url($routeName) }}" class="transition hover:text-gold">{{ $label }}</a>
@@ -80,7 +81,6 @@
 
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
                 <span>{{ __('site.footer.visualisation_note') }}</span>
-                <a href="{{ route('admin.login') }}" class="transition hover:text-gold">{{ __('site.footer.staff') }}</a>
             </div>
         </div>
     </div>
