@@ -379,6 +379,7 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 
 - **Attendance**: select an employee, then mark each day of their salary week Present or Absent and enter the amount. One row per employee per date. A present day needs an amount; an absent day is ₹0. Days before `joining_date` are never saved, and unmarked days are skipped.
 - **Salary**: there is no fixed salary. Gross is the sum of the week's amounts.
+- **Employee payment-tracking dashboard**: shows the employee's details, this salary week's attendance, salary history, attendance history and advances. Owner notes on advances and payments are not shown.
 - **Paid-week lock**: attendance inside a paid salary week cannot change; the employee row is locked during saves so this cannot race with a payment.
 - **Salary week**: Pay Salary uses the last completed week ending on the employee's `weekly_salary_payment_day`. The period is re-derived server-side from `period_end`, so hidden form fields cannot shift or split a week. A week ending after today is refused, and the in-progress week is shown as a read-only summary instead of a payment form.
 - **No double pay**: `(employee_id, period_start, period_end)` is unique, and a transaction locks the employee row before the duplicate check. A week with zero gross (no attendance) is refused so a ₹0 payment cannot lock the period.

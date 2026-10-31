@@ -6,6 +6,7 @@ use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Models\Contractor;
 use App\Models\Employee;
+use App\Models\EmployeeAttendance;
 use App\Models\Project;
 use App\Models\WalletTransaction;
 use App\Services\WalletService;
@@ -14,6 +15,7 @@ use App\Support\PhoneNumber;
 use App\Support\Site\SiteRoutes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -349,14 +351,63 @@ class PaymentTrackingController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        // Each history list gets its own page parameter so paginating one
+        // table does not move the other.
+        $attendances = $employee->attendances()
+            ->orderByDesc('attendance_date')
+            ->paginate(10, ['*'], 'attendance_page')
+            ->withQueryString();
+
+        $advances = $employee->advances()
+            ->orderByDesc('advance_date')
+            ->orderByDesc('id')
+            ->paginate(10, ['*'], 'advance_page')
+            ->withQueryString();
+
         return view('site.payment-tracking.dashboard', [
             'category' => 'employee',
             'tracking' => $data,
-            'employee' => $employee,
+            'employee' => $employee->load('type'),
             'payments' => $payments,
             'totalPaid' => Money::sum($payments, fn ($payment) => (string) $payment->amount_paid),
             'totalDue' => Money::sum($payments, fn ($payment) => (string) $payment->remaining_salary_due),
+            'totalAdvances' => $employee->totalAdvances(),
+            'totalRepayments' => $employee->totalRepayments(),
             'outstandingAdvance' => $employee->outstandingAdvance(),
+            'week' => $this->employeeWeek($employee),
+            'attendances' => $attendances,
+            'advances' => $advances,
         ]);
+    }
+
+    /**
+     * The salary week containing today, with a row for every day so unmarked
+     * days are visible too.
+     *
+     * @return array{start: Carbon, end: Carbon, days: list<array{date: Carbon, row: ?EmployeeAttendance}>, present: int, absent: int, earned: string}
+     */
+    private function employeeWeek(Employee $employee): array
+    {
+        $period = $employee->getWeekContaining(now());
+
+        $rows = $employee->attendances()
+            ->whereDate('attendance_date', '>=', $period['start_date'])
+            ->whereDate('attendance_date', '<=', $period['end_date'])
+            ->get()
+            ->keyBy(fn (EmployeeAttendance $row) => $row->attendance_date->toDateString());
+
+        $days = [];
+        for ($date = $period['start']->copy(); $date->lte($period['end']); $date->addDay()) {
+            $days[] = ['date' => $date->copy(), 'row' => $rows->get($date->toDateString())];
+        }
+
+        return [
+            'start' => $period['start'],
+            'end' => $period['end'],
+            'days' => $days,
+            'present' => $rows->where('status', 'present')->count(),
+            'absent' => $rows->where('status', 'absent')->count(),
+            'earned' => Money::sum($rows, fn (EmployeeAttendance $row) => (string) $row->amount),
+        ];
     }
 }

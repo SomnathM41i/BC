@@ -7,7 +7,9 @@ use App\Enums\TransactionType;
 use App\Models\Contractor;
 use App\Models\Employee;
 use App\Models\EmployeeAdvance;
+use App\Models\EmployeeAttendance;
 use App\Models\EmployeeSalaryPayment;
+use App\Models\EmployeeType;
 use App\Models\Project;
 use App\Models\WalletTransaction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -340,6 +342,83 @@ class PaymentTrackingTest extends TestCase
             ->assertSee('₹500.00')
             ->assertSee('₹2,200.00')
             ->assertSee('Part paid');
+    }
+
+    public function test_employee_dashboard_shows_attendance_advances_and_profile(): void
+    {
+        $this->travelTo('2026-10-28 10:00:00');
+
+        $employee = Employee::create([
+            'employee_id' => 'EMP-2026-0001',
+            'full_name' => 'Ramesh Patil',
+            'phone_number' => '9022357293',
+            'employee_type_id' => EmployeeType::query()->where('name', 'Mistri')->value('id'),
+            'weekly_salary_payment_day' => 'thursday',
+            'joining_date' => '2026-10-01',
+            'status' => 'active',
+        ]);
+
+        $other = Employee::create([
+            'employee_id' => 'EMP-2026-0002',
+            'full_name' => 'Other Worker',
+            'phone_number' => '9022357294',
+            'weekly_salary_payment_day' => 'thursday',
+            'joining_date' => '2026-10-01',
+            'status' => 'active',
+        ]);
+
+        // 23-29 Oct is the Thursday salary week containing 28 Oct; 20 Oct is
+        // outside it, so it counts in the history but not this week's earnings.
+        foreach ([['2026-10-20', 'present', '111.00'], ['2026-10-26', 'present', '750.00'], ['2026-10-27', 'absent', '0.00']] as [$date, $status, $amount]) {
+            EmployeeAttendance::create([
+                'employee_id' => $employee->id,
+                'attendance_date' => $date,
+                'status' => $status,
+                'payable_days' => $status === 'present' ? '1.0' : '0.0',
+                'amount' => $amount,
+            ]);
+        }
+
+        EmployeeAttendance::create([
+            'employee_id' => $other->id,
+            'attendance_date' => '2026-10-26',
+            'status' => 'present',
+            'payable_days' => '1.0',
+            'amount' => '98765.00',
+        ]);
+
+        EmployeeAdvance::create([
+            'employee_id' => $employee->id,
+            'advance_date' => '2026-10-05',
+            'amount' => '4321.00',
+            'notes' => 'Private owner note',
+        ]);
+
+        $this->startLookup('employee');
+        $this->post('/payment-tracking/verify', ['mobile' => '9022357293']);
+
+        $this->get('/payment-tracking/dashboard')
+            ->assertOk()
+            ->assertSee('Mistri')
+            ->assertSee('01 Oct 2026')
+            ->assertSee('Thursday')
+            ->assertSee('23 Oct')
+            ->assertSee('Present: 1, Absent: 1.')
+            ->assertSee('Earned so far: ₹750.00')
+            ->assertSee('Not marked')
+            ->assertSee('20 Oct 2026')
+            ->assertSee('₹111.00')
+            ->assertSee('₹4,321.00')
+            ->assertDontSee('Private owner note')
+            ->assertDontSee('₹98,765.00');
+    }
+
+    public function test_employee_dashboard_is_translated_to_marathi(): void
+    {
+        $this->assertSame(
+            array_keys(__('site.payment_tracking.employee', [], 'en')),
+            array_keys(__('site.payment_tracking.employee', [], 'mr'))
+        );
     }
 
     public function test_verified_session_expires_after_the_configured_window(): void
