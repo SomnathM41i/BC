@@ -131,17 +131,10 @@ layout; Latin faces are preloaded.
 
 ### 3.5a Payment tracking
 
-Visitors pick client, contractor or employee, enter their registered mobile
-number and confirm a 6-digit code before any record is shown.
+Visitors pick client, contractor or employee and enter their registered mobile number, on the home page card (`#track-payments`) or at `/payment-tracking`. No password or OTP is used: knowing the number is enough to see that record.
 
-- Codes last 5 minutes, allow 5 tries, can be resent after 60 seconds, and at
-  most 5 are sent per number per hour (`site.payment_tracking`).
-- Unknown numbers reach the same code screen with no code behind them, so the
-  form does not reveal who is on record.
-- SMS goes through `App\Contracts\SmsGateway`, bound in `AppServiceProvider`.
-  **No real provider is connected yet.** `LogSmsGateway` writes codes to the log
-  and throws in production, so tracking stays closed there until a provider
-  class is bound.
+- Lookups are rate limited per IP and number (`site.payment_tracking`).
+- Unknown numbers get a generic message and no records.
 - A number shared by two contractors or employees gets no access; a warning is
   logged naming the records to correct.
 
@@ -689,7 +682,6 @@ once with `SKIP_BUILD=1 git commit ...` only when assets cannot change.
 - [ ] `.env` not web-accessible
 - [ ] Demo/seeded accounts removed or passwords changed
 - [ ] Enquiry notification address tested
-- [ ] SMS provider bound to `SmsGateway` and a code received on a real phone
 
 ---
 

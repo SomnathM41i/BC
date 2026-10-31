@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Contracts\SmsGateway;
-use App\Services\Sms\LogSmsGateway;
 use App\Support\PhoneNumber;
 use App\Support\Site\SiteContent;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -21,8 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Swap this binding for a real provider to send payment tracking codes.
-        $this->app->bind(SmsGateway::class, LogSmsGateway::class);
+        //
     }
 
     /**

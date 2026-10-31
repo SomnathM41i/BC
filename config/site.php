@@ -154,11 +154,6 @@ return [
         // Lookup limits: per IP + mobile number, and per IP overall.
         'lookup_per_minute' => 5,
         'lookup_per_hour' => 20,
-        // One-time code sent to the registered number before records are shown.
-        'otp_minutes' => 5,
-        'otp_max_attempts' => 5,
-        'otp_resend_seconds' => 60,
-        'otp_per_number_per_hour' => 5,
     ],
 
 ];

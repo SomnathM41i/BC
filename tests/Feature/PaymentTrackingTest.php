@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Contracts\SmsGateway;
 use App\Enums\ProjectStatus;
 use App\Enums\TransactionType;
 use App\Models\Contractor;
@@ -13,57 +12,17 @@ use App\Models\EmployeeSalaryPayment;
 use App\Models\EmployeeType;
 use App\Models\Project;
 use App\Models\WalletTransaction;
-use App\Services\Sms\LogSmsGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
-use RuntimeException;
 use Tests\TestCase;
 
 class PaymentTrackingTest extends TestCase
 {
     use RefreshDatabase;
 
-    private object $sms;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->sms = new class implements SmsGateway
-        {
-            public array $sent = [];
-
-            public bool $fail = false;
-
-            public function send(string $mobile, string $message): void
-            {
-                if ($this->fail) {
-                    throw new RuntimeException('Provider down');
-                }
-
-                $this->sent[] = $message;
-            }
-
-            public function code(): string
-            {
-                preg_match('/\d{6}/', end($this->sent), $match);
-
-                return $match[0];
-            }
-        };
-
-        $this->app->instance(SmsGateway::class, $this->sms);
-    }
-
-    /**
-     * Gives the number, then enters the code that was "sent" to it.
-     */
     private function signIn(string $mobile): TestResponse
     {
-        $this->post('/payment-tracking/verify', ['mobile' => $mobile])
-            ->assertRedirect('/payment-tracking/otp');
-
-        return $this->post('/payment-tracking/otp', ['code' => $this->sms->code()]);
+        return $this->post('/payment-tracking/verify', ['mobile' => $mobile]);
     }
 
     private function clientProject(string $name, string $mobile, string $agreed = '1000000.00'): Project
@@ -108,126 +67,67 @@ class PaymentTrackingTest extends TestCase
             ->assertRedirect('/payment-tracking/verify');
     }
 
-    public function test_footer_links_to_payment_tracking_and_the_home_page_has_no_lookup_form(): void
+    public function test_home_page_shows_the_card_and_it_signs_in_with_the_number(): void
     {
+        $this->clientProject('Alpha Villa', '9021113887');
+
         $this->get('/')
             ->assertOk()
-            ->assertSee('/payment-tracking"', false)
-            ->assertDontSee('name="mobile"', false);
+            ->assertSee('id="track-payments"', false)
+            ->assertSee('/payment-tracking/lookup', false)
+            ->assertSee('No password or OTP needed.')
+            ->assertSee('/payment-tracking"', false);
 
-        $this->get('/mr')
-            ->assertOk()
-            ->assertSee('/mr/payment-tracking"', false);
+        $this->get('/mr')->assertOk()->assertSee('/mr/payment-tracking/lookup', false);
+
+        $this->post('/payment-tracking/lookup', ['category' => 'client', 'mobile' => '9021113887'])
+            ->assertRedirect('/payment-tracking/dashboard');
+
+        $this->get('/payment-tracking/dashboard')->assertOk()->assertSee('Alpha Villa');
     }
 
-    public function test_records_stay_hidden_until_the_code_is_entered(): void
+    public function test_home_page_card_rejects_bad_input_and_unknown_numbers(): void
     {
-        $project = $this->clientProject('Alpha Villa', '9021113887');
-        $this->receipt($project, '50000', 'First instalment');
+        $home = url('/').'#track-payments';
 
-        $this->startLookup('client');
-        $this->post('/payment-tracking/verify', ['mobile' => '9021113887'])
-            ->assertRedirect('/payment-tracking/otp');
+        $this->post('/payment-tracking/lookup', ['category' => 'nobody', 'mobile' => '9021113887'])
+            ->assertRedirect($home)
+            ->assertSessionHasErrors('category');
 
-        $this->get('/payment-tracking/otp')->assertOk()->assertSee('******3887');
-        $this->get('/payment-tracking/dashboard')->assertRedirect('/payment-tracking');
-    }
+        $this->post('/payment-tracking/lookup', ['category' => 'client', 'mobile' => '12345'])
+            ->assertRedirect($home)
+            ->assertSessionHasErrors('mobile');
 
-    public function test_wrong_code_is_rejected_and_locks_after_five_tries(): void
-    {
-        // The route throttle is covered elsewhere; this test reaches the per-code lock.
-        config(['site.payment_tracking.lookup_per_minute' => 100]);
-
-        $this->clientProject('Alpha Villa', '9021113887');
-
-        $this->startLookup('client');
-        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
-
-        $wrong = $this->sms->code() === '000000' ? '111111' : '000000';
-
-        for ($try = 1; $try <= 4; $try++) {
-            $this->post('/payment-tracking/otp', ['code' => $wrong])
-                ->assertRedirect('/payment-tracking/otp')
-                ->assertSessionHasErrors('code');
-        }
-
-        $this->post('/payment-tracking/otp', ['code' => $wrong]);
-        $this->post('/payment-tracking/otp', ['code' => $this->sms->code()])
-            ->assertRedirect('/payment-tracking/verify')
-            ->assertSessionHas('tracking_error', __('site.payment_tracking.otp.locked'));
+        $this->post('/payment-tracking/lookup', ['category' => 'client', 'mobile' => '9999999999'])
+            ->assertRedirect($home)
+            ->assertSessionHas('tracking_error', __('site.payment_tracking.lookup_failed'));
 
         $this->get('/payment-tracking/dashboard')->assertRedirect('/payment-tracking');
     }
 
-    public function test_expired_code_is_rejected(): void
+    public function test_unknown_mobile_shows_no_records(): void
     {
         $this->clientProject('Alpha Villa', '9021113887');
 
         $this->startLookup('client');
-        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
 
-        $this->travel(6)->minutes();
-
-        $this->post('/payment-tracking/otp', ['code' => $this->sms->code()])
+        $this->post('/payment-tracking/verify', ['mobile' => '9999999999'])
             ->assertRedirect('/payment-tracking/verify')
-            ->assertSessionHas('tracking_error', __('site.payment_tracking.otp.expired'));
+            ->assertSessionHas('tracking_error', __('site.payment_tracking.lookup_failed'));
+
+        $this->get('/payment-tracking/dashboard')->assertRedirect('/payment-tracking');
     }
 
-    public function test_resend_waits_for_the_cooldown_and_replaces_the_code(): void
+    public function test_duplicate_contractor_numbers_get_no_access(): void
     {
-        $this->clientProject('Alpha Villa', '9021113887');
+        $this->contractor('First Contractor', '9000000000');
+        $this->contractor('Second Contractor', '9000000000');
 
-        $this->startLookup('client');
-        $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
+        $this->startLookup('contractor');
 
-        $this->post('/payment-tracking/otp/resend')
-            ->assertSessionHas('tracking_error', __('site.payment_tracking.otp.wait'));
-        $this->assertCount(1, $this->sms->sent);
-
-        $this->travel(61)->seconds();
-
-        $this->post('/payment-tracking/otp/resend')->assertRedirect('/payment-tracking/otp');
-        $this->assertCount(2, $this->sms->sent);
-    }
-
-    public function test_codes_per_number_are_limited(): void
-    {
-        $this->clientProject('Alpha Villa', '9021113887');
-        $this->startLookup('client');
-
-        for ($send = 1; $send <= 5; $send++) {
-            $this->post('/payment-tracking/verify', ['mobile' => '9021113887']);
-            $this->travel(1)->minutes();
-        }
-
-        $this->post('/payment-tracking/verify', ['mobile' => '9021113887'])
+        $this->post('/payment-tracking/verify', ['mobile' => '9000000000'])
             ->assertRedirect('/payment-tracking/verify')
-            ->assertSessionHas('tracking_error', __('site.payment_tracking.otp.too_many'));
-
-        $this->assertCount(5, $this->sms->sent);
-    }
-
-    public function test_failed_sms_shows_a_message_and_grants_nothing(): void
-    {
-        $this->clientProject('Alpha Villa', '9021113887');
-        $this->sms->fail = true;
-
-        $this->startLookup('client');
-
-        $this->post('/payment-tracking/verify', ['mobile' => '9021113887'])
-            ->assertRedirect('/payment-tracking/verify')
-            ->assertSessionHas('tracking_error', __('site.payment_tracking.otp.unavailable'));
-
-        $this->get('/payment-tracking/otp')->assertRedirect('/payment-tracking');
-    }
-
-    public function test_log_gateway_refuses_to_run_in_production(): void
-    {
-        $this->app['env'] = 'production';
-
-        $this->expectException(RuntimeException::class);
-
-        (new LogSmsGateway)->send('9021113887', 'test');
+            ->assertSessionHas('tracking_error', __('site.payment_tracking.lookup_failed'));
     }
 
     public function test_portal_renders_in_both_languages(): void
@@ -325,39 +225,6 @@ class PaymentTrackingTest extends TestCase
             ->assertDontSee('Secret Villa');
 
         $this->assertSame($mine->id, session('payment_tracking.selected_project_id'));
-    }
-
-    public function test_unknown_mobile_gets_the_same_generic_message_and_no_records(): void
-    {
-        $this->clientProject('Alpha Villa', '9021113887');
-
-        $this->startLookup('client');
-
-        $this->post('/payment-tracking/verify', ['mobile' => '9999999999'])
-            ->assertRedirect('/payment-tracking/otp');
-
-        $this->assertSame([], $this->sms->sent);
-
-        $this->post('/payment-tracking/otp', ['code' => '123456'])
-            ->assertRedirect('/payment-tracking/otp')
-            ->assertSessionHasErrors('code');
-
-        $this->get('/payment-tracking/dashboard')
-            ->assertRedirect('/payment-tracking')
-            ->assertSessionHas('tracking_error', __('site.payment_tracking.session_expired'));
-    }
-
-    public function test_duplicate_contractor_numbers_fail_generically_instead_of_guessing(): void
-    {
-        $this->contractor('First Contractor', '9000000000');
-        $this->contractor('Second Contractor', '9000000000');
-
-        $this->startLookup('contractor');
-
-        $this->post('/payment-tracking/verify', ['mobile' => '9000000000'])
-            ->assertRedirect('/payment-tracking/otp');
-
-        $this->assertSame([], $this->sms->sent);
     }
 
     public function test_contractor_dashboard_shows_only_their_own_transfers(): void
