@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreEmployeeAttendanceRequest;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Support\Money;
+use App\Support\WorkLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -24,10 +25,13 @@ class EmployeeAttendanceController extends Controller
         $employee = null;
         $dates = [];
         $existing = collect();
+        $amounts = [];
 
         if ($employeeId) {
             $employee = Employee::find($employeeId);
             if ($employee) {
+                $amounts = $employee->dayAmounts();
+
                 // Attendance is always edited inside the week that contains the
                 // selected date, so today's day is never hidden in a past week.
                 $period = $employee->getWeekContaining($referenceDate);
@@ -62,6 +66,7 @@ class EmployeeAttendanceController extends Controller
             'employee' => $employee,
             'dates' => $dates,
             'existing' => $existing,
+            'amounts' => $amounts,
         ]);
     }
 
@@ -74,16 +79,17 @@ class EmployeeAttendanceController extends Controller
             // Lock the employee so a salary payment cannot be recorded for this
             // week while its attendance is being changed.
             $employee = Employee::query()->whereKey($data['employee_id'])->lockForUpdate()->firstOrFail();
+            $amounts = $employee->dayAmounts();
 
             foreach ($data['days'] as $date => $day) {
-                $status = $day['status'] ?? null;
+                $level = $day['level'] ?? null;
 
                 // Never record attendance before the joining date.
-                if (! $status || Carbon::parse($date)->lt($employee->joining_date->copy()->startOfDay())) {
+                if (! $level || Carbon::parse($date)->lt($employee->joining_date->copy()->startOfDay())) {
                     continue;
                 }
 
-                $problems[] = $this->saveDay($employee, $date, $status, $day['amount'] ?? null);
+                $problems[] = $this->saveDay($employee, $date, $level, $amounts);
             }
         });
 
@@ -103,7 +109,7 @@ class EmployeeAttendanceController extends Controller
      * keeps the match working on both MySQL (DATE column) and SQLite (datetime
      * text).
      */
-    private function saveDay(Employee $employee, string $date, string $status, ?string $amount): ?string
+    private function saveDay(Employee $employee, string $date, string $level, array $amounts): ?string
     {
         $day = Carbon::parse($date)->format('d-m-Y');
 
@@ -111,22 +117,36 @@ class EmployeeAttendanceController extends Controller
             return "{$day}: this salary week is already paid.";
         }
 
-        $amount = Money::normalize($amount ?? '0');
-
-        if ($status === 'present' && Money::isZero($amount)) {
-            return "{$day}: enter the amount for a present day.";
-        }
-
-        $values = [
-            'status' => $status,
-            'payable_days' => $status === 'present' ? '1.0' : '0.0',
-            'amount' => $status === 'present' ? $amount : '0.00',
-        ];
-
         $existing = EmployeeAttendance::query()
             ->where('employee_id', $employee->id)
             ->whereDate('attendance_date', $date)
             ->first();
+
+        // The form resends every day, so an unchanged level must keep the
+        // amount it was marked with, even if the salary has changed since.
+        if ($existing && $existing->work_level === $level) {
+            return null;
+        }
+
+        if ($level === 'absent') {
+            $values = [
+                'status' => 'absent',
+                'work_level' => null,
+                'payable_days' => '0.0',
+                'amount' => '0.00',
+            ];
+        } else {
+            if (Money::isZero($amounts[$level])) {
+                return "{$day}: set this employee's normal day salary first.";
+            }
+
+            $values = [
+                'status' => 'present',
+                'work_level' => $level,
+                'payable_days' => WorkLevel::MULTIPLIERS[$level],
+                'amount' => $amounts[$level],
+            ];
+        }
 
         if ($existing) {
             $existing->update($values);

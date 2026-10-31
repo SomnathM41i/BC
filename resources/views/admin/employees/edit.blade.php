@@ -50,6 +50,7 @@
                     </select>
                 </div>
             </div>
+            @include('admin.employees.salary-field', ['salary' => $employee->daily_salary])
             <div class="flex items-center gap-3">
                 <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">Update</button>
                 <a href="{{ route('admin.employees.show', $employee) }}" class="text-sm text-slate-600 hover:text-slate-900">Cancel</a>

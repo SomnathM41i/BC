@@ -4,5 +4,5 @@
     'bg-amber-100 text-amber-800' => $status === 'absent',
     'bg-sand/60 text-ink/60' => ! $status,
 ])>
-    {{ __('site.payment_tracking.employee.attendance_'.($status ?: 'not_marked')) }}
+    {{ __('site.payment_tracking.employee.attendance_'.(($level ?? null) ?: $status ?: 'not_marked')) }}
 </span>

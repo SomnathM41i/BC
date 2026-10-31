@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Money;
+use App\Support\WorkLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ class Employee extends Model
         'full_name',
         'phone_number',
         'employee_type_id',
+        'daily_salary',
         'weekly_salary_payment_day',
         'joining_date',
         'status',
@@ -26,6 +28,7 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
+            'daily_salary' => 'decimal:2',
             'joining_date' => 'date',
         ];
     }
@@ -63,6 +66,22 @@ class Employee extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * What each work level pays this employee today.
+     *
+     * @return array<string, string>
+     */
+    public function dayAmounts(): array
+    {
+        $amounts = [];
+
+        foreach (WorkLevel::MULTIPLIERS as $level => $multiplier) {
+            $amounts[$level] = bcmul((string) ($this->daily_salary ?? '0'), $multiplier, Money::SCALE);
+        }
+
+        return $amounts;
     }
 
     /**

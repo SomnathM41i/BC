@@ -306,20 +306,22 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 - Groups contractors by trade/skill for the admin index
 
 ### Employee
-- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `weekly_salary_payment_day`, `joining_date`, `status`
-- Casts: `joining_date` → `date`
+- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `daily_salary`, `weekly_salary_payment_day`, `joining_date`, `status`
+- Casts: `daily_salary` → `decimal:2`, `joining_date` → `date`
 - Relations: `type()`, `attendances()`, `advances()`, `salaryPayments()`
+- `daily_salary` is the normal day salary; `dayAmounts()` returns what each work level pays today
 - `isDatePaid()` tells whether a salary payment covers a date
 - Scopes `active()` / `inactive()`; `isActive()` helper
 - `generateEmployeeId()` produces `EMP-YYYY-NNNN`, continuing the current year's sequence
-- `getWeeklyPeriod($reference)` — last completed salary week: the 7 days ending on the most recent payment day on or before the reference date (used by Pay Salary)
+- `getWeeklyPeriod($reference)` — last completed salary week: the 7 days ending on the most recent payment day on or before the reference date (used by the demo seeder)
 - `getWeekContaining($reference)` — the 7 days ending on the next payment day on or after the reference date (used by the attendance chart, so today is always inside the edited week)
 - `totalAdvances()`, `totalRepayments()` and `outstandingAdvance()`; repayments are summed from `employee_salary_payments.advance_repayment`
 
 ### EmployeeAttendance
-- Fillable: `employee_id`, `attendance_date`, `status`, `payable_days`, `amount`
+- Fillable: `employee_id`, `attendance_date`, `status`, `work_level`, `payable_days`, `amount`
 - Casts: `attendance_date` → `date`, `payable_days` → `decimal:1`, `amount` → `decimal:2`
 - Unique `(employee_id, attendance_date)`
+- `status` stays `present` or `absent`. `work_level` is null on absent days and on days marked before work levels existed
 
 ### EmployeeType
 - Fixed and seeded by migration: Labour, Mistri, Other. It is a label only and sets no pay
@@ -329,8 +331,9 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 - Casts: `advance_date` → `date`, `amount` → `decimal:2`
 
 ### EmployeeSalaryPayment
-- `daily_salary` and `half_days` only hold history on older payments; new payments store `0`
-- Fillable: `employee_id`, `period_start`, `period_end`, `daily_salary`, `gross_salary`, `present_days`, `half_days`, `total_payable_days`, `outstanding_advance_before`, `advance_repayment`, `net_salary_payable`, `amount_paid`, `remaining_salary_due`, `remaining_advance_after`, `status`, `payment_date`, `notes`
+- `daily_salary` only holds history on older payments; new payments store `0`
+- `rate_breakdown` (JSON) records the week's levels and amounts; it is null on older payments
+- Fillable: `employee_id`, `period_start`, `period_end`, `daily_salary`, `gross_salary`, `present_days`, `half_days`, `total_payable_days`, `rate_breakdown`, `outstanding_advance_before`, `advance_repayment`, `net_salary_payable`, `amount_paid`, `remaining_salary_due`, `remaining_advance_after`, `status`, `payment_date`, `notes`
 - Casts: dates for periods/payment date; money columns → `decimal:2`; day columns → `decimal:1`
 - Status: `paid` or `partially_paid`
 - Unique `(employee_id, period_start, period_end)` stops the same week being paid twice
@@ -390,12 +393,14 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 
 ### Employee rules
 
-- **Attendance**: select an employee, then mark each day of their salary week Present or Absent and enter the amount. One row per employee per date. A present day needs an amount; an absent day is ₹0. Days before `joining_date` are never saved, and unmarked days are skipped.
-- **Salary**: there is no fixed salary. Gross is the sum of the week's amounts.
+- **Pay**: each employee has a normal day salary, set on the create and edit screens. `App\Support\WorkLevel` pays Half day 0.5×, Normal day 1× and Long day 1.5× of it, and these also count as the payable days.
+- **Attendance**: select an employee, then mark each day of their salary week Half day, Normal day, Long day or Absent. The amount is never typed or read from the form: it is calculated from the employee's current salary and copied onto the row, so later salary changes do not alter marked days, and resaving an unchanged level keeps its amount. One row per employee per date. An employee with no salary cannot be marked present; an absent day is ₹0. Days before `joining_date` are never saved, and unmarked days are skipped. Days marked before work levels existed keep their amount and show as "Present (older entry)" until a level is chosen.
+- **Salary**: gross is the sum of the week's stored amounts, and the payment records a breakdown by level. If a changed payment day makes a week overlap a paid one, days already paid are left out of the new gross.
 - **Employee payment-tracking dashboard**: shows the employee's details, this salary week's attendance, salary history, attendance history and advances. Owner notes on advances and payments are not shown.
 - **Paid-week lock**: attendance inside a paid salary week cannot change; the employee row is locked during saves so this cannot race with a payment.
-- **Salary week**: Pay Salary uses the last completed week ending on the employee's `weekly_salary_payment_day`. The period is re-derived server-side from `period_end`, so hidden form fields cannot shift or split a week. A week ending after today is refused, and the in-progress week is shown as a read-only summary instead of a payment form.
-- **No double pay**: `(employee_id, period_start, period_end)` is unique, and a transaction locks the employee row before the duplicate check. A week with zero gross (no attendance) is refused so a ₹0 payment cannot lock the period.
+- **Salary week**: the attendance chart shows the 7 days ending on `weekly_salary_payment_day`. It does not limit when salary can be paid.
+- **Paying salary**: the owner can pay on any day. A payment covers every marked day up to the chosen date that no earlier payment covers; its period runs from the first to the last of those days, so later days stay open. Unmarked days inside that range lock with it, and Pay Salary warns about them first.
+- **No double pay**: days inside any salary payment's period are never counted again, and a transaction locks the employee row before calculating. A zero total is refused, so an empty payment cannot be recorded.
 - **Advances**: outstanding = total advances − repayments. A repayment is stored once, on `employee_salary_payments.advance_repayment`, and cannot exceed the outstanding balance.
 - **Salary amounts**: net payable = gross − advance repayment; amount paid cannot exceed net payable. The payment is `paid` when nothing remains and `partially_paid` otherwise. `complete()` tops up the remaining due without creating a second payment or recording the repayment again.
 - **Dashboard cards**: active employees, present today, absent today (based on attendance rows, not employee status), outstanding advances, salary paid this calendar week (Mon–Sun by `payment_date`), and the count of `partially_paid` payments.
@@ -452,7 +457,7 @@ resources/views/
 │   ├── auth/login.blade.php
 │   ├── contractors/index.blade.php
 │   ├── dashboard.blade.php
-│   ├── employees/{create,edit,index,show}.blade.php
+│   ├── employees/{create,edit,index,show,salary-field}.blade.php
 │   ├── owner/show.blade.php
 │   ├── pay-salary/create.blade.php
 │   ├── projects/{create,index,show}.blade.php
@@ -523,6 +528,8 @@ on desktop.
 | `2026_10_28_072216_create_employee_salary_payments_table.php` | employee_salary_payments (unique employee/period) |
 | `2026_10_28_080000_drop_salary_payment_id_from_employee_advances.php` | drops the unused advance → salary-payment link |
 | `2026_10_31_000001_add_employee_types_and_daily_amounts.php` | adds employee types and the per-day amount, copies the old salary onto marked days, then drops `employees.daily_salary` |
+| `2026_10_31_000002_add_normal_day_salary_and_work_levels.php` | adds the normal day salary, the attendance work level and the salary payment breakdown |
+| `2026_10_31_000003_widen_salary_payment_day_columns.php` | widens the salary payment day counts, since a payment can cover many weeks |
 
 ---
 

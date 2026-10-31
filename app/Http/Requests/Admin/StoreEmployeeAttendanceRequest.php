@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\WorkLevel;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEmployeeAttendanceRequest extends FormRequest
@@ -20,9 +21,9 @@ class StoreEmployeeAttendanceRequest extends FormRequest
             'employee_id' => ['required', 'integer', 'exists:employees,id'],
             'reference_date' => ['required', 'date'],
             'days' => ['required', 'array'],
-            // Empty means "not marked" and is skipped.
-            'days.*.status' => ['nullable', 'in:present,absent'],
-            'days.*.amount' => ['nullable', 'numeric', 'gte:0', 'max:9999999', 'decimal:0,2'],
+            // Empty leaves the day as it is. The amount is never taken from the
+            // form: it comes from the employee's normal day salary.
+            'days.*.level' => ['nullable', 'in:'.implode(',', [...array_keys(WorkLevel::MULTIPLIERS), 'absent'])],
         ];
     }
 }

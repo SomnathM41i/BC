@@ -57,7 +57,7 @@
                                 {{ $day['date']->copy()->locale(app()->getLocale())->isoFormat('ddd') }}, {{ $day['date']->format('d M') }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 sm:px-5">
-                                @include('site.payment-tracking.partials.attendance-status', ['status' => $day['row']?->status])
+                                @include('site.payment-tracking.partials.attendance-status', ['status' => $day['row']?->status, 'level' => $day['row']?->work_level])
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-right text-ink/70 sm:px-5">
                                 @if ($day['row'])
@@ -122,8 +122,13 @@
                 <tbody class="divide-y divide-ink/10">
                     @forelse ($payments as $payment)
                         <tr>
-                            <td class="whitespace-nowrap px-4 py-3 text-ink/70 sm:px-5">
-                                {{ $payment->period_start?->format('d M') }} – {{ $payment->period_end?->format('d M Y') }}
+                            <td class="px-4 py-3 text-ink/70 sm:px-5">
+                                <span class="whitespace-nowrap">{{ $payment->period_start?->format('d M') }} – {{ $payment->period_end?->format('d M Y') }}</span>
+                                @if ($payment->rate_breakdown)
+                                    <span class="mt-1 block text-xs text-ink/50">
+                                        {{ \App\Support\WorkLevel::describe($payment->rate_breakdown, fn ($level) => __('site.payment_tracking.employee.attendance_'.($level ?: 'present'))) }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-right text-ink/70 sm:px-5">{{ $payment->total_payable_days }}</td>
                             <td class="whitespace-nowrap px-4 py-3 text-right text-ink/70 sm:px-5">@inr($payment->gross_salary)</td>
@@ -176,7 +181,7 @@
                         <tr>
                             <td class="whitespace-nowrap px-4 py-3 text-ink/70 sm:px-5">{{ $attendance->attendance_date->format('d M Y') }}</td>
                             <td class="whitespace-nowrap px-4 py-3 sm:px-5">
-                                @include('site.payment-tracking.partials.attendance-status', ['status' => $attendance->status])
+                                @include('site.payment-tracking.partials.attendance-status', ['status' => $attendance->status, 'level' => $attendance->work_level])
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-right text-ink/70 sm:px-5">@inr($attendance->amount)</td>
                         </tr>

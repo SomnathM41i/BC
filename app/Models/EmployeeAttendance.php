@@ -14,6 +14,7 @@ class EmployeeAttendance extends Model
         'employee_id',
         'attendance_date',
         'status',
+        'work_level',
         'payable_days',
         'amount',
     ];

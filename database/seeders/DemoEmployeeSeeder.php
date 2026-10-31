@@ -8,6 +8,7 @@ use App\Models\EmployeeAttendance;
 use App\Models\EmployeeSalaryPayment;
 use App\Models\EmployeeType;
 use App\Support\Money;
+use App\Support\WorkLevel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -36,6 +37,7 @@ class DemoEmployeeSeeder extends Seeder
             'full_name' => 'Ramesh Patil',
             'phone_number' => '9876543210',
             'employee_type_id' => EmployeeType::query()->where('name', 'Labour')->value('id'),
+            'daily_salary' => '600.00',
             'weekly_salary_payment_day' => 'saturday',
             'joining_date' => '2026-09-15',
             'status' => 'active',
@@ -46,6 +48,7 @@ class DemoEmployeeSeeder extends Seeder
             'full_name' => 'Suresh Jadhav',
             'phone_number' => '9823456789',
             'employee_type_id' => EmployeeType::query()->where('name', 'Mistri')->value('id'),
+            'daily_salary' => '800.00',
             'weekly_salary_payment_day' => 'wednesday',
             'joining_date' => '2026-10-01',
             'status' => 'active',
@@ -74,12 +77,14 @@ class DemoEmployeeSeeder extends Seeder
 
         $this->seedAttendance($ramesh, $today, fn (Carbon $date) => match ($date->dayOfWeek) {
             Carbon::SATURDAY => 'absent',
-            default => 'present',
+            Carbon::WEDNESDAY => 'long_day',
+            default => 'normal_day',
         });
 
         $this->seedAttendance($suresh, $today, fn (Carbon $date) => match ($date->dayOfWeek) {
             Carbon::SUNDAY => 'absent',
-            default => 'present',
+            Carbon::MONDAY => 'half_day',
+            default => 'normal_day',
         });
 
         // Keep one employee absent today so both dashboard counts are visible.
@@ -113,15 +118,18 @@ class DemoEmployeeSeeder extends Seeder
         }
     }
 
-    private function saveAttendance(Employee $employee, string $date, string $status): void
+    private function saveAttendance(Employee $employee, string $date, string $level): void
     {
         $employee->attendances()->whereDate('attendance_date', $date)->delete();
 
+        $amount = $employee->dayAmounts()[$level] ?? null;
+
         $employee->attendances()->create([
             'attendance_date' => $date,
-            'status' => $status,
-            'payable_days' => $status === 'present' ? '1.0' : '0.0',
-            'amount' => $status === 'present' ? ($employee->id % 2 ? '700.00' : '650.00') : '0.00',
+            'status' => $amount ? 'present' : 'absent',
+            'work_level' => $amount ? $level : null,
+            'payable_days' => WorkLevel::MULTIPLIERS[$level] ?? '0.0',
+            'amount' => $amount ?? '0.00',
         ]);
     }
 
@@ -165,9 +173,10 @@ class DemoEmployeeSeeder extends Seeder
             'period_end' => $period['end_date'],
             'daily_salary' => '0.00',
             'gross_salary' => $gross,
-            'present_days' => $attendances->where('status', 'present')->count(),
-            'half_days' => $attendances->where('status', 'half_day')->count(),
+            'present_days' => $attendances->where('status', 'present')->where('work_level', '!=', 'half_day')->count(),
+            'half_days' => $attendances->where('work_level', 'half_day')->count(),
             'total_payable_days' => number_format($payable, 1, '.', ''),
+            'rate_breakdown' => WorkLevel::breakdownFor($attendances),
             'outstanding_advance_before' => $outstandingBefore,
             'advance_repayment' => $repayment,
             'net_salary_payable' => $net,

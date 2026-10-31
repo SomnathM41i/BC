@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\EmployeeSalaryPayment;
 use App\Support\Money;
+use App\Support\WorkLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -23,26 +24,12 @@ class EmployeeSalaryController extends Controller
         $referenceDate = $request->input('reference_date', now()->toDateString());
 
         $employee = null;
-        $period = null;
         $summary = null;
-        $currentPeriod = null;
-        $currentSummary = null;
-        $currentWeekEnded = true;
 
         if ($selectedEmployeeId) {
             $employee = Employee::find($selectedEmployeeId);
             if ($employee) {
-                $period = $employee->getWeeklyPeriod($referenceDate);
-                $summary = $this->calculateSummary($employee, $period['start_date'], $period['end_date']);
-
-                // The attendance chart edits the week containing today. Show that
-                // week too, so days marked there are visible even though only the
-                // last completed week can actually be paid.
-                $currentPeriod = $employee->getWeekContaining($referenceDate);
-                if ($currentPeriod['start_date'] !== $period['start_date']) {
-                    $currentSummary = $this->calculateSummary($employee, $currentPeriod['start_date'], $currentPeriod['end_date']);
-                    $currentWeekEnded = Carbon::parse($currentPeriod['end_date'])->lte(now()->endOfDay());
-                }
+                $summary = $this->calculateSummary($employee, $referenceDate);
             }
         }
 
@@ -51,11 +38,7 @@ class EmployeeSalaryController extends Controller
             'selectedEmployeeId' => $selectedEmployeeId,
             'referenceDate' => $referenceDate,
             'employee' => $employee,
-            'period' => $period,
             'summary' => $summary,
-            'currentPeriod' => $currentPeriod,
-            'currentSummary' => $currentSummary,
-            'currentWeekEnded' => $currentWeekEnded,
         ]);
     }
 
@@ -72,48 +55,65 @@ class EmployeeSalaryController extends Controller
         ]);
     }
 
-    protected function calculateSummary(Employee $employee, string $startDate, string $endDate): array
+    /**
+     * Salary can be paid on any day, so a payment covers every marked day up to
+     * the chosen date that no earlier payment covers. Days after it stay open.
+     */
+    protected function calculateSummary(Employee $employee, string $upTo): array
     {
-        // Prevent paying already-paid period twice
-        $existing = EmployeeSalaryPayment::query()
-            ->where('employee_id', $employee->id)
-            ->where('period_start', $startDate)
-            ->where('period_end', $endDate)
-            ->first();
+        $payments = $employee->salaryPayments()->get();
+        $isPaid = fn (Carbon $date) => $payments->contains(
+            fn (EmployeeSalaryPayment $payment) => $date->between($payment->period_start, $payment->period_end)
+        );
 
         $attendances = EmployeeAttendance::query()
             ->where('employee_id', $employee->id)
-            ->whereDate('attendance_date', '>=', $startDate)
-            ->whereDate('attendance_date', '<=', $endDate)
-            ->get();
+            ->whereDate('attendance_date', '<=', $upTo)
+            ->orderBy('attendance_date')
+            ->get()
+            ->reject(fn (EmployeeAttendance $att) => $isPaid($att->attendance_date))
+            ->values();
+
+        $periodStart = $attendances->first()?->attendance_date->toDateString() ?? $upTo;
+        $periodEnd = $attendances->last()?->attendance_date->toDateString() ?? $upTo;
 
         $present = 0;
         $half = 0;
         $payable = '0.0';
         $gross = '0.00';
         foreach ($attendances as $att) {
-            if ($att->status === 'present') {
-                $present++;
-            } elseif ($att->status === 'half_day') {
+            if ($att->work_level === 'half_day') {
                 $half++;
+            } elseif ($att->status === 'present') {
+                $present++;
             }
             $payable = bcadd($payable, (string) $att->payable_days, 1);
             $gross = Money::add($gross, $att->amount);
         }
+
+        // Paying locks everything between the first and last day, so days left
+        // unmarked in that range could not be marked afterwards.
+        $marked = $attendances->map(fn (EmployeeAttendance $att) => $att->attendance_date->toDateString())->all();
+        $unmarked = 0;
+        for ($date = Carbon::parse($periodStart); $date->lte($periodEnd); $date->addDay()) {
+            if (! in_array($date->toDateString(), $marked, true) && ! $isPaid($date)) {
+                $unmarked++;
+            }
+        }
+
         $outstanding = $employee->outstandingAdvance();
-        $netPayable = $gross; // before repayment selection; repayment applied on payment
 
         return [
-            'period_start' => $startDate,
-            'period_end' => $endDate,
+            'period_start' => $periodStart,
+            'period_end' => $periodEnd,
             'present_days' => $present,
             'half_days' => $half,
             'total_payable_days' => $payable,
+            'rate_breakdown' => WorkLevel::breakdownFor($attendances),
             'gross_salary' => $gross,
             'outstanding_advance' => $outstanding,
-            'net_salary_payable_before_repayment' => $netPayable,
-            'already_paid' => (bool) $existing,
-            'existing_payment' => $existing,
+            'net_salary_payable_before_repayment' => $gross, // repayment applied on payment
+            'unmarked_days' => $unmarked,
         ];
     }
 
@@ -121,38 +121,19 @@ class EmployeeSalaryController extends Controller
     {
         $employee = Employee::findOrFail($request->validated('employee_id'));
 
-        // Derive the period from the employee's payment day instead of trusting
-        // the hidden fields, so a week can never be split or shifted.
-        $expected = $employee->getWeeklyPeriod($request->validated('period_end'));
-        $periodStart = $expected['start_date'];
-        $periodEnd = $expected['end_date'];
-
-        if (Carbon::parse($periodEnd)->gt(now()->endOfDay())) {
-            return back()->with('error', 'This salary week has not ended yet.');
-        }
+        $upTo = $request->validated('period_end');
 
         try {
-            $payment = DB::transaction(function () use ($request, $employee, $periodStart, $periodEnd) {
-                // Lock the employee row so two submissions cannot both pass the
-                // "already paid" check and create duplicate payments.
+            $payment = DB::transaction(function () use ($request, $employee, $upTo) {
+                // Lock the employee row so two submissions cannot both pay the
+                // same days. The second finds nothing left and is refused below.
                 Employee::query()->whereKey($employee->id)->lockForUpdate()->first();
 
-                $duplicate = EmployeeSalaryPayment::query()
-                    ->where('employee_id', $employee->id)
-                    ->where('period_start', $periodStart)
-                    ->where('period_end', $periodEnd)
-                    ->exists();
+                $summary = $this->calculateSummary($employee, $upTo);
 
-                if ($duplicate) {
-                    throw new \RuntimeException('This salary period has already been paid.');
-                }
-
-                $summary = $this->calculateSummary($employee, $periodStart, $periodEnd);
-
-                // A week with no attendance has nothing to pay. Blocking it here
-                // stops a ₹0 payment from locking the period as already paid.
+                // Blocking a zero total stops an empty payment being recorded.
                 if (Money::isZero($summary['gross_salary'])) {
-                    throw new \RuntimeException('No attendance is marked for '.Carbon::parse($periodStart)->format('d-m-Y').' to '.Carbon::parse($periodEnd)->format('d-m-Y').'. Mark attendance before recording salary.');
+                    throw new \RuntimeException('There are no unpaid days up to '.Carbon::parse($upTo)->format('d-m-Y').'. Mark attendance before recording salary.');
                 }
 
                 $gross = $summary['gross_salary'];
@@ -181,13 +162,14 @@ class EmployeeSalaryController extends Controller
                 // these repayment columns, so nothing can be counted twice.
                 return EmployeeSalaryPayment::create([
                     'employee_id' => $employee->id,
-                    'period_start' => $periodStart,
-                    'period_end' => $periodEnd,
+                    'period_start' => $summary['period_start'],
+                    'period_end' => $summary['period_end'],
                     'daily_salary' => '0.00',
                     'gross_salary' => $gross,
                     'present_days' => $summary['present_days'],
                     'half_days' => $summary['half_days'],
                     'total_payable_days' => $summary['total_payable_days'],
+                    'rate_breakdown' => $summary['rate_breakdown'],
                     'outstanding_advance_before' => $outstandingBefore,
                     'advance_repayment' => $repayment,
                     'net_salary_payable' => $netPayable,

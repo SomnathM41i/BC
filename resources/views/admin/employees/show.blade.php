@@ -40,6 +40,30 @@
         </div>
     </div>
 
+    <div class="mb-6 rounded-xl bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-4 py-4 sm:px-5">
+            <h2 class="font-semibold text-slate-900">Pay Details</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 text-sm">
+                <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-3 py-2 sm:px-4">Work Level</th>
+                        <th class="px-3 py-2 sm:px-4">Amount per day</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($employee->dayAmounts() as $level => $amount)
+                        <tr>
+                            <td class="px-3 py-2 font-medium text-slate-900 sm:px-4">{{ \App\Support\WorkLevel::LABELS[$level] }}</td>
+                            <td class="px-3 py-2 text-slate-600 sm:px-4">@inr($amount)</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="mb-6 grid gap-6 lg:grid-cols-2">
         <div class="flex h-full flex-col rounded-xl bg-white shadow-sm">
             <div class="border-b border-slate-100 px-4 py-4 sm:px-5">
@@ -82,7 +106,7 @@
                     <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                         <tr>
                             <th class="px-3 py-2 sm:px-4">Date</th>
-                            <th class="px-3 py-2 sm:px-4">Status</th>
+                            <th class="px-3 py-2 sm:px-4">Work Level</th>
                             <th class="px-3 py-2 sm:px-4">Amount</th>
                         </tr>
                     </thead>
@@ -90,7 +114,7 @@
                         @forelse ($attendances as $att)
                             <tr>
                                 <td class="whitespace-nowrap px-3 py-2 text-slate-900 sm:px-4">{{ $att->attendance_date->format('d-m-Y') }}</td>
-                                <td class="px-3 py-2 text-slate-600 sm:px-4">{{ ucfirst($att->status) }}</td>
+                                <td class="px-3 py-2 text-slate-600 sm:px-4">{{ \App\Support\WorkLevel::LABELS[$att->work_level] ?? ucfirst($att->status) }}</td>
                                 <td class="px-3 py-2 text-slate-600 sm:px-4">
                                     @inr($att->amount)
                                 </td>
@@ -163,6 +187,9 @@
                             <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Partially Paid</span>
                         @endif
                     </div>
+                    @if ($pay->rate_breakdown)
+                        <p class="mt-2 text-xs text-slate-500">{{ \App\Support\WorkLevel::describe($pay->rate_breakdown) }}</p>
+                    @endif
                     <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
                         <div>
                             <dt class="text-xs text-slate-500">Gross</dt>
@@ -219,8 +246,11 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($salaryPayments as $pay)
                         <tr>
-                            <td class="whitespace-nowrap px-4 py-3 text-slate-900">
-                                {{ $pay->period_start->format('d-m-Y') }} - {{ $pay->period_end->format('d-m-Y') }}
+                            <td class="px-4 py-3 text-slate-900">
+                                <span class="whitespace-nowrap">{{ $pay->period_start->format('d-m-Y') }} - {{ $pay->period_end->format('d-m-Y') }}</span>
+                                @if ($pay->rate_breakdown)
+                                    <span class="mt-1 block text-xs text-slate-500">{{ \App\Support\WorkLevel::describe($pay->rate_breakdown) }}</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-slate-600">@inr($pay->gross_salary)</td>
                             <td class="px-4 py-3 text-slate-600">@inr($pay->advance_repayment)</td>

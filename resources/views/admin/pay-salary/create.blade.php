@@ -6,7 +6,7 @@
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-semibold text-slate-900">Pay Salary</h1>
-            <p class="text-sm text-slate-500">Weekly salary for the last completed week ending on the employee's payment day. Attendance must be marked before payment.</p>
+            <p class="text-sm text-slate-500">Pay on any day. Covers every unpaid marked day up to the chosen date.</p>
         </div>
         @if($employee)
             <a href="{{ route('admin.attendance.index', ['employee_id' => $employee->id, 'reference_date' => $referenceDate]) }}" class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Open Attendance Chart</a>
@@ -25,22 +25,22 @@
                 </select>
             </div>
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">Reference Date</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Pay Up To</label>
                 <input type="date" name="reference_date" value="{{ $referenceDate }}" required class="rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
             <button class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Calculate</button>
         </form>
     </div>
 
-    @if($employee && $summary && $period)
+    @if($employee && $summary)
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl bg-white p-5 shadow-sm">
                 <p class="text-sm text-slate-500">Period</p>
                 <p class="mt-2 text-sm font-semibold text-slate-900">{{ \Carbon\Carbon::parse($summary['period_start'])->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($summary['period_end'])->format('d-m-Y') }}</p>
             </div>
             <div class="rounded-xl bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Present Days</p>
-                <p class="mt-2 text-sm font-semibold text-slate-900">{{ $summary['present_days'] }}</p>
+                <p class="text-sm text-slate-500">Work Breakdown</p>
+                <p class="mt-2 text-sm font-semibold text-slate-900">{{ \App\Support\WorkLevel::describe($summary['rate_breakdown']) ?: 'No days worked' }}</p>
             </div>
             <div class="rounded-xl bg-white p-5 shadow-sm">
                 <p class="text-sm text-slate-500">Gross Salary</p>
@@ -52,33 +52,18 @@
             </div>
         </div>
 
-        @if($currentSummary && ! $currentSummary['already_paid'] && ! $currentWeekEnded && ! \App\Support\Money::isZero($currentSummary['gross_salary']))
-            <div class="mb-6 rounded-xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-900">
-                <p class="font-medium">
-                    Current week ({{ \Carbon\Carbon::parse($currentSummary['period_start'])->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($currentSummary['period_end'])->format('d-m-Y') }}):
-                    {{ $currentSummary['present_days'] }} present days, @inr($currentSummary['gross_salary']) gross so far.
-                </p>
-                <p class="mt-1">
-                    This week is still in progress. It ends on {{ \Carbon\Carbon::parse($currentSummary['period_end'])->format('d-m-Y') }} and becomes payable after that date.
-                    <a href="{{ route('admin.attendance.index', ['employee_id' => $employee->id, 'reference_date' => $referenceDate]) }}" class="font-medium underline">Open current week chart</a>
-                </p>
-            </div>
-        @endif
-
-        @if($summary['already_paid'])
+        @if(\App\Support\Money::isZero($summary['gross_salary']))
             <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-                This salary period has already been paid. You cannot pay the same period again.
-            </div>
-        @elseif(\App\Support\Money::isZero($summary['gross_salary']))
-            <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-                <p class="font-medium">No attendance is marked for this salary week.</p>
-                <p class="mt-1">
-                    {{ \Carbon\Carbon::parse($summary['period_start'])->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($summary['period_end'])->format('d-m-Y') }}
-                    has no amounts, so there is nothing to pay. Mark attendance for this week first; a ₹0 payment is not recorded.
-                </p>
-                <a href="{{ route('admin.attendance.index', ['employee_id' => $employee->id, 'reference_date' => $summary['period_end']]) }}" class="mt-2 inline-block font-medium underline">Mark attendance for this week</a>
+                <p class="font-medium">There are no unpaid days up to {{ \Carbon\Carbon::parse($referenceDate)->format('d-m-Y') }}.</p>
+                <p class="mt-1">Mark attendance first, or choose a later date.</p>
+                <a href="{{ route('admin.attendance.index', ['employee_id' => $employee->id, 'reference_date' => $referenceDate]) }}" class="mt-2 inline-block font-medium underline">Mark attendance</a>
             </div>
         @else
+            @if($summary['unmarked_days'] > 0)
+                <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+                    {{ $summary['unmarked_days'] }} unmarked {{ \Illuminate\Support\Str::plural('day', $summary['unmarked_days']) }} in this period will be locked after payment. Mark them first if they were worked.
+                </div>
+            @endif
             <div class="max-w-2xl rounded-xl bg-white shadow-sm">
                 <div class="border-b border-slate-100 px-6 py-4">
                     <h2 class="font-semibold text-slate-900">Payment Details</h2>
@@ -89,8 +74,7 @@
                       class="space-y-4 px-6 py-6">
                     @csrf
                     <input type="hidden" name="employee_id" value="{{ $employee->id }}">
-                    <input type="hidden" name="period_start" value="{{ $summary['period_start'] }}">
-                    <input type="hidden" name="period_end" value="{{ $summary['period_end'] }}">
+                                        <input type="hidden" name="period_end" value="{{ $referenceDate }}">
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-sm font-medium text-slate-700">Gross Salary</label>

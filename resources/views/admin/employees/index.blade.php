@@ -34,6 +34,7 @@
                         <th class="px-4 py-3">Name</th>
                         <th class="px-4 py-3">Phone</th>
                         <th class="px-4 py-3">Type</th>
+                        <th class="px-4 py-3">Normal Day</th>
                         <th class="px-4 py-3">Weekly Payment Day</th>
                         <th class="px-4 py-3">Joining Date</th>
                         <th class="px-4 py-3">Status</th>
@@ -47,6 +48,7 @@
                             <td class="px-4 py-3 text-slate-900">{{ $employee->full_name }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $employee->phone_number }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $employee->type?->name ?? '—' }}</td>
+                            <td class="px-4 py-3 text-slate-600">@inr($employee->daily_salary)</td>
                             <td class="px-4 py-3 text-slate-600">{{ ucfirst($employee->weekly_salary_payment_day) }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $employee->joining_date->format('d-m-Y') }}</td>
                             <td class="px-4 py-3">
@@ -62,7 +64,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-slate-500">No employees found.</td>
+                            <td colspan="9" class="px-4 py-6 text-center text-slate-500">No employees found.</td>
                         </tr>
                     @endforelse
                 </tbody>

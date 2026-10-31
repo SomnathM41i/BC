@@ -5,7 +5,7 @@
 @section('content')
     <div class="mb-6">
         <h1 class="text-2xl font-semibold text-slate-900">Attendance</h1>
-        <p class="text-sm text-slate-500">Select an employee, mark each day Present or Absent, and enter the amount earned.</p>
+        <p class="text-sm text-slate-500">Select an employee and mark each day's work level. The amount comes from the employee's normal day salary.</p>
     </div>
 
     <div class="mb-6 rounded-xl bg-white shadow-sm">
@@ -43,8 +43,8 @@
                             <tr>
                                 <th class="px-4 py-3">Day</th>
                                 <th class="px-4 py-3">Date</th>
-                                <th class="px-4 py-3">Status</th>
-                                <th class="px-4 py-3">Amount (₹)</th>
+                                <th class="px-4 py-3">Work Level</th>
+                                <th class="px-4 py-3">Amount</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -62,33 +62,45 @@
                                     @if($d['before_joining'])
                                         <td colspan="2" class="px-4 py-3 text-xs text-slate-400">Before joining</td>
                                     @elseif($d['paid'])
-                                        <td class="px-4 py-3 text-xs text-slate-500">Salary paid, locked{{ $row ? ': '.ucfirst($row->status) : '' }}</td>
+                                        <td class="px-4 py-3 text-xs text-slate-500">Salary paid, locked{{ $row ? ': '.(\App\Support\WorkLevel::LABELS[$row->work_level] ?? ucfirst($row->status)) : '' }}</td>
                                         <td class="px-4 py-3 text-xs text-slate-500">
                                             @if($row) @inr($row->amount) @endif
                                         </td>
                                     @else
                                         <td class="px-4 py-3">
                                             <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                                <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-600">
-                                                    <input type="radio" name="days[{{ $d['date'] }}][status]" value="" class="day-status h-4 w-4 border-slate-300" @checked(! $row)>
-                                                    Not Marked
-                                                </label>
+                                                {{-- An empty value leaves the day as it is, so this option only exists
+                                                     for a day that has no level to choose: unmarked or an older entry. --}}
+                                                @if(! $row)
+                                                    <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-600">
+                                                        <input type="radio" name="days[{{ $d['date'] }}][level]" value="" data-amount="0" class="day-level h-4 w-4 border-slate-300" checked>
+                                                        Not Marked
+                                                    </label>
+                                                @elseif($row->status === 'present' && ! $row->work_level)
+                                                    <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
+                                                        <input type="radio" name="days[{{ $d['date'] }}][level]" value="" data-amount="{{ $row->amount }}" data-count="present" class="day-level h-4 w-4 accent-emerald-600" checked>
+                                                        Present (older entry)
+                                                    </label>
+                                                @endif
+                                                @foreach($amounts as $level => $amount)
+                                                    {{-- A marked day keeps the amount it was saved with, even if the salary changed. --}}
+                                                    @php($marked = $row?->work_level === $level)
+                                                    @php($amount = $marked ? $row->amount : $amount)
+                                                    @php($unset = \App\Support\Money::isZero($amount))
+                                                    <label @class(['inline-flex items-center gap-1.5 text-sm', 'cursor-pointer text-slate-700' => ! $unset, 'text-slate-400' => $unset])>
+                                                        <input type="radio" name="days[{{ $d['date'] }}][level]" value="{{ $level }}" data-amount="{{ $amount }}" data-count="{{ $level }}"
+                                                               class="day-level h-4 w-4 accent-emerald-600" @checked($marked) @disabled($unset)>
+                                                        {{ \App\Support\WorkLevel::LABELS[$level] }}
+                                                        <span class="text-xs text-slate-500">{{ $unset ? 'No salary set' : \App\Support\Money::inr($amount) }}</span>
+                                                    </label>
+                                                @endforeach
                                                 <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
-                                                    <input type="radio" name="days[{{ $d['date'] }}][status]" value="present" class="day-status h-4 w-4 accent-emerald-600" @checked($row?->status === 'present')>
-                                                    Present
-                                                </label>
-                                                <label class="inline-flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
-                                                    <input type="radio" name="days[{{ $d['date'] }}][status]" value="absent" class="day-status h-4 w-4 accent-red-600" @checked($row?->status === 'absent')>
+                                                    <input type="radio" name="days[{{ $d['date'] }}][level]" value="absent" data-amount="0" data-count="absent" class="day-level h-4 w-4 accent-red-600" @checked($row?->status === 'absent')>
                                                     Absent
                                                 </label>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3">
-                                            <input type="number" step="0.01" min="0" name="days[{{ $d['date'] }}][amount]"
-                                                   value="{{ $row?->status === 'present' ? $row->amount : '' }}"
-                                                   aria-label="Amount for {{ $d['full'] }}"
-                                                   class="day-amount w-24 rounded-md border border-slate-300 px-2 py-1 text-sm">
-                                        </td>
+                                        <td class="day-amount whitespace-nowrap px-4 py-3 text-slate-700"></td>
                                     @endif
                                 </tr>
                             @endforeach
@@ -97,7 +109,8 @@
                             <tr>
                                 <td colspan="2" class="px-4 py-3 text-right font-medium text-slate-700">Totals</td>
                                 <td colspan="2" class="px-4 py-3 text-sm text-slate-900">
-                                    Present: <span id="w-present">0</span> | Absent: <span id="w-absent">0</span> | Week Total: <span id="w-total" class="font-semibold">₹0.00</span>
+                                    Half: <span id="w-half_day">0</span> | Normal: <span id="w-normal_day">0</span> | Long: <span id="w-long_day">0</span> | Absent: <span id="w-absent">0</span> | Week Total: <span id="w-total" class="font-semibold">₹0.00</span>
+                                    <span id="w-older-wrap" class="hidden"> | Older entries: <span id="w-present">0</span></span>
                                 </td>
                             </tr>
                         </tfoot>
@@ -110,26 +123,30 @@
         </form>
 
         <script>
+            const inr = value => '₹' + value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
             function recalcWeek() {
-                let present = 0, absent = 0, total = 0;
+                const counts = { half_day: 0, normal_day: 0, long_day: 0, absent: 0, present: 0 };
+                let total = 0;
 
                 document.querySelectorAll('.day-row').forEach(row => {
-                    const status = row.querySelector('.day-status:checked');
-                    const amount = row.querySelector('.day-amount');
+                    const level = row.querySelector('.day-level:checked');
 
-                    if (! status) { return; }
+                    if (! level) { return; }
 
-                    // Only a present day has an amount.
-                    amount.disabled = status.value !== 'present';
-                    if (amount.disabled) { amount.value = ''; }
+                    const amount = parseFloat(level.dataset.amount || '0');
 
-                    if (status.value === 'present') { present++; total += parseFloat(amount.value || '0'); }
-                    if (status.value === 'absent') { absent++; }
+                    row.querySelector('.day-amount').textContent = level.dataset.count ? inr(amount) : '—';
+                    total += amount;
+
+                    if (level.dataset.count) { counts[level.dataset.count]++; }
                 });
 
-                document.getElementById('w-present').textContent = present;
-                document.getElementById('w-absent').textContent = absent;
-                document.getElementById('w-total').textContent = '₹' + total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                Object.entries(counts).forEach(([key, count]) => {
+                    document.getElementById('w-' + key).textContent = count;
+                });
+                document.getElementById('w-older-wrap').classList.toggle('hidden', counts.present === 0);
+                document.getElementById('w-total').textContent = inr(total);
             }
 
             document.addEventListener('DOMContentLoaded', recalcWeek);
