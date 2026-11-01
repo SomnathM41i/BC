@@ -2,7 +2,7 @@
 
 <header data-site-header class="sticky top-0 z-50 border-b border-ink/10 bg-white/95 backdrop-blur transition-shadow">
     <div class="bg-brand-dark text-white">
-        <div class="site-container flex items-center justify-start gap-4 py-2 text-[0.75rem] sm:justify-between sm:gap-6">
+        <div class="site-container flex items-center justify-between gap-4 py-1.5 text-[0.75rem] sm:gap-6">
             <p class="flex min-w-0 items-center gap-2 text-white/75">
                 <x-site.icon name="pin" class="h-3.5 w-3.5 shrink-0 text-gold" />
                 <span class="truncate sm:hidden">{{ $site['address_compact'] }}</span>
@@ -15,6 +15,22 @@
                     <x-site.icon name="phone" class="h-3.5 w-3.5" />
                     {{ $site['phones'][0]['display'] }}
                 </a>
+
+                <div class="flex items-center gap-2">
+                    <a href="{{ $site['whatsapp_url'] }}" target="_blank" rel="noopener"
+                       aria-label="{{ __('site.actions.whatsapp') }}" title="{{ __('site.actions.whatsapp') }}"
+                       class="social-badge social-badge-whatsapp">
+                        <x-site.icon name="whatsapp-solid" class="h-4 w-4" />
+                    </a>
+
+                    @isset($site['social']['instagram'])
+                        <a href="{{ $site['social']['instagram'] }}" target="_blank" rel="noopener"
+                           aria-label="{{ __('site.actions.instagram') }}" title="{{ __('site.actions.instagram') }}"
+                           class="social-badge social-badge-instagram">
+                            <x-site.icon name="instagram" class="h-4 w-4" />
+                        </a>
+                    @endisset
+                </div>
             </div>
         </div>
     </div>
