@@ -41,6 +41,19 @@
                         </span>
                     </a>
 
+                    @isset($site['social']['instagram'])
+                        <a href="{{ $site['social']['instagram'] }}" target="_blank" rel="noopener"
+                           class="flex items-center gap-4 rounded-xl border border-ink/10 bg-white p-4 transition hover:border-brand/25 hover:shadow-sm">
+                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-sand text-brand">
+                                <x-site.icon name="instagram" class="h-5 w-5" />
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block text-xs font-semibold uppercase tracking-wider text-ink/45">{{ __('site.contact.instagram_label') }}</span>
+                                <span class="block truncate text-base font-semibold text-brand-dark">{{ '@'.basename($site['social']['instagram']) }}</span>
+                            </span>
+                        </a>
+                    @endisset
+
                     <div class="flex items-start gap-4 rounded-xl border border-ink/10 bg-white p-4">
                         <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-sand text-brand">
                             <x-site.icon name="pin" class="h-5 w-5" />

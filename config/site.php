@@ -82,7 +82,9 @@ return [
     ],
 
     // Confirmed social profiles only. Example: ['facebook' => 'https://...'].
-    'social' => [],
+    'social' => [
+        'instagram' => 'https://www.instagram.com/bandgar__construction/',
+    ],
 
     /*
      | Client reviews. Leave this list empty until a customer has agreed in

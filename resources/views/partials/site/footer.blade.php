@@ -16,10 +16,19 @@
                 {{ __('site.footer.about') }}
             </p>
 
-            <a href="{{ $site['whatsapp_url'] }}" target="_blank" rel="noopener" class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-gold transition hover:text-white">
-                <x-site.icon name="whatsapp" class="h-4 w-4" />
-                {{ __('site.actions.whatsapp') }}
-            </a>
+            <div class="mt-6 flex flex-col items-start gap-3">
+                <a href="{{ $site['whatsapp_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-semibold text-gold transition hover:text-white">
+                    <x-site.icon name="whatsapp" class="h-4 w-4" />
+                    {{ __('site.actions.whatsapp') }}
+                </a>
+
+                @isset($site['social']['instagram'])
+                    <a href="{{ $site['social']['instagram'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-semibold text-gold transition hover:text-white">
+                        <x-site.icon name="instagram" class="h-4 w-4" />
+                        {{ __('site.actions.instagram') }}
+                    </a>
+                @endisset
+            </div>
         </div>
 
         <div>
