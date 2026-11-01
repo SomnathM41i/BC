@@ -606,6 +606,7 @@ return [
         'payment_tracking' => 'Track Your Payments',
         'rights' => 'All rights reserved.',
         'visualisation_note' => 'Project images are 3D design visualisations.',
+        'designed_by' => 'Designed and developed by',
     ],
 
 ];

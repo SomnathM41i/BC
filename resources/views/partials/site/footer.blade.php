@@ -90,6 +90,10 @@
 
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
                 <span>{{ __('site.footer.visualisation_note') }}</span>
+                <span>
+                    {{ __('site.footer.designed_by') }}
+                    <a href="https://somnathm41i-portfolio.vercel.app/" target="_blank" rel="noopener" class="font-semibold text-gold transition hover:text-white">Somnath Mali</a>
+                </span>
             </div>
         </div>
     </div>
