@@ -374,6 +374,28 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame('1050.00', $employee->fresh()->dayAmounts()['long_day']);
     }
 
+    public function test_employee_without_a_salary_can_set_one_from_pay_details(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee(['daily_salary' => '0.00']);
+
+        // A pre-filled 0.00 would fail the form's minimum and block saving.
+        $this->actingAs($owner)->get("/admin/employees/{$employee->id}")
+            ->assertSee('name="half_day" value=""', false)
+            ->assertSee('name="long_day" value=""', false);
+
+        $this->actingAs($owner)->put("/admin/employees/{$employee->id}/pay", [
+            'half_day' => '',
+            'normal_day' => '600',
+            'long_day' => '',
+        ])->assertRedirect();
+
+        $this->assertSame(
+            ['half_day' => '300.00', 'normal_day' => '600.00', 'long_day' => '900.00'],
+            $employee->fresh()->dayAmounts()
+        );
+    }
+
     public function test_pay_details_amounts_must_be_above_zero(): void
     {
         $employee = $this->employee();

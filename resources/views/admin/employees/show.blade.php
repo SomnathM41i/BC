@@ -60,7 +60,7 @@
                             <tr>
                                 <td class="px-3 py-2 font-medium text-slate-900 sm:px-4">{{ \App\Support\WorkLevel::LABELS[$level] }}</td>
                                 <td class="px-3 py-2 sm:px-4">
-                                    <input type="number" step="0.01" min="0.01" name="{{ $level }}" value="{{ old($level, $amount) }}" @required($level === 'normal_day')
+                                    <input type="number" step="0.01" min="0.01" name="{{ $level }}" value="{{ old($level, \App\Support\Money::isZero($amount) ? '' : $amount) }}" @required($level === 'normal_day')
                                            aria-label="{{ \App\Support\WorkLevel::LABELS[$level] }} amount"
                                            class="w-32 rounded-md border border-slate-300 px-2 py-1 text-sm">
                                     @error($level)
