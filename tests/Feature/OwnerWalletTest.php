@@ -65,6 +65,59 @@ class OwnerWalletTest extends TestCase
         $this->assertSame($projectBefore, $service->projectBalance($project));
     }
 
+    public function test_overspending_shows_a_negative_balance_and_income_covers_it_first(): void
+    {
+        $service = $this->service();
+        $owner = $this->owner();
+
+        $this->actingAs($owner)->post('/admin/owner/expense', [
+            'amount' => '1000',
+            'transaction_date' => '2026-10-01',
+        ])->assertSessionHas('status', 'Personal expense recorded. Personal wallet is now -₹1,000.00.');
+
+        $this->assertSame('-1000.00', $service->ownerBalance());
+
+        $this->actingAs($owner)->get('/admin/owner')
+            ->assertOk()
+            ->assertSee('-₹1,000.00')
+            ->assertSee('Overspent');
+
+        $service->recordOwnerIncome('2000.00', '2026-10-02', null, null, $owner);
+
+        $this->assertSame('1000.00', $service->ownerBalance());
+
+        $this->actingAs($owner)->get('/admin/owner')
+            ->assertOk()
+            ->assertDontSee('Overspent')
+            ->assertSeeInOrder(['₹2,000.00', '₹1,000.00', '₹1,000.00', '-₹1,000.00']);
+    }
+
+    public function test_overspending_does_not_touch_company_money(): void
+    {
+        $service = $this->service();
+        $owner = $this->owner();
+        $contractor = $this->contractor();
+        $project = $this->makeProject($contractor, '100000.00');
+
+        $service->receiveProjectPayment($project, '5000.00', '2026-10-01', null, $owner);
+        $service->recordOwnerExpense('1000.00', null, '2026-10-02', null, $owner);
+
+        $this->assertSame('-1000.00', $service->ownerBalance());
+        $this->assertSame('5000.00', $service->businessBalance());
+    }
+
+    public function test_overspent_wallet_cannot_transfer_to_company(): void
+    {
+        $service = $this->service();
+        $owner = $this->owner();
+
+        $service->recordOwnerExpense('1000.00', null, '2026-10-01', null, $owner);
+
+        $this->expectException(WalletException::class);
+
+        $service->returnOwnerFunds('500.00', '2026-10-02', null, $owner);
+    }
+
     public function test_personal_money_never_touches_projects_or_contractor_wallets(): void
     {
         $service = $this->service();

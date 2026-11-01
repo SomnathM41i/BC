@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\TransferToOwnerRequest;
 use App\Models\ExpenseCategory;
 use App\Models\WalletTransaction;
 use App\Services\WalletService;
+use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -34,8 +35,21 @@ class OwnerWalletController extends Controller
             ->recentFirst()
             ->get();
 
+        $summary = $this->wallets->ownerSummary();
+
+        // Walk back from the current balance so the newest row always matches
+        // the wallet, showing what each entry left in it.
+        $balance = $summary['balance'];
+
+        foreach ($transactions as $transaction) {
+            $transaction->balance_after = $balance;
+            $balance = in_array($transaction->type, [TransactionType::OwnerExpense, TransactionType::OwnerReturn], true)
+                ? Money::add($balance, $transaction->amount)
+                : Money::sub($balance, $transaction->amount);
+        }
+
         return view('admin.owner.show', [
-            'summary' => $this->wallets->ownerSummary(),
+            'summary' => $summary,
             'businessBalance' => $this->wallets->businessBalance(),
             'unallocated' => $this->wallets->unallocatedFunds(),
             'transactions' => $transactions,
@@ -98,8 +112,12 @@ class OwnerWalletController extends Controller
             $request->user(),
         );
 
+        $balance = $this->wallets->ownerBalance();
+
         return redirect()
             ->route('admin.owner.show')
-            ->with('status', 'Personal expense recorded.');
+            ->with('status', Money::lt($balance, '0')
+                ? 'Personal expense recorded. Personal wallet is now '.Money::inr($balance).'.'
+                : 'Personal expense recorded.');
     }
 }

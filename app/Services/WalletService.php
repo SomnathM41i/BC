@@ -449,6 +449,9 @@ class WalletService
 
     /**
      * Personal expense paid from the Owner Personal Wallet. Does not affect project costs.
+     *
+     * The owner may overspend, so this can take the balance below zero. Later
+     * money coming into the wallet then covers that shortfall first.
      */
     public function recordOwnerExpense(
         string $amount,
@@ -465,7 +468,8 @@ class WalletService
             }
 
             $owner = $this->lockOwnerWallet();
-            $this->debit($owner, $amount, 'owner personal wallet');
+            $owner->balance = Money::sub((string) $owner->balance, $amount);
+            $owner->save();
 
             return $this->createTransaction([
                 'type' => TransactionType::OwnerExpense,

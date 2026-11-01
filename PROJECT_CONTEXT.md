@@ -264,7 +264,7 @@ linked to their original contractor cost via `related_transaction_id`.
 ### WalletType
 - `business` — Company wallet
 - `project` — Per-project wallet
-- `owner` — Owner personal wallet
+- `owner` — Owner personal wallet. It can go negative through a personal expense, and later income or company transfers cover that first. Transfer to Company still needs a sufficient balance
 
 ### TransactionType (9 types)
 

@@ -16,7 +16,12 @@
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Personal Wallet Balance</p>
-            <p class="mt-1 text-2xl font-semibold text-slate-900">@inr($summary['balance'])</p>
+            @if (\App\Support\Money::lt($summary['balance'], '0'))
+                <p class="mt-1 text-2xl font-semibold text-rose-600">@inr($summary['balance'])</p>
+                <p class="mt-1 text-xs text-rose-600">Overspent. The next money added covers this first.</p>
+            @else
+                <p class="mt-1 text-2xl font-semibold text-slate-900">@inr($summary['balance'])</p>
+            @endif
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Personal Income</p>
@@ -144,6 +149,7 @@
                         <th class="px-4 py-3">Category</th>
                         <th class="px-4 py-3">Description</th>
                         <th class="px-4 py-3 text-right">Amount</th>
+                        <th class="px-4 py-3 text-right">Balance</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -154,10 +160,11 @@
                             <td class="px-4 py-3 text-slate-600">{{ $transaction->category?->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $transaction->description ?: '—' }}</td>
                             <td class="px-4 py-3 text-right font-medium {{ $transaction->type->textColorClass() }}">@inr($transaction->amount)</td>
+                            <td @class(['px-4 py-3 text-right font-medium', 'text-rose-600' => \App\Support\Money::lt($transaction->balance_after, '0'), 'text-slate-900' => ! \App\Support\Money::lt($transaction->balance_after, '0')])>@inr($transaction->balance_after)</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-slate-500">No transactions yet.</td>
+                            <td colspan="6" class="px-4 py-6 text-center text-slate-500">No transactions yet.</td>
                         </tr>
                     @endforelse
                 </tbody>
