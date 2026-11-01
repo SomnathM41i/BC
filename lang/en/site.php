@@ -21,7 +21,7 @@ return [
         ],
         'contact' => [
             'title' => 'Contact Us — Kargani, Atpadi',
-            'description' => 'Speak to Bandgar Construction & Developers about a new home, a 2D plan or a 3D design. Kargani, Shetfale Road, Taluka Atpadi, Sangli District.',
+            'description' => 'Speak to Bandgar Construction & Developers about a new home, a 2D plan or a 3D design. Kargani, Shetfale Road, Taluka Atpadi, District Sangli.',
         ],
         'sitemap' => [
             'title' => 'Sitemap',
@@ -598,7 +598,7 @@ return [
     ],
 
     'footer' => [
-        'about' => 'Residential construction, architectural design and interior services at Kargani, Shetfale Road, Taluka Atpadi, Sangli District, Maharashtra.',
+        'about' => 'Residential construction, architectural design and interior services at Kargani, Shetfale Road, Taluka Atpadi, District Sangli.',
         'services_title' => 'Services',
         'contact_title' => 'Contact',
         'payment_tracking' => 'Track Your Payments',

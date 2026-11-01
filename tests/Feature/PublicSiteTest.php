@@ -79,7 +79,7 @@ class PublicSiteTest extends TestCase
         $this->get('/contact')
             ->assertOk()
             ->assertSee('Kargani, Shetfale Road', false)
-            ->assertSee('Taluka Atpadi, Sangli District', false)
+            ->assertSee('Taluka Atpadi, District Sangli', false)
             ->assertSee('Er. Bharat Bandgar', false)
             ->assertDontSee('Gav Number 2', false)
             ->assertDontSee('Sanjorao', false)

@@ -54,7 +54,7 @@ return [
     'address' => [
         // One-line address for the compact bar at the top of the site.
         'short' => [
-            'en' => 'Kargani, Shetfale Road, Taluka Atpadi, Sangli',
+            'en' => 'Kargani, Shetfale Road, Taluka Atpadi, District Sangli',
             'mr' => 'करगणी, शेटफळे रोड, ता. आटपाडी, जि. सांगली',
         ],
         // Shorter still, for phone-width screens.
@@ -65,7 +65,7 @@ return [
         'lines' => [
             'en' => [
                 'Kargani, Shetfale Road',
-                'Taluka Atpadi, Sangli District',
+                'Taluka Atpadi, District Sangli',
                 'Maharashtra, India',
             ],
             'mr' => [
@@ -136,7 +136,7 @@ return [
 
     'seo' => [
         'title_suffix' => 'Bandgar Construction',
-        'default_description' => 'Residential construction, architectural planning, structural and interior design services in Kargani, Shetfale Road, Taluka Atpadi, Sangli District, Maharashtra, India.',
+        'default_description' => 'Residential construction, architectural planning, structural and interior design services in Kargani, Shetfale Road, Taluka Atpadi, District Sangli.',
         'og_image' => 'images/site/portfolio/modern-duplex-residence/cover.jpg',
         'theme_color' => '#64151F',
     ],
