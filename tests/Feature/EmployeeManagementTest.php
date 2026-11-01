@@ -288,6 +288,104 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame(1, EmployeeAttendance::query()->count());
     }
 
+    public function test_pay_details_amounts_can_be_edited_and_used_for_new_days(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        $this->markWeek($employee, ['2026-10-23' => ['level' => 'long_day']]);
+
+        $this->actingAs($owner)->get("/admin/employees/{$employee->id}")
+            ->assertSee('name="long_day" value="900.00"', false);
+
+        $this->actingAs($owner)->put("/admin/employees/{$employee->id}/pay", [
+            'half_day' => '250',
+            'normal_day' => '600',
+            'long_day' => '1000',
+        ])->assertRedirect("/admin/employees/{$employee->id}");
+
+        $this->assertSame(
+            ['half_day' => '250.00', 'normal_day' => '600.00', 'long_day' => '1000.00'],
+            $employee->fresh()->dayAmounts()
+        );
+
+        $this->markWeek($employee, [
+            '2026-10-24' => ['level' => 'long_day'],
+            '2026-10-25' => ['level' => 'half_day'],
+        ]);
+
+        $this->assertSame('900.00', $this->attendanceOn($employee, '2026-10-23')->amount);
+        $this->assertSame('1000.00', $this->attendanceOn($employee, '2026-10-24')->amount);
+        $this->assertSame('250.00', $this->attendanceOn($employee, '2026-10-25')->amount);
+
+        $this->actingAs($owner)->get("/admin/employees/{$employee->id}/edit")
+            ->assertSee('custom amounts in Pay Details');
+    }
+
+    public function test_changing_only_normal_day_keeps_half_and_long_day_calculated(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        // The form also sends the unchanged half and long day values.
+        $this->actingAs($owner)->put("/admin/employees/{$employee->id}/pay", [
+            'half_day' => '300.00',
+            'normal_day' => '800',
+            'long_day' => '900.00',
+        ])->assertRedirect();
+
+        $employee = $employee->fresh();
+
+        $this->assertFalse($employee->hasCustomDayAmounts());
+        $this->assertSame(
+            ['half_day' => '400.00', 'normal_day' => '800.00', 'long_day' => '1200.00'],
+            $employee->dayAmounts()
+        );
+    }
+
+    public function test_custom_amount_stays_through_a_salary_change_and_clearing_it_restores_the_calculation(): void
+    {
+        $owner = $this->owner();
+        $employee = $this->employee();
+
+        $this->actingAs($owner)->put("/admin/employees/{$employee->id}/pay", [
+            'half_day' => '300.00',
+            'normal_day' => '600.00',
+            'long_day' => '1000',
+        ]);
+
+        $this->actingAs($owner)->put("/admin/employees/{$employee->id}/pay", [
+            'half_day' => '300.00',
+            'normal_day' => '700',
+            'long_day' => '1000.00',
+        ]);
+
+        $this->assertSame(
+            ['half_day' => '350.00', 'normal_day' => '700.00', 'long_day' => '1000.00'],
+            $employee->fresh()->dayAmounts()
+        );
+
+        $this->actingAs($owner)->put("/admin/employees/{$employee->id}/pay", [
+            'half_day' => '350.00',
+            'normal_day' => '700.00',
+            'long_day' => '',
+        ]);
+
+        $this->assertSame('1050.00', $employee->fresh()->dayAmounts()['long_day']);
+    }
+
+    public function test_pay_details_amounts_must_be_above_zero(): void
+    {
+        $employee = $this->employee();
+
+        $this->actingAs($this->owner())
+            ->from("/admin/employees/{$employee->id}")
+            ->put("/admin/employees/{$employee->id}/pay", ['normal_day' => '0', 'half_day' => '-5'])
+            ->assertSessionHasErrors(['normal_day', 'half_day']);
+
+        $this->assertSame('600.00', $employee->fresh()->daily_salary);
+    }
+
     public function test_employee_needs_a_normal_day_salary_and_it_can_be_changed(): void
     {
         $owner = $this->owner();

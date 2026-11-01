@@ -44,24 +44,39 @@
         <div class="border-b border-slate-100 px-4 py-4 sm:px-5">
             <h2 class="font-semibold text-slate-900">Pay Details</h2>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-sm">
-                <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                    <tr>
-                        <th class="px-3 py-2 sm:px-4">Work Level</th>
-                        <th class="px-3 py-2 sm:px-4">Amount per day</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @foreach($employee->dayAmounts() as $level => $amount)
+        <form method="POST" action="{{ route('admin.employees.pay.update', $employee) }}">
+            @csrf
+            @method('PUT')
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-100 text-sm">
+                    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                         <tr>
-                            <td class="px-3 py-2 font-medium text-slate-900 sm:px-4">{{ \App\Support\WorkLevel::LABELS[$level] }}</td>
-                            <td class="px-3 py-2 text-slate-600 sm:px-4">@inr($amount)</td>
+                            <th class="px-3 py-2 sm:px-4">Work Level</th>
+                            <th class="px-3 py-2 sm:px-4">Amount per day (₹)</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach($employee->dayAmounts() as $level => $amount)
+                            <tr>
+                                <td class="px-3 py-2 font-medium text-slate-900 sm:px-4">{{ \App\Support\WorkLevel::LABELS[$level] }}</td>
+                                <td class="px-3 py-2 sm:px-4">
+                                    <input type="number" step="0.01" min="0.01" name="{{ $level }}" value="{{ old($level, $amount) }}" @required($level === 'normal_day')
+                                           aria-label="{{ \App\Support\WorkLevel::LABELS[$level] }} amount"
+                                           class="w-32 rounded-md border border-slate-300 px-2 py-1 text-sm">
+                                    @error($level)
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 px-4 py-3 sm:px-5">
+                <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">Save Pay</button>
+                <p class="text-xs text-slate-500">New amounts apply to days marked after saving. Clear Half day or Long day to calculate it from Normal day again.</p>
+            </div>
+        </form>
     </div>
 
     <div class="mb-6 grid gap-6 lg:grid-cols-2">

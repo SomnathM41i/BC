@@ -2,6 +2,9 @@
     <label class="mb-1 block text-sm font-medium text-slate-700">Normal Day Salary (₹)</label>
     <input type="number" step="0.01" min="0.01" name="daily_salary" id="daily-salary" value="{{ old('daily_salary', $salary) }}" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
     <p class="mt-1 text-xs text-slate-500">Half day pays 0.5× and long day pays 1.5×: <span id="daily-salary-preview"></span></p>
+    @if($customAmounts ?? false)
+        <p class="mt-1 text-xs text-amber-700">This employee has custom amounts in Pay Details, and those stay as they are.</p>
+    @endif
 </div>
 
 <script>

@@ -306,10 +306,11 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 - Groups contractors by trade/skill for the admin index
 
 ### Employee
-- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `daily_salary`, `weekly_salary_payment_day`, `joining_date`, `status`
+- Fillable: `employee_id`, `full_name`, `phone_number`, `employee_type_id`, `daily_salary`, `half_day_amount`, `long_day_amount`, `weekly_salary_payment_day`, `joining_date`, `status`
 - Casts: `daily_salary` → `decimal:2`, `joining_date` → `date`
 - Relations: `type()`, `attendances()`, `advances()`, `salaryPayments()`
 - `daily_salary` is the normal day salary; `dayAmounts()` returns what each work level pays today
+- `half_day_amount` and `long_day_amount` are null unless the owner set a custom amount; `saveDayAmounts()` keeps them null when unchanged
 - `isDatePaid()` tells whether a salary payment covers a date
 - Scopes `active()` / `inactive()`; `isActive()` helper
 - `generateEmployeeId()` produces `EMP-YYYY-NNNN`, continuing the current year's sequence
@@ -393,7 +394,7 @@ The effects are defined in `TransactionType::businessCashEffect()`,
 
 ### Employee rules
 
-- **Pay**: each employee has a normal day salary, set on the create and edit screens. `App\Support\WorkLevel` pays Half day 0.5×, Normal day 1× and Long day 1.5× of it, and these also count as the payable days.
+- **Pay**: each employee has a normal day salary, set on the create and edit screens. `App\Support\WorkLevel` pays Half day 0.5×, Normal day 1× and Long day 1.5× of it, and these also count as the payable days. Pay Details on the employee page can set a custom Half day or Long day amount; clearing it restores the calculation.
 - **Attendance**: select an employee, then mark each day of their salary week Half day, Normal day, Long day or Absent. The amount is never typed or read from the form: it is calculated from the employee's current salary and copied onto the row, so later salary changes do not alter marked days, and resaving an unchanged level keeps its amount. One row per employee per date. An employee with no salary cannot be marked present; an absent day is ₹0. Days before `joining_date` are never saved, and unmarked days are skipped. Days marked before work levels existed keep their amount and show as "Present (older entry)" until a level is chosen.
 - **Salary**: gross is the sum of the week's stored amounts, and the payment records a breakdown by level. If a changed payment day makes a week overlap a paid one, days already paid are left out of the new gross.
 - **Employee payment-tracking dashboard**: shows the employee's details, this salary week's attendance, salary history, attendance history and advances. Owner notes on advances and payments are not shown.
@@ -432,6 +433,7 @@ English at the root, Marathi under `/mr`:
 - Transactions ledger
 - Contractors (index, store)
 - Employees (`/admin/employees` resource: index, create, store, show, edit, update, destroy/deactivate)
+- Employee pay: `PUT /admin/employees/{employee}/pay`
 - Attendance: `GET|POST /admin/attendance`
 - Advances: `/admin/advances`, `/admin/advances/create`, `POST /admin/advances`
 - Pay Salary: `GET|POST /admin/pay-salary`, `POST /admin/pay-salary/calculate`, `POST /admin/pay-salary/{payment}/complete` (top up a partial payment)
@@ -530,6 +532,7 @@ on desktop.
 | `2026_10_31_000001_add_employee_types_and_daily_amounts.php` | adds employee types and the per-day amount, copies the old salary onto marked days, then drops `employees.daily_salary` |
 | `2026_10_31_000002_add_normal_day_salary_and_work_levels.php` | adds the normal day salary, the attendance work level and the salary payment breakdown |
 | `2026_10_31_000003_widen_salary_payment_day_columns.php` | widens the salary payment day counts, since a payment can cover many weeks |
+| `2026_11_01_000001_add_custom_day_amounts_to_employees.php` | adds optional custom half day and long day amounts |
 
 ---
 

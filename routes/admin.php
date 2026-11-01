@@ -68,6 +68,8 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
     Route::post('contractors', [ContractorController::class, 'store'])->name('contractors.store');
 
     Route::resource('employees', EmployeeController::class);
+    Route::put('employees/{employee}/pay', [EmployeeController::class, 'updatePay'])
+        ->whereNumber('employee')->name('employees.pay.update');
     Route::get('attendance', [EmployeeAttendanceController::class, 'index'])->name('attendance.index');
     Route::post('attendance', [EmployeeAttendanceController::class, 'store'])->name('attendance.store');
     Route::get('advances', [EmployeeAdvanceController::class, 'index'])->name('advances.index');

@@ -20,6 +20,8 @@ class Employee extends Model
         'phone_number',
         'employee_type_id',
         'daily_salary',
+        'half_day_amount',
+        'long_day_amount',
         'weekly_salary_payment_day',
         'joining_date',
         'status',
@@ -29,6 +31,8 @@ class Employee extends Model
     {
         return [
             'daily_salary' => 'decimal:2',
+            'half_day_amount' => 'decimal:2',
+            'long_day_amount' => 'decimal:2',
             'joining_date' => 'date',
         ];
     }
@@ -75,13 +79,53 @@ class Employee extends Model
      */
     public function dayAmounts(): array
     {
-        $amounts = [];
+        $amounts = self::calculatedAmounts($this->daily_salary ?? '0');
 
-        foreach (WorkLevel::MULTIPLIERS as $level => $multiplier) {
-            $amounts[$level] = bcmul((string) ($this->daily_salary ?? '0'), $multiplier, Money::SCALE);
-        }
+        $amounts['half_day'] = $this->half_day_amount ?? $amounts['half_day'];
+        $amounts['long_day'] = $this->long_day_amount ?? $amounts['long_day'];
 
         return $amounts;
+    }
+
+    public function hasCustomDayAmounts(): bool
+    {
+        return $this->half_day_amount !== null || $this->long_day_amount !== null;
+    }
+
+    /**
+     * Save the Pay Details amounts. Half and long day stay calculated unless
+     * the owner actually changed them, so a raised salary still carries through.
+     *
+     * @param  array{normal_day: string, half_day?: ?string, long_day?: ?string}  $amounts
+     */
+    public function saveDayAmounts(array $amounts): void
+    {
+        $before = $this->dayAmounts();
+        $salary = Money::normalize($amounts['normal_day']);
+        $calculated = self::calculatedAmounts($salary);
+        $values = ['daily_salary' => $salary];
+
+        foreach (['half_day' => 'half_day_amount', 'long_day' => 'long_day_amount'] as $level => $column) {
+            $amount = $amounts[$level] ?? null;
+            $unchanged = $amount !== null && $this->{$column} === null && Money::compare($amount, $before[$level]) === 0;
+
+            $values[$column] = $amount === null || $unchanged || Money::compare($amount, $calculated[$level]) === 0
+                ? null
+                : Money::normalize($amount);
+        }
+
+        $this->update($values);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function calculatedAmounts(string $salary): array
+    {
+        return array_map(
+            fn (string $multiplier) => bcmul($salary, $multiplier, Money::SCALE),
+            WorkLevel::MULTIPLIERS
+        );
     }
 
     /**

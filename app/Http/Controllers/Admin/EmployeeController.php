@@ -106,6 +106,21 @@ class EmployeeController extends Controller
             ->with('status', 'Employee updated successfully.');
     }
 
+    public function updatePay(Request $request, Employee $employee): RedirectResponse
+    {
+        $data = $request->validate([
+            'normal_day' => ['required', 'numeric', 'gt:0', 'max:9999999', 'decimal:0,2'],
+            'half_day' => ['nullable', 'numeric', 'gt:0', 'max:9999999', 'decimal:0,2'],
+            'long_day' => ['nullable', 'numeric', 'gt:0', 'max:9999999', 'decimal:0,2'],
+        ]);
+
+        $employee->saveDayAmounts($data);
+
+        return redirect()
+            ->route('admin.employees.show', $employee)
+            ->with('status', 'Pay details updated.');
+    }
+
     public function destroy(Employee $employee): RedirectResponse
     {
         // Do not delete; keep history. Just deactivate if still active.
