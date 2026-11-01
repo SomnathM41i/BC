@@ -80,10 +80,11 @@ class FundMovementTest extends TestCase
                 'amount' => '2500',
                 'transaction_date' => '2026-10-02',
             ])
-            ->assertSessionHas('error');
+            ->assertSessionHasNoErrors();
 
-        $this->assertSame('0.00', $this->service()->projectBalance($project));
-        $this->assertSame('1000.00', $this->service()->unallocatedFunds());
+        $this->assertSame('2500.00', $this->service()->projectBalance($project));
+        $this->assertSame('-1500.00', $this->service()->unallocatedFunds());
+        $this->assertSame('1000.00', $this->service()->businessBalance());
     }
 
     public function test_owner_can_give_money_to_a_contractor_through_the_ui(): void

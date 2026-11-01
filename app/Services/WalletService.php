@@ -35,6 +35,8 @@ use Illuminate\Support\Facades\DB;
  *   total company cash unchanged.
  *
  * Invariant: Unallocated funds = Business balance - sum(active project assigned balances).
+ * Spending can overdraw any wallet: company cash, unallocated funds, a project
+ * and the owner's wallet can all go negative, and later money covers that first.
  * Contractor wallet balances do NOT participate in this invariant.
  */
 class WalletService
@@ -192,8 +194,8 @@ class WalletService
      *
      * This is a reclassification, not a new cash receipt: the money is already
      * part of company cash in the Business Wallet, so total company cash does
-     * not change. Only unallocated funds (company cash not already assigned to
-     * a project) can be assigned.
+     * not change. Assigning more than is unallocated takes unallocated funds
+     * below zero.
      */
     public function fundProject(
         Project $project,
@@ -213,14 +215,6 @@ class WalletService
 
             $business = $this->lockBusinessWallet();
             $wallet = $this->lockProjectWallet($project);
-
-            $unallocated = Money::sub((string) $business->balance, $this->assignedProjectTotal());
-
-            if (Money::lt($unallocated, $amount)) {
-                throw new WalletException(
-                    'Insufficient unallocated funds. Available: '.Money::inr($unallocated).'.'
-                );
-            }
 
             // Reclassification only: company cash already includes this money.
             $this->credit($wallet, $amount, 'project assigned balance');
@@ -270,8 +264,8 @@ class WalletService
             $business = $this->lockBusinessWallet();
             $wallet = $this->lockProjectWallet($project);
 
-            $this->debit($wallet, $amount, 'project assigned balance');
-            $this->debit($business, $amount, 'company cash');
+            $this->overdraw($wallet, $amount);
+            $this->overdraw($business, $amount);
 
             return $this->createTransaction([
                 'type' => TransactionType::ProjectExpense,
@@ -318,8 +312,8 @@ class WalletService
             $wallet = $this->lockProjectWallet($project);
             $contractorWallet = $this->lockContractorWallet($contractor);
 
-            $this->debit($wallet, $amount, 'project assigned balance');
-            $this->debit($business, $amount, 'company cash');
+            $this->overdraw($wallet, $amount);
+            $this->overdraw($business, $amount);
             $this->credit($contractorWallet, $amount, 'contractor advance');
 
             return $this->createTransaction([
@@ -355,15 +349,7 @@ class WalletService
             $business = $this->lockBusinessWallet();
             $owner = $this->lockOwnerWallet();
 
-            $unallocated = Money::sub((string) $business->balance, $this->assignedProjectTotal());
-
-            if (Money::lt($unallocated, $amount)) {
-                throw new WalletException(
-                    'Insufficient unallocated funds. Available: '.Money::inr($unallocated).'.'
-                );
-            }
-
-            $this->debit($business, $amount, 'company cash');
+            $this->overdraw($business, $amount);
             $this->credit($owner, $amount, 'owner personal wallet');
 
             return $this->createTransaction([
@@ -468,8 +454,7 @@ class WalletService
             }
 
             $owner = $this->lockOwnerWallet();
-            $owner->balance = Money::sub((string) $owner->balance, $amount);
-            $owner->save();
+            $this->overdraw($owner, $amount);
 
             return $this->createTransaction([
                 'type' => TransactionType::OwnerExpense,
@@ -515,7 +500,8 @@ class WalletService
 
     /**
      * Step 2 of closure: release the remaining assigned balance back into
-     * unallocated company funds and mark the project Closed.
+     * unallocated company funds and mark the project Closed. An overspent
+     * project's shortfall moves to unallocated funds the same way.
      *
      * This is a reclassification, not a new cash receipt. Total company cash
      * does not change.
@@ -552,6 +538,21 @@ class WalletService
                     'project_id' => $project->id,
                     'source_wallet_id' => $wallet->id,
                     'destination_wallet_id' => $business->id,
+                    'created_by' => $actor?->id,
+                ]);
+            } elseif (Money::lt($remaining, '0')) {
+                $shortfall = Money::negate($remaining);
+
+                $this->credit($wallet, $shortfall, 'project assigned balance');
+
+                $this->createTransaction([
+                    'type' => TransactionType::ClosureRelease,
+                    'amount' => $shortfall,
+                    'transaction_date' => now()->toDateString(),
+                    'description' => 'Project overspend moved to unallocated company funds.',
+                    'project_id' => $project->id,
+                    'source_wallet_id' => $business->id,
+                    'destination_wallet_id' => $wallet->id,
                     'created_by' => $actor?->id,
                 ]);
             }
@@ -819,6 +820,15 @@ class WalletService
             throw new WalletException('Insufficient '.$label.'. Available: '.Money::inr($wallet->balance).'.');
         }
 
+        $wallet->balance = Money::sub((string) $wallet->balance, $amount);
+        $wallet->save();
+    }
+
+    /**
+     * Spending is always recorded, even past what the wallet holds.
+     */
+    protected function overdraw(Wallet $wallet, string $amount): void
+    {
         $wallet->balance = Money::sub((string) $wallet->balance, $amount);
         $wallet->save();
     }

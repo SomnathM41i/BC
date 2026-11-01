@@ -54,7 +54,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">@inr($report['agreed_amount'])</td>
                             <td class="px-4 py-3 text-right">@inr($report['total_received'])</td>
-                            <td class="px-4 py-3 text-right font-medium">@inr($report['assigned_balance'])</td>
+                            <td @class(['px-4 py-3 text-right font-medium', 'text-rose-600' => \App\Support\Money::lt($report['assigned_balance'], '0')])>@inr($report['assigned_balance'])</td>
                             <td class="px-4 py-3 text-right">@inr($report['total_costs'])</td>
                             <td class="px-4 py-3 text-right">
                                 <a href="{{ route('admin.projects.show', $project) }}" class="inline-flex items-center gap-1 text-slate-700 underline">

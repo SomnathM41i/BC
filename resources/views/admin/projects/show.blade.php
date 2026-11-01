@@ -63,7 +63,7 @@
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Available Balance</p>
-            <p class="mt-1 text-xl font-semibold text-slate-900">@inr($report['assigned_balance'])</p>
+            <p @class(['mt-1 text-xl font-semibold', 'text-rose-600' => \App\Support\Money::lt($report['assigned_balance'], '0'), 'text-slate-900' => ! \App\Support\Money::lt($report['assigned_balance'], '0')])>@inr($report['assigned_balance'])</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Total Spend</p>

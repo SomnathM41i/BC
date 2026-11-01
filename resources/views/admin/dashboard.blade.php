@@ -26,11 +26,11 @@
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Company Balance</p>
-            <p class="mt-1 text-2xl font-semibold text-slate-900">@inr($businessBalance)</p>
+            <p @class(['mt-1 text-2xl font-semibold', 'text-rose-600' => \App\Support\Money::lt($businessBalance, '0'), 'text-slate-900' => ! \App\Support\Money::lt($businessBalance, '0')])>@inr($businessBalance)</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Unallocated Funds</p>
-            <p class="mt-1 text-2xl font-semibold text-slate-900">@inr($unallocated)</p>
+            <p @class(['mt-1 text-2xl font-semibold', 'text-rose-600' => \App\Support\Money::lt($unallocated, '0'), 'text-slate-900' => ! \App\Support\Money::lt($unallocated, '0')])>@inr($unallocated)</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Personal Wallet</p>
@@ -109,7 +109,7 @@
                             <td class="px-4 py-3 text-right">@inr($report['agreed_amount'])</td>
                             <td class="px-4 py-3 text-right">@inr($report['total_received'])</td>
                             <td class="px-4 py-3 text-right">@inr($report['remaining_against_agreed'])</td>
-                            <td class="px-4 py-3 text-right font-medium">@inr($report['assigned_balance'])</td>
+                            <td @class(['px-4 py-3 text-right font-medium', 'text-rose-600' => \App\Support\Money::lt($report['assigned_balance'], '0')])>@inr($report['assigned_balance'])</td>
                             <td class="px-4 py-3 text-right">@inr($report['total_costs'])</td>
                             <td class="px-4 py-3 text-right">
                                 <a href="{{ route('admin.projects.show', $project) }}" class="inline-flex items-center gap-1 text-slate-700 underline">

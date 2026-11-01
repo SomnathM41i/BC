@@ -211,6 +211,12 @@ Total spending = Direct spending + Contractor spending
 Setting aside money and closing a project do **not** change total company cash
 — they only reclassify money between "free" and "set aside for a project".
 
+Spending is never blocked by a balance. Company cash, unallocated funds, a project
+and the owner's wallet can all go negative, and later money covers that first.
+Contractor wallets only ever increase. Closing an overspent project moves its
+shortfall to unallocated funds. The one exception is Transfer to Company, which
+needs a sufficient personal balance.
+
 ---
 
 ## 5. Roles
@@ -264,7 +270,7 @@ linked to their original contractor cost via `related_transaction_id`.
 ### WalletType
 - `business` — Company wallet
 - `project` — Per-project wallet
-- `owner` — Owner personal wallet. It can go negative through a personal expense, and later income or company transfers cover that first. Transfer to Company still needs a sufficient balance
+- `owner` — Owner personal wallet. Transfer to Company still needs a sufficient balance
 
 ### TransactionType (9 types)
 

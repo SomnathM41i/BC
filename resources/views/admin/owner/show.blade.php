@@ -36,11 +36,11 @@
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Company Balance</p>
-            <p class="mt-1 text-xl font-semibold text-slate-900">@inr($businessBalance)</p>
+            <p @class(['mt-1 text-xl font-semibold', 'text-rose-600' => \App\Support\Money::lt($businessBalance, '0'), 'text-slate-900' => ! \App\Support\Money::lt($businessBalance, '0')])>@inr($businessBalance)</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Unallocated Funds</p>
-            <p class="mt-1 text-xl font-semibold text-slate-900">@inr($unallocated)</p>
+            <p @class(['mt-1 text-xl font-semibold', 'text-rose-600' => \App\Support\Money::lt($unallocated, '0'), 'text-slate-900' => ! \App\Support\Money::lt($unallocated, '0')])>@inr($unallocated)</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Transferred to Company</p>

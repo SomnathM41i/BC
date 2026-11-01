@@ -177,15 +177,6 @@ class WalletWorkflowTest extends TestCase
         $this->assertSame('2000.00', $service->businessBalance());
         $this->assertSame('2000.00', $service->unallocatedFunds());
 
-        // Assign ₹2,500? Only ₹2,000 is available, so this must fail.
-        try {
-            $service->fundProject($project, '2500.00', '2026-10-02', null, $owner);
-            $this->fail('Funding beyond unallocated funds should have been rejected.');
-        } catch (WalletException $e) {
-            // expected
-        }
-
-        // Assign ₹1,500 instead.
         $service->fundProject($project, '1500.00', '2026-10-02', 'Seed project funds', $owner);
 
         // Company cash is unchanged; the ₹1,500 has simply moved from
