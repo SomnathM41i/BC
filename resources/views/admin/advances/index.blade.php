@@ -13,6 +13,21 @@
         </a>
     </div>
 
+    <div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <div class="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+            <p class="text-xs text-slate-500 sm:text-sm">Total Advances</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 sm:text-xl">@inr($totalAdvances)</p>
+        </div>
+        <div class="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+            <p class="text-xs text-slate-500 sm:text-sm">Total Repayments</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 sm:text-xl">@inr($totalRepayments)</p>
+        </div>
+        <div class="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+            <p class="text-xs text-slate-500 sm:text-sm">Outstanding Advance</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 sm:text-xl">@inr($outstandingAdvance)</p>
+        </div>
+    </div>
+
     <div class="overflow-hidden rounded-xl bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 text-sm">

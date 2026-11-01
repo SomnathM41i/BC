@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEmployeeAdvanceRequest;
 use App\Models\Employee;
 use App\Models\EmployeeAdvance;
+use App\Models\EmployeeSalaryPayment;
+use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,8 +21,15 @@ class EmployeeAdvanceController extends Controller
             ->orderByDesc('advance_date')
             ->paginate(30);
 
+        // Totals cover every advance, not just the current page of the list.
+        $totalAdvances = Money::normalize(EmployeeAdvance::query()->sum('amount') ?? '0');
+        $totalRepayments = Money::normalize(EmployeeSalaryPayment::query()->sum('advance_repayment') ?? '0');
+
         return view('admin.advances.index', [
             'advances' => $advances,
+            'totalAdvances' => $totalAdvances,
+            'totalRepayments' => $totalRepayments,
+            'outstandingAdvance' => Money::sub($totalAdvances, $totalRepayments),
         ]);
     }
 

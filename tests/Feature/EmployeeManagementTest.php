@@ -845,6 +845,38 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame(1, EmployeeSalaryPayment::query()->where('employee_id', $employee->id)->count());
     }
 
+    public function test_advances_page_totals_every_advance_across_all_pages(): void
+    {
+        Carbon::setTestNow('2026-10-30 10:00:00');
+
+        $employee = $this->employee();
+
+        for ($i = 0; $i < 35; $i++) {
+            EmployeeAdvance::create([
+                'employee_id' => $employee->id,
+                'advance_date' => '2026-10-01',
+                'amount' => '100.00',
+            ]);
+        }
+
+        $this->markWeek($employee, ['2026-10-23' => ['level' => 'normal_day']]);
+
+        $this->actingAs($this->owner())->post('/admin/pay-salary', [
+            'employee_id' => $employee->id,
+            'period_end' => '2026-10-29',
+            'advance_repayment' => '500',
+            'amount_paid' => '100',
+            'payment_date' => '2026-10-30',
+        ])->assertRedirect();
+
+        $this->actingAs($this->owner())->get('/admin/advances')
+            ->assertOk()
+            ->assertViewHas('totalAdvances', '3500.00')
+            ->assertViewHas('totalRepayments', '500.00')
+            ->assertViewHas('outstandingAdvance', '3000.00')
+            ->assertSee('₹3,500.00');
+    }
+
     public function test_advance_repayment_cannot_exceed_outstanding_balance(): void
     {
         Carbon::setTestNow('2026-10-30 10:00:00');
